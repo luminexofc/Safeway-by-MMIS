@@ -26,3 +26,6 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Editor/MCP config (not app code)
+opencode.json
