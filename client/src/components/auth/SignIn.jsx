@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { account } from "../../lib/appwrite";
-import { useSession } from "../../lib/session";
+import { startGoogleAuth, useSession } from "../../lib/session";
 import { friendlyError } from "../../lib/errors";
 import "./signin.css";
 import SignInScene from "./SignInScene";
@@ -84,13 +84,7 @@ export default function SignIn({ onSignUp, onForgot, onSuccess }) {
     }
   };
 
-  const googleSignIn = () => {
-    const origin = window.location.origin;
-    // Mark the attempt so the session check after the redirect can tell a
-    // dropped cookie (browser blocked it) from a plain logged-out state.
-    sessionStorage.setItem("sp_oauth_pending", "1");
-    account.createOAuth2Session({ provider: "google", success: `${origin}/dashboard`, failure: `${origin}/auth-error` });
-  };
+  const googleSignIn = () => startGoogleAuth();
 
   return (
     <div className="sp">

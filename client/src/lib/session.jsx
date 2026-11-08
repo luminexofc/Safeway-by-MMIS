@@ -4,16 +4,27 @@ import { account } from "./appwrite";
 const SessionContext = createContext({
   user: null,
   loading: true,
-  oauthBlocked: false,
   refresh: async () => {},
   setUser: () => {},
   logout: async () => {},
 });
 
+// Google sign-in via the OAuth2 token flow. Unlike createOAuth2Session, this
+// does not rely on a third-party cookie surviving the round trip: Appwrite
+// returns one-time userId/secret params that /auth/callback exchanges for a
+// session stored in localStorage.cookieFallback.
+export function startGoogleAuth() {
+  const origin = window.location.origin;
+  account.createOAuth2Token({
+    provider: "google",
+    success: `${origin}/auth/callback`,
+    failure: `${origin}/auth-error`,
+  });
+}
+
 export function SessionProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [oauthBlocked, setOauthBlocked] = useState(false);
 
   // Best-effort user fetch. Deliberately never clobbers state with null on
   // failure: the login flow sets the user directly from the session first,
@@ -21,17 +32,10 @@ export function SessionProvider({ children }) {
   const refresh = useCallback(async () => {
     try {
       const me = await account.get();
-      sessionStorage.removeItem("sp_oauth_pending");
-      setOauthBlocked(false);
       setUser(me);
       return me;
     } catch (err) {
       console.error("[session] could not fetch user:", err?.code ?? err?.message ?? err);
-      // 401 right after an OAuth redirect means the browser dropped the
-      // cross-site session cookie — tell the login page in plain words.
-      if (err?.code === 401 && sessionStorage.getItem("sp_oauth_pending")) {
-        setOauthBlocked(true);
-      }
       return null;
     } finally {
       setLoading(false);
@@ -52,7 +56,7 @@ export function SessionProvider({ children }) {
   }, [refresh]);
 
   return (
-    <SessionContext.Provider value={{ user, loading, oauthBlocked, refresh, setUser, logout }}>
+    <SessionContext.Provider value={{ user, loading, refresh, setUser, logout }}>
       {children}
     </SessionContext.Provider>
   );

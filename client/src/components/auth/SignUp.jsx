@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { account, ID } from "../../lib/appwrite";
-import { useSession } from "../../lib/session";
+import { startGoogleAuth, useSession } from "../../lib/session";
 import { friendlyError } from "../../lib/errors";
 import "./signup.css";
 import SignUpScene from "./SignUpScene";
@@ -87,10 +87,7 @@ export default function SignUp({ onSignIn, onSuccess }) {
     }
   };
 
-  const googleSignUp = () => {
-    const origin = window.location.origin;
-    account.createOAuth2Session({ provider: "google", success: `${origin}/dashboard`, failure: `${origin}/auth-error` });
-  };
+  const googleSignUp = () => startGoogleAuth();
 
   const field = (k, type, ph, auto) => (
     <div className="su-field">

@@ -8,7 +8,7 @@ export default function AppShell({ children }) {
   const { user, logout } = useSession();
 
   const isLanding = loc.pathname === "/";
-  const isAuth = ["/login", "/signup", "/verify", "/reset", "/auth-error"].includes(loc.pathname);
+  const isAuth = ["/login", "/signup", "/verify", "/reset", "/auth-error", "/auth/callback"].includes(loc.pathname);
 
   if (isLanding) return <>{children}</>;
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "../components/ThemeToggle";
+import { useSession } from "../lib/session";
 import "./landing.css";
 import {
   landingRoutes, navLinks, featureCards, processSteps, quickLinks,
@@ -330,6 +331,7 @@ function HeroMap() {
 export default function Landing() {
   const rootRef = useRef(null);
   const theme = useAppTheme();
+  const { user, loading: sessionLoading } = useSession();
   const [email, setEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState({
     type: "",
@@ -385,12 +387,25 @@ export default function Landing() {
           </nav>
 
           <div className="sw-header-actions">
-            <SiteLink className="sw-btn sw-btn-sm sw-btn-ghost" to={landingRoutes.login}>
-              Login
-            </SiteLink>
-            <SiteLink className="sw-btn sw-btn-sm sw-btn-dark" to={landingRoutes.register}>
-              Register
-            </SiteLink>
+            {!sessionLoading && (user ? (
+              <>
+                <span className="sw-signed-in">
+                  Signed in{user.name ? ` · ${user.name.split(" ")[0]}` : ""}
+                </span>
+                <SiteLink className="sw-btn sw-btn-sm sw-btn-dark" to={landingRoutes.alerts}>
+                  Open dashboard
+                </SiteLink>
+              </>
+            ) : (
+              <>
+                <SiteLink className="sw-btn sw-btn-sm sw-btn-ghost" to={landingRoutes.login}>
+                  Login
+                </SiteLink>
+                <SiteLink className="sw-btn sw-btn-sm sw-btn-dark" to={landingRoutes.register}>
+                  Register
+                </SiteLink>
+              </>
+            ))}
             <span className="sw-theme-slot">
               <ThemeToggle />
             </span>

@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from "react
 import { SessionProvider, useSession } from "./lib/session";
 import AppShell from "./components/AppShell";
 import Landing from "./pages/Landing";
-import { Login, Signup, Verify, AuthError, ResetPassword } from "./pages/Auth";
+import { Login, Signup, Verify, AuthError, ResetPassword, OAuthCallback } from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import NavigatePage from "./pages/Navigate";
 import Report from "./pages/Report";
@@ -48,6 +48,7 @@ export default function App() {
           <Route path="/verify" element={<Shell><Verify /></Shell>} />
           <Route path="/reset" element={<Shell><ResetPassword /></Shell>} />
           <Route path="/auth-error" element={<Shell><AuthError /></Shell>} />
+          <Route path="/auth/callback" element={<Shell><OAuthCallback /></Shell>} />
           <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
           <Route path="/navigate" element={<Protected><NavigatePage /></Protected>} />
           <Route path="/report" element={<Protected><Report /></Protected>} />

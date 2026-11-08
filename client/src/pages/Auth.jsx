@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import BeuiButton from "../components/beui/BeuiButton";
 import BeuiBadge from "../components/beui/BeuiBadge";
@@ -19,25 +19,19 @@ import "../components/auth/responsive.css";
 export function Login() {
   const nav = useNavigate();
   const location = useLocation();
-  const { oauthBlocked } = useSession();
+  const { user, loading } = useSession();
   const [view, setView] = useState("signin"); // "signin" | "forgot"
   const go = (next) => next !== view && wipeThen(() => setView(next));
+  // Already signed in? Login has nothing to offer — open the app.
+  useEffect(() => {
+    if (!loading && user) nav("/dashboard", { replace: true });
+  }, [loading, user, nav]);
   // Where the user was headed when the guard bounced them here.
   const from = location.state?.from;
   const cameForPage = typeof from === "string" && from.startsWith("/") && !from.startsWith("//");
 
   return (
     <AuthLayout pageKey={view}>
-      {oauthBlocked && view === "signin" && (
-        <div className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-[13.5px] font-semibold text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200" role="alert">
-          <p className="font-bold">Google sign-in didn't finish.</p>
-          <p className="mt-1 font-normal">
-            Your browser blocked the sign-in cookie on the way back from Google.
-            In your browser settings, allow third-party cookies for this site,
-            then try Google sign-in again. Email sign-in works either way.
-          </p>
-        </div>
-      )}
       {cameForPage && view === "signin" && (
         <p className="mb-4 text-center text-[13.5px] font-semibold text-teal-800 dark:text-teal-300">
           Sign in to continue to your map.
@@ -58,11 +52,64 @@ export function Login() {
 
 export function Signup() {
   const nav = useNavigate();
+  const { user, loading } = useSession();
+  useEffect(() => {
+    if (!loading && user) nav("/dashboard", { replace: true });
+  }, [loading, user, nav]);
   return (
     <AuthLayout pageKey="signup">
       {/* Account + session already exist after signup — straight to the app. */}
       <SignUp onSignIn={() => wipeThen(() => nav("/login"))} onSuccess={() => nav("/dashboard", { replace: true })} />
     </AuthLayout>
+  );
+}
+
+// Landing target for the Google OAuth2 token flow (…/auth/callback?userId&secret).
+export function OAuthCallback() {
+  const [params] = useSearchParams();
+  const nav = useNavigate();
+  const { refresh } = useSession();
+  const [failed, setFailed] = useState(false);
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    const userId = params.get("userId");
+    const secret = params.get("secret");
+    if (!userId || !secret) {
+      setFailed(true);
+      return;
+    }
+    (async () => {
+      try {
+        await account.createSession({ userId, secret });
+        // Confirms the session actually persisted (localStorage fallback)
+        // and fills in the name/email for the header.
+        const me = await refresh();
+        if (!me) throw new Error("session not persisted");
+        nav("/dashboard", { replace: true });
+      } catch (ex) {
+        console.error("[oauth] callback failed:", ex?.code ?? ex?.message ?? ex);
+        setFailed(true);
+      }
+    })();
+  }, [params, refresh, nav]);
+
+  if (failed) {
+    return (
+      <AuthFrame title="Google sign-in didn't finish" sub="The sign-in link expired or was already used." footer={<Link to="/login" className="font-bold text-teal-800 underline dark:text-teal-300">Back to login</Link>}>
+        <BeuiButton to="/login">Try again</BeuiButton>
+      </AuthFrame>
+    );
+  }
+
+  return (
+    <AuthFrame title="Finishing sign-in" sub="Hold on a second…" footer={<></>}>
+      <p className="text-[14px] text-slate-600 dark:text-slate-400">
+        Confirming your Google account and opening your dashboard.
+      </p>
+    </AuthFrame>
   );
 }
 
