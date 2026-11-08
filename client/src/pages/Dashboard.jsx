@@ -419,10 +419,13 @@ export default function Dashboard() {
 
   /* ── Tiles ────────────────────────────────────────────────────────── */
 
-  const tileUrl  = dark
-    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-  const tileAttr = dark
+  // Light starts on OSM, dark on CARTO. If either provider fails (flaky
+  // network, rate limit), swap to the other one instead of a blank map.
+  const [tileFailed, setTileFailed] = useState(false);
+  const tileUrl   = tileFailed
+    ? (dark ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png")
+    : (dark ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+  const tileAttr  = tileUrl.includes("cartocdn") || tileUrl.includes("carto")
     ? '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     : '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors';
 
@@ -472,7 +475,12 @@ export default function Dashboard() {
           zoomControl={false}
           className="h-full w-full"
         >
-          <TileLayer key={dark ? "dark" : "light"} attribution={tileAttr} url={tileUrl} />
+          <TileLayer
+            key={`${dark ? "dark" : "light"}-${tileFailed ? "fb" : "primary"}`}
+            attribution={tileAttr}
+            url={tileUrl}
+            eventHandlers={{ tileerror: () => setTileFailed(true) }}
+          />
           <MapBridge
             mapRef={mapRef}
             onZoom={() => {}}
