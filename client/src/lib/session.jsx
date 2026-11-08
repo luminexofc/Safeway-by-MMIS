@@ -35,7 +35,8 @@ export function SessionProvider({ children }) {
       setUser(me);
       return me;
     } catch (err) {
-      console.error("[session] could not fetch user:", err?.code ?? err?.message ?? err);
+      // 401 just means "signed out" — expected on public pages.
+      if (err?.code !== 401) console.warn("[session] could not fetch user:", err?.code ?? err?.message ?? err);
       return null;
     } finally {
       setLoading(false);
