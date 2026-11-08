@@ -8,6 +8,7 @@ import SignIn from "../components/auth/SignIn";
 import SignUp from "../components/auth/SignUp";
 import ForgotPassword from "../components/auth/ForgotPassword";
 import { account } from "../lib/appwrite";
+import { useSession } from "../lib/session";
 import { friendlyError } from "../lib/errors";
 import { useCooldown } from "../lib/useCooldown";
 import { wipeThen } from "../lib/wipe";
@@ -18,6 +19,7 @@ import "../components/auth/responsive.css";
 export function Login() {
   const nav = useNavigate();
   const location = useLocation();
+  const { oauthBlocked } = useSession();
   const [view, setView] = useState("signin"); // "signin" | "forgot"
   const go = (next) => next !== view && wipeThen(() => setView(next));
   // Where the user was headed when the guard bounced them here.
@@ -26,6 +28,16 @@ export function Login() {
 
   return (
     <AuthLayout pageKey={view}>
+      {oauthBlocked && view === "signin" && (
+        <div className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-[13.5px] font-semibold text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200" role="alert">
+          <p className="font-bold">Google sign-in didn't finish.</p>
+          <p className="mt-1 font-normal">
+            Your browser blocked the sign-in cookie on the way back from Google.
+            In your browser settings, allow third-party cookies for this site,
+            then try Google sign-in again. Email sign-in works either way.
+          </p>
+        </div>
+      )}
       {cameForPage && view === "signin" && (
         <p className="mb-4 text-center text-[13.5px] font-semibold text-teal-800 dark:text-teal-300">
           Sign in to continue to your map.

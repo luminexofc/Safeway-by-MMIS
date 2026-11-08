@@ -86,6 +86,9 @@ export default function SignIn({ onSignUp, onForgot, onSuccess }) {
 
   const googleSignIn = () => {
     const origin = window.location.origin;
+    // Mark the attempt so the session check after the redirect can tell a
+    // dropped cookie (browser blocked it) from a plain logged-out state.
+    sessionStorage.setItem("sp_oauth_pending", "1");
     account.createOAuth2Session({ provider: "google", success: `${origin}/dashboard`, failure: `${origin}/auth-error` });
   };
 
