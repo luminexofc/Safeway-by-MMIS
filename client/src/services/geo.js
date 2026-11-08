@@ -131,7 +131,7 @@ export function useGeolocation(auto = false) {
     navigator.geolocation.getCurrentPosition(
       (p) => {
         if (!mounted.current) return;
-        setPos({ lat: p.coords.latitude, lng: p.coords.longitude });
+        setPos({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy });
         setStatus("ok");
       },
       (e) => {
@@ -143,7 +143,7 @@ export function useGeolocation(auto = false) {
             : "Your location is unavailable. Search any address instead."
         );
       },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
     );
   }, []);
 

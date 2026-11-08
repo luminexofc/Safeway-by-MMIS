@@ -125,6 +125,7 @@ export default function MapView({
               opacity: 0.95,
               lineCap: "round",
               lineJoin: "round",
+              smoothFactor: 0,
               dashArray: l.dashed ? "2 8" : undefined,
             }}
           />

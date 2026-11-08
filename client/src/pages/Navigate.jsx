@@ -311,6 +311,7 @@ export default function Navigate() {
                 markers={markers}
                 lines={lines}
                 fitSignal={fitSignal}
+                radius={isMyLoc(from) && geo.pos?.accuracy ? { at: [geo.pos.lat, geo.pos.lng], meters: geo.pos.accuracy } : null}
                 chip={to ? `${t.chipTo}${to.slice(0, 42)}` : t.chipDefault}
               />
             </div>

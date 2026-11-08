@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, useMap, useMapEvents } from "react-leaflet";
 import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -222,6 +222,7 @@ export default function Dashboard() {
   const mapRef = useRef(null);
 
   const [userPos,  setUserPos]  = useState(null);
+  const [userAcc,  setUserAcc]  = useState(null);
   const [feed,     setFeed]     = useState([]);   // live rows from the reports table
   const [feedBusy, setFeedBusy] = useState(true);
   const [saving,   setSaving]   = useState(false);
@@ -286,6 +287,7 @@ export default function Dashboard() {
       ({ coords }) => {
         const ll = [coords.latitude, coords.longitude];
         setUserPos(ll);
+        setUserAcc(coords.accuracy);
         if (fly) mapRef.current?.flyTo(ll, 15, { duration: 1.4 });
       },
       () => notify("Location unavailable. Allow access or search an address instead."),
@@ -495,7 +497,7 @@ export default function Dashboard() {
           {route && (
             <>
               <Polyline positions={route.coords} pathOptions={{ color: "#fff",    weight: 10, opacity: 0.85 }} />
-              <Polyline positions={route.coords} pathOptions={{ color: "#0f766e", weight: 5,  lineCap: "round", lineJoin: "round" }} />
+              <Polyline positions={route.coords} pathOptions={{ color: "#0f766e", weight: 5,  lineCap: "round", lineJoin: "round", smoothFactor: 0 }} />
             </>
           )}
 
@@ -513,7 +515,15 @@ export default function Dashboard() {
             </Marker>
           ))}
 
-          {/* User location dot */}
+          {/* User location dot + GPS accuracy */}
+          {userPos && userAcc != null && (
+            <Circle
+              center={userPos}
+              radius={userAcc}
+              interactive={false}
+              pathOptions={{ color: "#0d9488", weight: 1, fillColor: "#0d9488", fillOpacity: 0.08 }}
+            />
+          )}
           {userPos && <Marker position={userPos} icon={userDotIcon} interactive={false} />}
 
           {/* Origin dot when routing */}
