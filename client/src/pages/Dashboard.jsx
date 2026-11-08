@@ -3,9 +3,9 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, useMapEvents 
 import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { cn } from "../lib/cn";
+import { cn } from "../../../shared/cn";
 import { COUNTRY_CENTER, reverseGeocodeAddress } from "../services/geo";
-import { useTheme } from "../lib/theme";
+import { useTheme } from "../../../shared/theme";
 import { callFunction, fetchFeed, reportType, depthLabel } from "../lib/appwrite";
 import { friendlyError } from "../lib/errors";
 import {
@@ -166,7 +166,7 @@ function RouteCard({ route, routing, mode, setMode, dest, nearby, hazardText, ha
 
       <div className={cn("space-y-3 p-4", compact && "py-3")}>
         {routing ? (
-          <p className="animate-pulse text-[13px] text-slate-400">Finding route…</p>
+          <p className="text-[13px] text-slate-400">Finding route…</p>
         ) : route ? (
           <>
             {/* ETA + distance */}
@@ -872,7 +872,7 @@ export default function Dashboard() {
                 ))}
                 <div className="flex items-center gap-1.5 border-t border-slate-100 pt-1.5 dark:border-white/10">
                   <span
-                    className={`h-2 w-2 shrink-0 rounded-full ${feedBusy ? "animate-pulse bg-amber-400" : "bg-emerald-500"}`}
+                    className={`h-2 w-2 shrink-0 rounded-full ${feedBusy ? "bg-amber-400" : "bg-emerald-500"}`}
                     aria-hidden="true"
                   />
                   <p className="text-[10.5px] text-slate-400">

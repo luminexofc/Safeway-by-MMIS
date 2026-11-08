@@ -10,7 +10,7 @@ import { useGeolocation, reverseGeocodeAddress, COUNTRY_CENTER } from "../servic
 import { useSession } from "../lib/session";
 import { callFunction, sha256Hex, uploadReportPhoto } from "../lib/appwrite";
 import { friendlyError } from "../lib/errors";
-import { cn } from "../lib/cn";
+import { cn } from "../../../shared/cn";
 
 const DEPTHS = [
   { label: "Ankle-deep", value: "ankle" },

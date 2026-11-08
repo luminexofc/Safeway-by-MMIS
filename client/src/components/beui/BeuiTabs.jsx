@@ -2,7 +2,7 @@
 // Design language from @beui/tabs (layoutId glide, TABS_GLIDE, reduced-motion safe).
 import { createContext, useContext, useId, useState, useCallback } from "react";
 import { motion, MotionConfig, useReducedMotion } from "motion/react";
-import { cn } from "../../lib/cn";
+import { cn } from "../../../../shared/cn";
 import { TABS_GLIDE } from "../../lib/ease";
 
 const Ctx = createContext(null);

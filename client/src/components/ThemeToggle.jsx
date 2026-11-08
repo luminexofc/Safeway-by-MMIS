@@ -1,5 +1,5 @@
 import { Sun, Moon } from "lucide-react";
-import { useTheme, nextThemeMode } from "../lib/theme";
+import { useTheme, nextThemeMode } from "../../../shared/theme";
 import { useLang } from "../lib/lang";
 
 const ICONS = { light: Sun, dark: Moon };

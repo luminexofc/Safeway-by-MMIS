@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Search, MapPin, Navigation, TriangleAlert, CheckCircle2, X, Command } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { cn } from "../../lib/cn";
+import { cn } from "../../../../shared/cn";
 import { SPRING_PANEL, SPRING_LAYOUT } from "../../lib/ease";
 
 export function BeuiCard({ children, className = "" }) {

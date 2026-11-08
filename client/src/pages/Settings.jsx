@@ -3,7 +3,7 @@ import BeuiButton from "../components/beui/BeuiButton";
 import BeuiBadge from "../components/beui/BeuiBadge";
 import { BeuiCard } from "../components/beui/beui";
 import { useGeolocation, BD_DIVISIONS } from "../services/geo";
-import { useTheme } from "../lib/theme";
+import { useTheme } from "../../../shared/theme";
 import { useSession } from "../lib/session";
 import { getProfile, upsertProfile } from "../lib/appwrite";
 import { friendlyError } from "../lib/errors";

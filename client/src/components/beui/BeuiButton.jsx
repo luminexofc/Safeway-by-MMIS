@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "motion/react";
 import { Link } from "react-router-dom";
 import { LoaderCircle } from "lucide-react";
-import { cn } from "../../lib/cn";
+import { cn } from "../../../../shared/cn";
 import { SPRING_PRESS } from "../../lib/ease";
 
 const VARIANTS = {

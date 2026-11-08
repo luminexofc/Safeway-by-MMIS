@@ -1,5 +1,5 @@
 import { Check, TriangleAlert, X, Info, Circle } from "lucide-react";
-import { cn } from "../../lib/cn";
+import { cn } from "../../../../shared/cn";
 
 const STATUS = {
   safe: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",

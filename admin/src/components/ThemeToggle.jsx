@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Monitor, Moon, Sun } from "lucide-react";
-import { useTheme } from "../lib/theme";
-import { cn } from "../lib/cn";
+import { useTheme } from "../../../shared/theme";
+import { cn } from "../../../shared/cn";
 
 const OPTIONS = [
   { id: "light", label: "Light", icon: Sun },

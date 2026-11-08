@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
+// One theme implementation for client + admin (DESIGN.md: Light / Dark /
+// System in both, default follows the OS until the visitor picks).
+
 const KEY = "sp-theme";
 const ThemeCtx = createContext({ mode: "system", resolved: "light", setMode: () => {} });
 
@@ -56,3 +59,6 @@ export function ThemeProvider({ children }) {
 }
 
 export const useTheme = () => useContext(ThemeCtx);
+
+/** The mode a one-click toggle moves to: light <-> dark. */
+export const nextThemeMode = (m) => (m === "dark" ? "light" : "dark");

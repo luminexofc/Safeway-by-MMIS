@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, Polyline, Circle, CircleMarker, Marker, ZoomControl, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { COUNTRY_FALLBACK, COUNTRY_CENTER } from "../services/geo";
-import { useTheme } from "../lib/theme";
+import { useTheme } from "../../../shared/theme";
 
 const FALLBACK_CENTER = [COUNTRY_FALLBACK?.lat ?? COUNTRY_CENTER[0], COUNTRY_FALLBACK?.lng ?? COUNTRY_CENTER[1]];
 

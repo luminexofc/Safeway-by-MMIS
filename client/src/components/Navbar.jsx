@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
-  Home, Route, FileSearch, MessagesSquare, LogIn, UserPlus, ClipboardList, User, Settings,
+  Home, Route, FileSearch, LogIn, UserPlus, ClipboardList, User, Settings,
   LogOut, Sun, Moon, Languages, ChevronDown, ShieldCheck,
 } from "lucide-react";
 import { useLang } from "../lib/lang";
-import { useTheme, nextThemeMode } from "../lib/theme";
+import { useTheme, nextThemeMode } from "../../../shared/theme";
 
 /* ------------------------------------------------------------------ */
 /* Config: adjust the paths to match your router                       */
@@ -16,7 +16,6 @@ const ROUTES = {
   dashboard: "/dashboard",
   navigate: "/navigate",
   track: "/report",
-  threads: "/threads",
   myReports: "/my-reports",
   profile: "/profile",
   settings: "/settings",
@@ -137,7 +136,6 @@ export default function Navbar({ user = null, onLogout, theme: themeProp, onThem
         { to: ROUTES.home, label: t.home, icon: Home, end: true },
         { to: ROUTES.navigate, label: t.findRoute, icon: Route },
         { to: ROUTES.track, label: t.trackReport, icon: FileSearch },
-        { to: ROUTES.threads, label: t.threads, icon: MessagesSquare },
       ];
 
   // Phone bottom bar: always five items. Settings and Logout live in the account menu up top.
@@ -153,7 +151,6 @@ export default function Navbar({ user = null, onLogout, theme: themeProp, onThem
         { to: ROUTES.home, label: t.homeS, icon: Home, end: true },
         { to: ROUTES.navigate, label: t.routeS, icon: Route },
         { to: ROUTES.track, label: t.trackS, icon: FileSearch },
-        { to: ROUTES.threads, label: t.threadsS, icon: MessagesSquare },
         { to: authCta.to, label: authCta.short, icon: authCta.icon },
       ];
 
@@ -188,7 +185,7 @@ export default function Navbar({ user = null, onLogout, theme: themeProp, onThem
   return (
     <>
       {/* ---------------- Top bar ---------------- */}
-      <header className="sticky top-0 z-[800] border-b border-white/40 bg-white/55 shadow-[0_1px_24px_-8px_rgba(15,23,42,0.25)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-slate-950/45">
+      <header className="sticky top-0 z-[800] border-b border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950">
         <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-2 px-4 sm:gap-3 sm:px-6">
           {/* Brand */}
           <Link to={loggedIn ? ROUTES.dashboard : ROUTES.home} className="flex shrink-0 items-center gap-2 rounded-xl py-1 pr-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
@@ -280,7 +277,7 @@ export default function Navbar({ user = null, onLogout, theme: themeProp, onThem
       {/* ---------------- Phone bottom navigation ---------------- */}
       <nav aria-label={t.mobileNav} className="fixed inset-x-3 z-[600] lg:hidden"
         style={{ bottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}>
-        <div className="mx-auto grid max-w-xl grid-cols-5 gap-1 rounded-2xl border border-white/40 bg-white/60 p-1.5 shadow-[0_8px_32px_-8px_rgba(15,23,42,0.35)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-slate-950/60">
+        <div className="mx-auto grid max-w-xl grid-cols-5 gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 dark:border-white/10 dark:bg-slate-950">
           {bottom.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end}
               className="relative block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">

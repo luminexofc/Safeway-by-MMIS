@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, LogOut, Check, X, Flag, Inbox, UserRoundX, RefreshCw } from "lucide-react";
-import { cn } from "../lib/cn";
+import { cn } from "../../../shared/cn";
 import ThemeToggle from "../components/ThemeToggle";
 import { useOperator } from "../lib/operator";
 import { tablesDB, storage, DATABASE_ID, TABLES, BUCKET, Query, callFunction } from "../lib/appwrite";
