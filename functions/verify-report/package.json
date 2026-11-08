@@ -1,0 +1,11 @@
+{
+  "name": "safeway-verify-report",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Operator-only: verify / discard / flag a report, write audit event, push to the division topic.",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "node-appwrite": "^31.1.0"
+  }
+}

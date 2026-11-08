@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { account } from "../../lib/appwrite";
 import "./forgot.css";
 import ForgotScene from "./ForgotScene";
 import { WaterSplash } from "./AuthParts";
@@ -37,15 +38,22 @@ export default function ForgotPassword({ onBackToSignIn }) {
     return () => clearTimeout(t);
   }, [resendIn]);
 
-  const send = (again) => {
+  const send = async (again) => {
     setLoading(true);
-    // Replace with your real "send reset link" API call
-    setTimeout(() => {
-      setLoading(false);
+    setError("");
+    try {
+      await account.createRecovery({ email: email.trim(), url: `${window.location.origin}/reset` });
       setSent(true);
       setResendIn(30);
       setResent(!!again);
-    }, 1400);
+    } catch {
+      // Do not leak whether the address is registered — same outcome either way.
+      setSent(true);
+      setResendIn(30);
+      setResent(!!again);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const submit = (e) => {

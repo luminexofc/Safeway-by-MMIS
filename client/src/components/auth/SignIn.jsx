@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { account } from "../../lib/appwrite";
+import { useSession } from "../../lib/session";
 import "./signin.css";
 import SignInScene from "./SignInScene";
 import { EyeIcon, GoogleIcon, WaterSplash } from "./AuthParts";
@@ -23,10 +25,12 @@ export default function SignIn({ onSignUp, onForgot, onSuccess }) {
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [shake, setShake] = useState(false);
   const [done, setDone] = useState(false);
+  const { refresh } = useSession();
 
   const [lockLeft, setLockLeft] = useState(0);
   const locked = lockLeft > 0;
@@ -40,7 +44,7 @@ export default function SignIn({ onSignUp, onForgot, onSuccess }) {
     return () => clearTimeout(t);
   }, [lockLeft]);
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     if (locked || loading) return;
     const err = {};
@@ -48,6 +52,7 @@ export default function SignIn({ onSignUp, onForgot, onSuccess }) {
     if (password.length < 6) err.password = "Password must be at least 6 characters.";
     setErrors(err);
     setDone(false);
+    setServerError("");
     if (Object.keys(err).length) {
       const n = attempts + 1;
       setAttempts(n);
@@ -57,12 +62,27 @@ export default function SignIn({ onSignUp, onForgot, onSuccess }) {
       return;
     }
     setLoading(true);
-    // Replace with your real sign-in API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await account.createEmailPasswordSession({ email, password });
+      await refresh();
       setDone(true);
       setTimeout(() => onSuccess && onSuccess(), 700);
-    }, 1400);
+    } catch (ex) {
+      const msg = ex?.code === 401 ? "Wrong email or password." : "Could not sign in. Check your connection and retry.";
+      setServerError(msg);
+      const n = attempts + 1;
+      setAttempts(n);
+      if (n >= 5) setLockLeft(30);
+      setShake(true);
+      setTimeout(() => setShake(false), 450);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const googleSignIn = () => {
+    const origin = window.location.origin;
+    account.createOAuth2Session({ provider: "google", success: `${origin}/dashboard`, failure: `${origin}/auth-error` });
   };
 
   return (
@@ -111,13 +131,14 @@ export default function SignIn({ onSignUp, onForgot, onSuccess }) {
 
             <a href="#forgot" className="sp-forgot" onClick={(e) => { e.preventDefault(); onForgot && onForgot(); }}>Forgot Password?</a>
 
+            {serverError && <div className="sp-msg" role="alert">{serverError}</div>}
             <button className="sp-btn" type="submit" disabled={loading || locked}>
               {loading ? <span className="sp-spin" /> : "Login"}
             </button>
             {done && <div className="sp-ok">Signed in. Redirecting to your routes…</div>}
           </form>
 
-          <button className="sp-google" type="button" onClick={() => onSuccess && onSuccess()}><GoogleIcon /> Sign in with Google</button>
+          <button className="sp-google" type="button" onClick={googleSignIn}><GoogleIcon /> Sign in with Google</button>
           <p className="sp-signup">
             Don't have an account?{" "}
             <a href="#signup" className="sp-link" onClick={(e) => { e.preventDefault(); onSignUp && onSignUp(); }}>Register now</a>

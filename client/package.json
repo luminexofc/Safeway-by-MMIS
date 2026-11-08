@@ -11,6 +11,7 @@
     "test": "node --test src/services/geo.test.js"
   },
   "dependencies": {
+    "appwrite": "^29.2.0",
     "clsx": "^2.1.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.532.0",

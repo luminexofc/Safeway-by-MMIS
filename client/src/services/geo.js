@@ -4,11 +4,32 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // - Geocoding: OpenStreetMap Nominatim (biased to Bangladesh)
 // - Routing: OSRM public demo server (driving profile)
 // - Position: browser Geolocation API
-// Waterlogging safety scoring still comes from the Safeway backend
-// (POST /v1/map/route). See README.
+// Waterlogging marker data comes from the Safeway backend (map-feed function).
+// See README.
 
 const BD_VIEWBOX = "88.0,20.5,92.7,26.7"; // lng-top, lat-top, lng-bottom, lat-bottom
 export const COUNTRY_CENTER = [23.685, 90.3563];
+export const COUNTRY_FALLBACK = { lat: COUNTRY_CENTER[0], lng: COUNTRY_CENTER[1], label: "Bangladesh" };
+
+// The 8 divisions, keyed by the slug the backend stores.
+export const BD_DIVISIONS = [
+  { slug: "dhaka", name: "Dhaka" },
+  { slug: "chattogram", name: "Chattogram" },
+  { slug: "khulna", name: "Khulna" },
+  { slug: "rajshahi", name: "Rajshahi" },
+  { slug: "barishal", name: "Barishal" },
+  { slug: "sylhet", name: "Sylhet" },
+  { slug: "rangpur", name: "Rangpur" },
+  { slug: "mymensingh", name: "Mymensingh" },
+];
+
+// Nominatim returns e.g. "Dhaka Division"; map back to our slugs, else "unknown".
+export function normalizeDivision(raw) {
+  if (!raw) return "unknown";
+  const bare = String(raw).toLowerCase().replace(/\s*division$/i, "").trim();
+  const hit = BD_DIVISIONS.find((d) => d.slug === bare || d.name.toLowerCase() === bare);
+  return hit ? hit.slug : "unknown";
+}
 
 // Shorten a Nominatim display name to its first three parts for dropdown rows.
 export function formatPlaceLabel(displayName, fallback = "") {
@@ -45,18 +66,33 @@ export async function geocode(query, limit = 5) {
   }));
 }
 
-export async function reverseGeocode(lat, lng) {
+async function fetchReverseAddress(lat, lng) {
   const url =
     `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}` +
     `&zoom=14&addressdetails=1&accept-language=en`;
   const res = await fetch(url, { headers: { Accept: "application/json" } });
   if (!res.ok) throw new Error(`Lookup failed (${res.status})`);
-  const d = await res.json();
+  return res.json();
+}
+
+// Full address for form submission: label + division slug + district.
+export async function reverseGeocodeAddress(lat, lng) {
+  const d = await fetchReverseAddress(lat, lng);
   const a = d.address || {};
   const place =
     a.road || a.suburb || a.neighbourhood || a.village || a.town || a.city || a.county || a.state || "";
   const city = a.city || a.town || a.village || a.county || a.state || "Bangladesh";
-  return place ? `${place}, ${city}` : city || d.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  const district = (a.county || a.state_district || a.city_district || "").replace(/\s*district$/i, "").trim();
+  return {
+    label: place ? `${place}, ${city}` : city || d.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+    division: normalizeDivision(a.state || a.region || a.county),
+    district: district || undefined,
+  };
+}
+
+export async function reverseGeocode(lat, lng) {
+  const { label } = await reverseGeocodeAddress(lat, lng);
+  return label;
 }
 
 // OSRM returns [lng,lat] pairs. Convert to Leaflet [lat,lng].

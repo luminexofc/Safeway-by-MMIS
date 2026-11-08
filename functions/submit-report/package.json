@@ -1,0 +1,11 @@
+{
+  "name": "safeway-submit-report",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Create a waterlogging report row as the calling user (forced status=pending).",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "node-appwrite": "^31.1.0"
+  }
+}

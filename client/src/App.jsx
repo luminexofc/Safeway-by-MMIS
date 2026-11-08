@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from "react-router-dom";
+import { SessionProvider, useSession } from "./lib/session";
 import AppShell from "./components/AppShell";
 import Landing from "./pages/Landing";
-import { Login, Signup, Verify, AuthError } from "./pages/Auth";
+import { Login, Signup, Verify, AuthError, ResetPassword } from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import NavigatePage from "./pages/Navigate";
 import Report from "./pages/Report";
@@ -19,25 +20,44 @@ function NotFound() {
   );
 }
 
+// Gate for app pages: bounce to /login until a session exists.
+function Protected({ children }) {
+  const { user, loading } = useSession();
+  const location = useLocation();
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#eef2f5] text-[14px] font-semibold text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+        Loading Safeway…
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  return <AppShell>{children}</AppShell>;
+}
+
+const Shell = ({ children }) => <AppShell>{children}</AppShell>;
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<AppShell><Landing /></AppShell>} />
-        <Route path="/login" element={<AppShell><Login /></AppShell>} />
-        <Route path="/signup" element={<AppShell><Signup /></AppShell>} />
-        <Route path="/verify" element={<AppShell><Verify /></AppShell>} />
-        <Route path="/auth-error" element={<AppShell><AuthError /></AppShell>} />
-        <Route path="/dashboard" element={<AppShell><Dashboard /></AppShell>} />
-        <Route path="/navigate" element={<AppShell><NavigatePage /></AppShell>} />
-        <Route path="/report" element={<AppShell><Report /></AppShell>} />
-        <Route path="/my-reports" element={<AppShell><MyReports /></AppShell>} />
-        <Route path="/settings" element={<AppShell><Settings /></AppShell>} />
-        <Route path="/profile" element={<AppShell><Profile /></AppShell>} />
-        <Route path="/home" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<AppShell><NotFound /></AppShell>} />
-      </Routes>
-    </BrowserRouter>
+    <SessionProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Shell><Landing /></Shell>} />
+          <Route path="/login" element={<Shell><Login /></Shell>} />
+          <Route path="/signup" element={<Shell><Signup /></Shell>} />
+          <Route path="/verify" element={<Shell><Verify /></Shell>} />
+          <Route path="/reset" element={<Shell><ResetPassword /></Shell>} />
+          <Route path="/auth-error" element={<Shell><AuthError /></Shell>} />
+          <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+          <Route path="/navigate" element={<Protected><NavigatePage /></Protected>} />
+          <Route path="/report" element={<Protected><Report /></Protected>} />
+          <Route path="/my-reports" element={<Protected><MyReports /></Protected>} />
+          <Route path="/settings" element={<Protected><Settings /></Protected>} />
+          <Route path="/profile" element={<Protected><Profile /></Protected>} />
+          <Route path="/home" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Shell><NotFound /></Shell>} />
+        </Routes>
+      </BrowserRouter>
+    </SessionProvider>
   );
 }

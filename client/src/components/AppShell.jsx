@@ -1,15 +1,14 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
+import { useSession } from "../lib/session";
 
 export default function AppShell({ children }) {
   const loc = useLocation();
-
-  // TODO: replace with your real auth state once login exists
-  const user = { name: "Safeway user" };
-  const handleLogout = () => {};
+  const nav = useNavigate();
+  const { user, logout } = useSession();
 
   const isLanding = loc.pathname === "/";
-  const isAuth = ["/login", "/signup", "/verify", "/auth-error"].includes(loc.pathname);
+  const isAuth = ["/login", "/signup", "/verify", "/reset", "/auth-error"].includes(loc.pathname);
 
   if (isLanding) return <>{children}</>;
 
@@ -20,6 +19,11 @@ export default function AppShell({ children }) {
       </div>
     );
   }
+
+  const handleLogout = async () => {
+    await logout();
+    nav("/login", { replace: true });
+  };
 
   return (
     <div className="min-h-screen pb-28 lg:pb-0">

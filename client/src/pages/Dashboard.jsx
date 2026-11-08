@@ -4,18 +4,18 @@ import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { cn } from "../lib/cn";
-import { COUNTRY_CENTER } from "../services/geo";
+import { COUNTRY_CENTER, reverseGeocodeAddress } from "../services/geo";
 import { useTheme } from "../lib/theme";
+import { callFunction, fetchFeed, reportType, depthLabel } from "../lib/appwrite";
 import {
   Search, X, LocateFixed, Plus, Minus, Navigation,
   TriangleAlert, ShieldCheck, ChevronDown, ChevronUp,
-  Camera, Car, Bike, MapPin, Info, Layers, Check,
+  Camera, Car, Bike, MapPin, Layers, Check,
 } from "lucide-react";
 
 /* ─── constants ─────────────────────────────────────────────────────── */
 
 const DEFAULT_CENTER = COUNTRY_CENTER; // [23.685, 90.3563]
-const STORE_KEY      = "safeway-reports";
 
 const TYPES = {
   safe:     { label: "Safe Route",   color: "#15803d" },
@@ -54,14 +54,6 @@ const HL = {
 };
 
 /* ─── helpers ────────────────────────────────────────────────────────── */
-
-const makeSeeds = ([lat, lng]) => [
-  { id: "s1", type: "safe",     lat: lat + 0.004, lng: lng - 0.006, note: "Well-lit road with shops open late." },
-  { id: "s2", type: "safe",     lat: lat - 0.006, lng: lng + 0.003, note: "Busy park path, regular foot traffic." },
-  { id: "s3", type: "blocked",  lat: lat + 0.002, lng: lng + 0.009, note: "Road closed for repairs." },
-  { id: "s4", type: "cautious", lat: lat - 0.004, lng: lng + 0.013, note: "Poor lighting after dark." },
-  { id: "s5", type: "danger",   lat: lat + 0.008, lng: lng - 0.003, note: "Waterlogging reported. Knee-deep." },
-];
 
 const fmtDist = (m) => m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
 const fmtTime = (s) => {
@@ -229,9 +221,9 @@ export default function Dashboard() {
   const mapRef = useRef(null);
 
   const [userPos,  setUserPos]  = useState(null);
-  const [custom,   setCustom]   = useState(() => {
-    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch { return []; }
-  });
+  const [feed,     setFeed]     = useState([]);   // live rows from the reports table
+  const [feedBusy, setFeedBusy] = useState(true);
+  const [saving,   setSaving]   = useState(false);
   const [show, setShow] = useState({ safe: true, cautious: true, danger: true, blocked: true });
 
   // Search
@@ -257,12 +249,30 @@ export default function Dashboard() {
   const [filterOpen, setFilterOpen] = useState(false);
 
   const base    = userPos || DEFAULT_CENTER;
-  const reports = useMemo(() => [...makeSeeds(base), ...custom], [base, custom]);
+  const reports = useMemo(() => feed.map((r) => ({
+    id: r.$id,
+    type: reportType(r),
+    lat: r.lat,
+    lng: r.lng,
+    depth: r.depth,
+    status: r.status,
+    note: r.note || `${depthLabel(r.depth)} — ${r.status === "verified" ? "verified" : "unverified"}`,
+  })), [feed]);
 
   const notify = useCallback((msg) => {
     setToast(msg);
     setTimeout(() => setToast(""), 3600);
   }, []);
+
+  const reloadFeed = useCallback(() => {
+    setFeedBusy(true);
+    return fetchFeed()
+      .then(setFeed)
+      .catch(() => notify("Live report feed unavailable. Showing your last loaded data."))
+      .finally(() => setFeedBusy(false));
+  }, [notify]);
+
+  useEffect(() => { reloadFeed(); }, [reloadFeed]);
 
   /* ── Geolocation ──────────────────────────────────────────────────── */
 
@@ -280,12 +290,6 @@ export default function Dashboard() {
   }, [notify]);
 
   useEffect(() => { locate(true); }, []); // eslint-disable-line
-
-  /* ── Persist custom reports ───────────────────────────────────────── */
-
-  useEffect(() => {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(custom)); } catch { }
-  }, [custom]);
 
   /* ── Debounced geocode (Nominatim, Bangladesh-biased) ─────────────── */
 
@@ -376,17 +380,37 @@ export default function Dashboard() {
   /* ── Report actions ───────────────────────────────────────────────── */
 
   const startReport  = () => { setTapping(true); setDraft(null); };
-  const saveReport   = () => {
-    if (!draft) return;
-    setCustom((prev) => [
-      ...prev,
-      { id: `c${Date.now()}`, type: draft.type, lat: draft.lat, lng: draft.lng, note: draft.note || "Reported by you." },
-    ]);
-    setDraft(null); setTapping(false);
-    notify("Report added. It will enter the verification queue.");
+  const saveReport   = async () => {
+    if (!draft || saving) return;
+    setSaving(true);
+    try {
+      // Quick report carries no depth input; map the pin type onto one.
+      const depth = draft.type === "blocked" ? "road_closed" : draft.type === "danger" ? "knee" : "ankle";
+      let placeLabel = `Pinned location, ${draft.lat.toFixed(4)}, ${draft.lng.toFixed(4)}`;
+      let division = "unknown", district;
+      try {
+        const addr = await reverseGeocodeAddress(draft.lat, draft.lng);
+        placeLabel = addr.label; division = addr.division; district = addr.district;
+      } catch { /* keep fallbacks */ }
+      await callFunction("submit-report", {
+        placeLabel,
+        division,
+        district,
+        lat: draft.lat,
+        lng: draft.lng,
+        depth,
+        note: draft.note?.trim() || undefined,
+      });
+      setDraft(null); setTapping(false);
+      notify("Report filed. It enters the verification queue.");
+      reloadFeed();
+    } catch (ex) {
+      notify(ex?.message || "Could not file the report. Please retry.");
+    } finally {
+      setSaving(false);
+    }
   };
   const cancelReport = () => { setDraft(null); setTapping(false); };
-  const removeCustom = (id) => setCustom((c) => c.filter((r) => r.id !== id));
 
   /* ── Tiles ────────────────────────────────────────────────────────── */
 
@@ -470,14 +494,6 @@ export default function Dashboard() {
                     {TYPES[r.type]?.label}
                   </p>
                   <p className="mt-0.5 text-[12px] text-slate-500 dark:text-slate-400">{r.note}</p>
-                  {r.id.startsWith("c") && (
-                    <button
-                      onClick={() => removeCustom(r.id)}
-                      className="mt-2 cursor-pointer text-[11px] font-bold text-red-600 underline dark:text-red-400"
-                    >
-                      Remove this report
-                    </button>
-                  )}
                 </div>
               </Popup>
             </Marker>
@@ -695,7 +711,7 @@ export default function Dashboard() {
             <div className="space-y-3 p-4">
               {/* Type selector */}
               <div className="grid grid-cols-2 gap-2">
-                {Object.entries(TYPES).map(([key, { label, color }]) => (
+                {Object.entries(TYPES).filter(([key]) => key !== "safe").map(([key, { label, color }]) => (
                   <button
                     key={key}
                     onClick={() => setDraft((d) => ({ ...d, type: key }))}
@@ -735,9 +751,10 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={saveReport}
-                  className="min-h-[40px] flex-1 cursor-pointer rounded-xl bg-teal-700 text-[13px] font-bold text-white transition-colors hover:bg-teal-800"
+                  disabled={saving}
+                  className="min-h-[40px] flex-1 cursor-pointer rounded-xl bg-teal-700 text-[13px] font-bold text-white transition-colors hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Submit
+                  {saving ? "Submitting…" : "Submit"}
                 </button>
               </div>
 
@@ -840,8 +857,13 @@ export default function Dashboard() {
                   </div>
                 ))}
                 <div className="flex items-center gap-1.5 border-t border-slate-100 pt-1.5 dark:border-white/10">
-                  <Info className="h-3 w-3 shrink-0 text-slate-400" />
-                  <p className="text-[10.5px] text-slate-400">Tap markers for details</p>
+                  <span
+                    className={`h-2 w-2 shrink-0 rounded-full ${feedBusy ? "animate-pulse bg-amber-400" : "bg-emerald-500"}`}
+                    aria-hidden="true"
+                  />
+                  <p className="text-[10.5px] text-slate-400">
+                    {feedBusy ? "Loading live reports…" : `${reports.length} live report${reports.length === 1 ? "" : "s"} · tap markers for details`}
+                  </p>
                 </div>
               </div>
             )}

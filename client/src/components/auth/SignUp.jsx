@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { account, ID } from "../../lib/appwrite";
+import { useSession } from "../../lib/session";
 import "./signup.css";
 import SignUpScene from "./SignUpScene";
 import { EyeIcon, GoogleIcon, WaterSplash } from "./AuthParts";
@@ -20,12 +22,14 @@ export default function SignUp({ onSignIn, onSuccess }) {
   const [f, setF] = useState({ name: "", email: "", pw: "", cpw: "", agree: false });
   const [show, setShow] = useState({ pw: false, cpw: false });
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [shake, setShake] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [lockLeft, setLockLeft] = useState(0);
   const locked = lockLeft > 0;
+  const { refresh } = useSession();
 
   useEffect(() => {
     if (!lockLeft) return;
@@ -42,7 +46,7 @@ export default function SignUp({ onSignIn, onSuccess }) {
     if (errors[k]) setErrors((p) => ({ ...p, [k]: undefined }));
   };
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     if (locked || loading) return;
     const err = {};
@@ -53,6 +57,7 @@ export default function SignUp({ onSignIn, onSuccess }) {
     if (!f.agree) err.agree = "Accept the Privacy Policy and Terms to continue.";
     setErrors(err);
     setDone(false);
+    setServerError("");
     if (Object.keys(err).length) {
       const n = attempts + 1;
       setAttempts(n);
@@ -62,8 +67,28 @@ export default function SignUp({ onSignIn, onSuccess }) {
       return;
     }
     setLoading(true);
-    // Replace with your real sign-up API call
-    setTimeout(() => { setLoading(false); setDone(true); setTimeout(() => onSuccess && onSuccess(), 700); }, 1400);
+    try {
+      await account.create({ userId: ID.unique(), email: f.email.trim(), password: f.pw, name: f.name.trim() });
+      await account.createEmailPasswordSession({ email: f.email.trim(), password: f.pw });
+      await refresh();
+      const origin = window.location.origin;
+      // Best-effort verification email; the app works without it.
+      await account.createVerification({ url: `${origin}/verify` }).catch(() => {});
+      setDone(true);
+      setTimeout(() => onSuccess && onSuccess(), 700);
+    } catch (ex) {
+      const msg = ex?.code === 409 ? "An account with this email already exists."
+        : ex?.code === 400 ? (ex?.message || "Check your details and retry.")
+        : "Could not create your account. Check your connection and retry.";
+      setServerError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const googleSignUp = () => {
+    const origin = window.location.origin;
+    account.createOAuth2Session({ provider: "google", success: `${origin}/dashboard`, failure: `${origin}/auth-error` });
   };
 
   const field = (k, type, ph, auto) => (
@@ -120,13 +145,14 @@ export default function SignUp({ onSignIn, onSuccess }) {
             </label>
             {errors.agree && <div className="su-msg" role="alert" style={{ margin: "-14px 0 16px" }}>{errors.agree}</div>}
 
+            {serverError && <div className="su-msg" role="alert" style={{ margin: "0 0 12px" }}>{serverError}</div>}
             <button className="su-btn" type="submit" disabled={loading || locked}>
               {loading ? <span className="su-spin" /> : "Register"}
             </button>
             {done && <div className="su-ok" role="status">Account created. Welcome to Safeway!</div>}
           </form>
 
-          <button className="su-google" type="button" onClick={() => onSuccess && onSuccess()}><GoogleIcon /> Sign up with Google</button>
+          <button className="su-google" type="button" onClick={googleSignUp}><GoogleIcon /> Sign up with Google</button>
           <p className="su-signin">
             Already have an account?{" "}
             <a href="#signin" className="su-link" onClick={(e) => { e.preventDefault(); onSignIn && onSignIn(); }}>Login</a>

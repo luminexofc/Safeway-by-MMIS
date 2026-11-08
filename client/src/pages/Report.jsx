@@ -6,10 +6,17 @@ import BeuiButton from "../components/beui/BeuiButton";
 import BeuiBadge from "../components/beui/BeuiBadge";
 import { BeuiCard, BeuiInput } from "../components/beui/beui";
 import MapView from "../components/MapView";
-import { useGeolocation, reverseGeocode, COUNTRY_CENTER } from "../services/geo";
+import { useGeolocation, reverseGeocodeAddress, COUNTRY_CENTER } from "../services/geo";
+import { useSession } from "../lib/session";
+import { callFunction, sha256Hex, uploadReportPhoto } from "../lib/appwrite";
 import { cn } from "../lib/cn";
 
-const DEPTHS = ["Ankle-deep", "Knee-deep", "Waist-deep", "Road closed"];
+const DEPTHS = [
+  { label: "Ankle-deep", value: "ankle" },
+  { label: "Knee-deep", value: "knee" },
+  { label: "Waist-deep", value: "waist" },
+  { label: "Road closed", value: "road_closed" },
+];
 const STEPS = [
   { n: 1, t: "Location", icon: MapPin },
   { n: 2, t: "Details", icon: Camera },
@@ -18,25 +25,38 @@ const STEPS = [
 
 export default function Report() {
   const nav = useNavigate();
+  const { user } = useSession();
   const [step, setStep] = useState(1);
-  const [depth, setDepth] = useState("Knee-deep");
+  const [depth, setDepth] = useState("knee");
   const [photo, setPhoto] = useState(null);
+  const [note, setNote] = useState("");
   const [pin, setPin] = useState({ lat: COUNTRY_CENTER[0], lng: COUNTRY_CENTER[1] });
   const [pinLabel, setPinLabel] = useState("Bangladesh. Drag the pin or tap the map.");
   const [pinResolving, setPinResolving] = useState(false);
   const [placedByUser, setPlacedByUser] = useState(false);
   const [fitSignal, setFitSignal] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const lookupId = useRef(0);
+  const addressRef = useRef({ division: "unknown", district: undefined });
   const geo = useGeolocation(true);
 
   const resolvePinLabel = (ll, immediate) => {
     const id = ++lookupId.current;
     setPinResolving(true);
     if (immediate) setPinLabel(immediate);
-    reverseGeocode(ll.lat, ll.lng)
-      .then((label) => { if (lookupId.current === id) setPinLabel(label); })
+    reverseGeocodeAddress(ll.lat, ll.lng)
+      .then(({ label, division, district }) => {
+        if (lookupId.current === id) {
+          setPinLabel(label);
+          addressRef.current = { division, district };
+        }
+      })
       .catch(() => {
-        if (lookupId.current === id) setPinLabel(`${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}`);
+        if (lookupId.current === id) {
+          setPinLabel(`${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}`);
+          addressRef.current = { division: "unknown", district: undefined };
+        }
       })
       .finally(() => { if (lookupId.current === id) setPinResolving(false); });
   };
@@ -55,6 +75,32 @@ export default function Report() {
     setPlacedByUser(true);
     setPin(ll);
     resolvePinLabel(ll);
+  };
+
+  const submit = async () => {
+    if (!user || submitting) return;
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const imageHash = photo ? await sha256Hex(photo) : undefined;
+      const uploaded = photo ? await uploadReportPhoto(photo, user.$id) : null;
+      const { division, district } = addressRef.current;
+      await callFunction("submit-report", {
+        placeLabel: pinLabel,
+        division,
+        district,
+        lat: pin.lat,
+        lng: pin.lng,
+        depth,
+        note: note.trim() || undefined,
+        imageFileIds: uploaded ? [uploaded.$id] : undefined,
+        imageHash,
+      });
+      nav("/my-reports");
+    } catch (ex) {
+      setSubmitError(ex?.message || "Could not file the report. Please retry.");
+      setSubmitting(false);
+    }
   };
 
   const precise = placedByUser || !!geo.pos;
@@ -118,22 +164,22 @@ export default function Report() {
                 <span className="mb-2 block text-[13.5px] font-semibold">Water depth</span>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {DEPTHS.map((d) => (
-                    <motion.button key={d} type="button" onClick={() => setDepth(d)} aria-pressed={depth === d} whileTap={{ scale: 0.96 }}
+                    <motion.button key={d.value} type="button" onClick={() => setDepth(d.value)} aria-pressed={depth === d.value} whileTap={{ scale: 0.96 }}
                       className={cn("min-h-[52px] cursor-pointer rounded-2xl border-2 px-3 text-[13.5px] font-bold transition-colors",
-                        depth === d ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900" : "border-slate-200 bg-white text-slate-600 hover:border-slate-400 dark:border-white/10 dark:bg-transparent dark:text-slate-300 dark:hover:border-white/30")}>{d}</motion.button>
+                        depth === d.value ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900" : "border-slate-200 bg-white text-slate-600 hover:border-slate-400 dark:border-white/10 dark:bg-transparent dark:text-slate-300 dark:hover:border-white/30")}>{d.label}</motion.button>
                   ))}
                 </div>
               </div>
               <div>
                 <span className="mb-1.5 block text-[13.5px] font-semibold">Photo evidence</span>
                 <label className="flex min-h-[130px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-center transition-colors hover:border-teal-600 hover:bg-teal-50/50 dark:border-white/15 dark:bg-white/5 dark:hover:border-teal-400">
-                  <input type="file" accept="image/*" className="sr-only" onChange={(e) => setPhoto(e.target.files?.[0]?.name || "photo.jpg")} />
+                  <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
                   <Camera className="h-8 w-8 text-slate-500 dark:text-slate-400" />
-                  <span className="text-[14px] font-semibold text-slate-700 dark:text-slate-200">{photo ? `Attached: ${photo}` : "Tap to add photo"}</span>
+                  <span className="text-[14px] font-semibold text-slate-700 dark:text-slate-200">{photo ? `Attached: ${photo.name}` : "Tap to add photo"}</span>
                   <span className="text-[12.5px] text-slate-500 dark:text-slate-400">JPG or PNG. A photo helps verification.</span>
                 </label>
               </div>
-              <BeuiInput label="Short note" placeholder="e.g. Knee-deep, rickshaws stuck, bikes passable left lane" />
+              <BeuiInput label="Short note" placeholder="e.g. Knee-deep, rickshaws stuck, bikes passable left lane" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} />
               <div className="flex gap-3">
                 <BeuiButton variant="ghost" onClick={() => setStep(1)}>← Back</BeuiButton>
                 <BeuiButton onClick={() => setStep(3)} className="flex-1">Review report →</BeuiButton>
@@ -144,12 +190,13 @@ export default function Report() {
             <div className="space-y-4">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
                 <div className="flex items-center justify-between gap-2"><p className="font-bold">{pinLabel || "Pinned location"}</p><BeuiBadge tone="caution">Enters queue</BeuiBadge></div>
-                <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">Depth: <b>{depth}</b> · Photo: <b>{photo || "attached"}</b> · {pin.lat.toFixed(5)}, {pin.lng.toFixed(5)}</p>
+                <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">Depth: <b>{DEPTHS.find((d) => d.value === depth)?.label}</b> · Photo: <b>{photo ? photo.name : "none"}</b> · {pin.lat.toFixed(5)}, {pin.lng.toFixed(5)}</p>
                 <p className="mt-2 text-[12px] text-slate-500 dark:text-slate-400">Goes to the verification queue when you submit.</p>
               </div>
+              {submitError && <p className="text-[13px] font-semibold text-red-600 dark:text-red-400" role="alert">{submitError}</p>}
               <div className="flex gap-3">
                 <BeuiButton variant="ghost" onClick={() => setStep(2)}>← Edit</BeuiButton>
-                <BeuiButton onClick={() => nav("/my-reports")} className="flex-1">Submit report</BeuiButton>
+                <BeuiButton onClick={submit} className="flex-1" disabled={submitting}>{submitting ? "Submitting…" : "Submit report"}</BeuiButton>
               </div>
             </div>
           )}
