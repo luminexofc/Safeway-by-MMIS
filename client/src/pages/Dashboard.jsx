@@ -7,6 +7,7 @@ import { cn } from "../lib/cn";
 import { COUNTRY_CENTER, reverseGeocodeAddress } from "../services/geo";
 import { useTheme } from "../lib/theme";
 import { callFunction, fetchFeed, reportType, depthLabel } from "../lib/appwrite";
+import { friendlyError } from "../lib/errors";
 import {
   Search, X, LocateFixed, Plus, Minus, Navigation,
   TriangleAlert, ShieldCheck, ChevronDown, ChevronUp,
@@ -268,7 +269,10 @@ export default function Dashboard() {
     setFeedBusy(true);
     return fetchFeed()
       .then(setFeed)
-      .catch(() => notify("Live report feed unavailable. Showing your last loaded data."))
+      .catch((err) => {
+        console.error("[dashboard] feed failed:", err?.code ?? err?.message ?? err);
+        notify(friendlyError(err, "Live report feed is unavailable right now. Showing your last loaded data."));
+      })
       .finally(() => setFeedBusy(false));
   }, [notify]);
 
@@ -405,7 +409,8 @@ export default function Dashboard() {
       notify("Report filed. It enters the verification queue.");
       reloadFeed();
     } catch (ex) {
-      notify(ex?.message || "Could not file the report. Please retry.");
+      console.error("[dashboard] quick report failed:", ex?.code ?? ex?.message ?? ex);
+      notify(friendlyError(ex, "Could not file the report. Please try again."));
     } finally {
       setSaving(false);
     }

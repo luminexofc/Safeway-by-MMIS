@@ -5,6 +5,7 @@ import { cn } from "../lib/cn";
 import ThemeToggle from "../components/ThemeToggle";
 import { useOperator } from "../lib/operator";
 import { tablesDB, storage, DATABASE_ID, TABLES, BUCKET, Query, callFunction } from "../lib/appwrite";
+import { friendlyError } from "../lib/errors";
 
 const MAIN_SITE = import.meta.env.VITE_MAIN_SITE_URL || "http://localhost:5173";
 
@@ -59,8 +60,9 @@ export default function AdminDashboard() {
       ]);
       setReports(r.rows);
       setEvents(e.rows);
-    } catch {
-      setError("Could not load the operations data. Retry.");
+    } catch (err) {
+      console.error("[console] load failed:", err?.code ?? err?.message ?? err);
+      setError(friendlyError(err, "Could not load the operations data. Please try again."));
     }
   }, []);
 
@@ -92,7 +94,8 @@ export default function AdminDashboard() {
       await callFunction("verify-report", { reportId: id, action });
       await load();
     } catch (ex) {
-      setError(ex?.message || "Could not update the report.");
+      console.error("[console] decision failed:", ex?.code ?? ex?.message ?? ex);
+      setError(friendlyError(ex, "Could not update the report. Please try again."));
     } finally {
       setActing("");
     }

@@ -6,6 +6,7 @@ import { BeuiCard } from "../components/beui/beui";
 import { BeuiTabs, BeuiTabsList, BeuiTab } from "../components/beui/BeuiTabs";
 import { useSession } from "../lib/session";
 import { tablesDB, DATABASE_ID, TABLES, Query, depthLabel, shortReportId } from "../lib/appwrite";
+import { friendlyError } from "../lib/errors";
 
 const STATUS_META = {
   pending: { label: "Pending review", tone: "caution" },
@@ -39,7 +40,10 @@ export default function MyReports() {
         total: false,
       })
       .then((res) => { if (live) setRows(res.rows); })
-      .catch(() => { if (live) { setRows([]); setError("Could not load your reports. Pull to retry."); } });
+      .catch((err) => {
+        console.error("[my-reports] load failed:", err?.code ?? err?.message ?? err);
+        if (live) { setRows([]); setError(friendlyError(err, "Could not load your reports. Please try again.")); }
+      });
     return () => { live = false; };
   }, [user]);
 

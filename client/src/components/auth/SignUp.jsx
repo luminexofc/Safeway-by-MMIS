@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { account, ID } from "../../lib/appwrite";
 import { useSession } from "../../lib/session";
+import { friendlyError } from "../../lib/errors";
 import "./signup.css";
 import SignUpScene from "./SignUpScene";
 import { EyeIcon, GoogleIcon, WaterSplash } from "./AuthParts";
@@ -29,7 +30,7 @@ export default function SignUp({ onSignIn, onSuccess }) {
   const [attempts, setAttempts] = useState(0);
   const [lockLeft, setLockLeft] = useState(0);
   const locked = lockLeft > 0;
-  const { refresh } = useSession();
+  const { refresh, setUser } = useSession();
 
   useEffect(() => {
     if (!lockLeft) return;
@@ -69,18 +70,18 @@ export default function SignUp({ onSignIn, onSuccess }) {
     setLoading(true);
     try {
       await account.create({ userId: ID.unique(), email: f.email.trim(), password: f.pw, name: f.name.trim() });
-      await account.createEmailPasswordSession({ email: f.email.trim(), password: f.pw });
-      await refresh();
+      // Signed in the moment the account exists — no second sign-in needed.
+      const session = await account.createEmailPasswordSession({ email: f.email.trim(), password: f.pw });
+      setUser({ $id: session.userId });
+      refresh();
       const origin = window.location.origin;
       // Best-effort verification email; the app works without it.
       await account.createVerification({ url: `${origin}/verify` }).catch(() => {});
       setDone(true);
       setTimeout(() => onSuccess && onSuccess(), 700);
     } catch (ex) {
-      const msg = ex?.code === 409 ? "An account with this email already exists."
-        : ex?.code === 400 ? (ex?.message || "Check your details and retry.")
-        : "Could not create your account. Check your connection and retry.";
-      setServerError(msg);
+      console.error("[signup] failed:", ex?.code ?? ex?.message ?? ex);
+      setServerError(friendlyError(ex, "Could not create your account. Please try again."));
     } finally {
       setLoading(false);
     }

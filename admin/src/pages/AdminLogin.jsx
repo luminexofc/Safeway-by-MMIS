@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle";
 import { account } from "../lib/appwrite";
+import { friendlyError } from "../lib/errors";
 
 const MAIN_SITE = import.meta.env.VITE_MAIN_SITE_URL || "http://localhost:5173";
 
@@ -25,8 +26,8 @@ export default function AdminLogin() {
       await account.createEmailPasswordSession({ email: email.trim(), password });
       nav("/", { replace: true });
     } catch (ex) {
-      const msg = ex?.code === 401 ? "Wrong email or password." : "Could not sign in. Check your connection and retry.";
-      setError(msg);
+      console.error("[console-login] failed:", ex?.code ?? ex?.message ?? ex);
+      setError(friendlyError(ex, "Could not sign in. Please try again."));
       setLoading(false);
     }
   };

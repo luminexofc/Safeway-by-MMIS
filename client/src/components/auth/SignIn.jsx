@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { account } from "../../lib/appwrite";
 import { useSession } from "../../lib/session";
+import { friendlyError } from "../../lib/errors";
 import "./signin.css";
 import SignInScene from "./SignInScene";
 import { EyeIcon, GoogleIcon, WaterSplash } from "./AuthParts";
@@ -30,7 +31,7 @@ export default function SignIn({ onSignUp, onForgot, onSuccess }) {
   const [attempts, setAttempts] = useState(0);
   const [shake, setShake] = useState(false);
   const [done, setDone] = useState(false);
-  const { refresh } = useSession();
+  const { refresh, setUser } = useSession();
 
   const [lockLeft, setLockLeft] = useState(0);
   const locked = lockLeft > 0;
@@ -63,13 +64,16 @@ export default function SignIn({ onSignUp, onForgot, onSuccess }) {
     }
     setLoading(true);
     try {
-      await account.createEmailPasswordSession({ email, password });
-      await refresh();
+      // The session is ours now — set identity immediately so the protected
+      // routes open on the spot; display details fill in via refresh().
+      const session = await account.createEmailPasswordSession({ email, password });
+      setUser({ $id: session.userId });
+      refresh();
       setDone(true);
       setTimeout(() => onSuccess && onSuccess(), 700);
     } catch (ex) {
-      const msg = ex?.code === 401 ? "Wrong email or password." : "Could not sign in. Check your connection and retry.";
-      setServerError(msg);
+      console.error("[signin] failed:", ex?.code ?? ex?.message ?? ex);
+      setServerError(friendlyError(ex, "Could not sign in. Please try again."));
       const n = attempts + 1;
       setAttempts(n);
       if (n >= 5) setLockLeft(30);

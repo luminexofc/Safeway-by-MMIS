@@ -9,6 +9,7 @@ import MapView from "../components/MapView";
 import { useGeolocation, reverseGeocodeAddress, COUNTRY_CENTER } from "../services/geo";
 import { useSession } from "../lib/session";
 import { callFunction, sha256Hex, uploadReportPhoto } from "../lib/appwrite";
+import { friendlyError } from "../lib/errors";
 import { cn } from "../lib/cn";
 
 const DEPTHS = [
@@ -98,7 +99,8 @@ export default function Report() {
       });
       nav("/my-reports");
     } catch (ex) {
-      setSubmitError(ex?.message || "Could not file the report. Please retry.");
+      console.error("[report] submit failed:", ex?.code ?? ex?.message ?? ex);
+      setSubmitError(friendlyError(ex, "Could not file the report. Please try again."));
       setSubmitting(false);
     }
   };

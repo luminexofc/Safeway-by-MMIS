@@ -6,6 +6,7 @@ import { useGeolocation, BD_DIVISIONS } from "../services/geo";
 import { useTheme } from "../lib/theme";
 import { useSession } from "../lib/session";
 import { getProfile, upsertProfile } from "../lib/appwrite";
+import { friendlyError } from "../lib/errors";
 
 const APPEARANCE_NOTE = {
   light: "Light theme.",
@@ -59,8 +60,9 @@ export default function Settings() {
         division: division || undefined,
       });
       setSaved("Saved");
-    } catch {
-      setSaved("Could not save. Retry.");
+    } catch (err) {
+      console.error("[settings] save failed:", err?.code ?? err?.message ?? err);
+      setSaved(friendlyError(err, "Could not save. Please try again."));
     } finally {
       setSaving(false);
     }

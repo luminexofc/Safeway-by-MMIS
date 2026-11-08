@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import BeuiButton from "../components/beui/BeuiButton";
 import BeuiBadge from "../components/beui/BeuiBadge";
 import AuthFrame from "../components/auth/AuthFrame";
@@ -8,6 +8,7 @@ import SignIn from "../components/auth/SignIn";
 import SignUp from "../components/auth/SignUp";
 import ForgotPassword from "../components/auth/ForgotPassword";
 import { account } from "../lib/appwrite";
+import { friendlyError } from "../lib/errors";
 import { useCooldown } from "../lib/useCooldown";
 import { wipeThen } from "../lib/wipe";
 // Stylesheets last, so the responsive rules override the page styles
@@ -16,16 +17,25 @@ import "../components/auth/responsive.css";
 
 export function Login() {
   const nav = useNavigate();
+  const location = useLocation();
   const [view, setView] = useState("signin"); // "signin" | "forgot"
   const go = (next) => next !== view && wipeThen(() => setView(next));
+  // Where the user was headed when the guard bounced them here.
+  const from = location.state?.from;
+  const cameForPage = typeof from === "string" && from.startsWith("/") && !from.startsWith("//");
 
   return (
     <AuthLayout pageKey={view}>
+      {cameForPage && view === "signin" && (
+        <p className="mb-4 text-center text-[13.5px] font-semibold text-teal-800 dark:text-teal-300">
+          Sign in to continue to your map.
+        </p>
+      )}
       {view === "signin" ? (
         <SignIn
           onSignUp={() => wipeThen(() => nav("/signup"))}
           onForgot={() => go("forgot")}
-          onSuccess={() => nav("/dashboard")}
+          onSuccess={() => nav(cameForPage ? from : "/dashboard", { replace: true })}
         />
       ) : (
         <ForgotPassword onBackToSignIn={() => go("signin")} />
@@ -38,7 +48,8 @@ export function Signup() {
   const nav = useNavigate();
   return (
     <AuthLayout pageKey="signup">
-      <SignUp onSignIn={() => wipeThen(() => nav("/login"))} onSuccess={() => nav("/verify")} />
+      {/* Account + session already exist after signup — straight to the app. */}
+      <SignUp onSignIn={() => wipeThen(() => nav("/login"))} onSuccess={() => nav("/dashboard", { replace: true })} />
     </AuthLayout>
   );
 }
@@ -112,7 +123,8 @@ export function ResetPassword() {
       await account.updateRecovery({ userId, secret, password });
       nav("/login", { replace: true });
     } catch (ex) {
-      setError(ex?.code === 401 || ex?.code === 400 ? "This reset link is invalid or expired. Request a new one." : "Could not reset your password. Retry.");
+      console.error("[reset] failed:", ex?.code ?? ex?.message ?? ex);
+      setError(friendlyError(ex, "This reset link is invalid or expired. Request a new one."));
       setLoading(false);
     }
   };

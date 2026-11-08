@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { User } from "lucide-react";
 import { useSession } from "../lib/session";
 import { account, getProfile, upsertProfile, tablesDB, DATABASE_ID, TABLES } from "../lib/appwrite";
+import { friendlyError } from "../lib/errors";
 import BeuiButton from "../components/beui/BeuiButton";
 import BeuiBadge from "../components/beui/BeuiBadge";
 import { BeuiCard, BeuiInput } from "../components/beui/beui";
@@ -46,8 +47,9 @@ export default function Profile() {
         await refresh();
       }
       setSaved("Saved");
-    } catch {
-      setSaved("Could not save. Retry.");
+    } catch (err) {
+      console.error("[profile] save failed:", err?.code ?? err?.message ?? err);
+      setSaved(friendlyError(err, "Could not save. Please try again."));
     } finally {
       setSaving(false);
     }
@@ -66,8 +68,9 @@ export default function Profile() {
       // Permanently blocks the account (client SDK cannot hard-delete).
       await account.updateStatus();
       setDeleted(true);
-    } catch {
-      setDeleteError("Could not delete your account. Retry or contact support.");
+    } catch (err) {
+      console.error("[profile] delete failed:", err?.code ?? err?.message ?? err);
+      setDeleteError(friendlyError(err, "Could not delete your account. Please try again or contact support."));
       setDeleting(false);
     }
   };
