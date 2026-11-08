@@ -419,12 +419,13 @@ export default function Dashboard() {
 
   /* ── Tiles ────────────────────────────────────────────────────────── */
 
-  // Light starts on OSM, dark on CARTO. If either provider fails (flaky
-  // network, rate limit), swap to the other one instead of a blank map.
+  // CARTO light is the primary in both modes (free, keyless, reliable here);
+  // the OSM tile server blocks clients en masse (it serves a 403 text tile),
+  // so OSM only survives as the fallback if CARTO errors out.
   const [tileFailed, setTileFailed] = useState(false);
   const tileUrl   = tileFailed
-    ? (dark ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png")
-    : (dark ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+    ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    : (dark ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png");
   const tileAttr  = tileUrl.includes("cartocdn") || tileUrl.includes("carto")
     ? '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     : '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors';

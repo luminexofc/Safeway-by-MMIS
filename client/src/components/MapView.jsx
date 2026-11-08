@@ -104,8 +104,8 @@ export default function MapView({
         <ZoomControl position="bottomright" />
         <TileLayer
           key={`${tileBust}-${darkTiles ? "dark" : "light"}`}
-          attribution={darkTiles ? '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>' : '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors'}
-          url={darkTiles ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url={darkTiles ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"}
           eventHandlers={{ tileerror: () => setTileFailed(true) }}
         />
         {radius && (
