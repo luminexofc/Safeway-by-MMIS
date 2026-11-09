@@ -1,18 +1,8 @@
 import { useState, useEffect } from "react";
+import { CheckCircle2 } from "lucide-react";
 import { account } from "../../lib/appwrite";
-import "./forgot.css";
-import ForgotScene from "./ForgotScene";
-import { WaterSplash } from "./AuthParts";
-
-const Logo = () => (
-  <svg width="44" height="52" viewBox="0 0 44 52" aria-hidden="true">
-    <defs><linearGradient id="flg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#19f7a2" /><stop offset="1" stopColor="#2a8cf0" /></linearGradient></defs>
-    <path d="M22 2C11 2 3 10 3 20c0 13 19 30 19 30s19-17 19-30C41 10 33 2 22 2z" fill="url(#flg)" />
-    <path d="M22 9c-4 6-8 10-8 14a8 8 0 0016 0c0-4-4-8-8-14z" fill="#0d1b3a" />
-    <path d="M22 12c-3 5-6 8-6 11a6 6 0 0012 0c0-3-3-6-6-11z" fill="#3aa0ff" />
-    <path d="M7 30c5 3 9-2 15 1s10 0 15-2c-3 7-9 14-15 20C16 44 10 37 7 30z" fill="#1ec9c0" opacity=".85" />
-  </svg>
-);
+import AuthFrame, { Field, TextInput, LockNote } from "./AuthFrame";
+import BeuiButton from "../beui/BeuiButton";
 
 export default function ForgotPassword({ onBackToSignIn }) {
   const [email, setEmail] = useState("");
@@ -21,7 +11,6 @@ export default function ForgotPassword({ onBackToSignIn }) {
   const [sent, setSent] = useState(false);
   const [resendIn, setResendIn] = useState(0);
   const [resent, setResent] = useState(false);
-  const [shake, setShake] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [lockLeft, setLockLeft] = useState(0);
   const locked = lockLeft > 0;
@@ -43,15 +32,12 @@ export default function ForgotPassword({ onBackToSignIn }) {
     setError("");
     try {
       await account.createRecovery({ email: email.trim(), url: `${window.location.origin}/reset` });
-      setSent(true);
-      setResendIn(30);
-      setResent(!!again);
     } catch {
       // Do not leak whether the address is registered — same outcome either way.
+    } finally {
       setSent(true);
       setResendIn(30);
       setResent(!!again);
-    } finally {
       setLoading(false);
     }
   };
@@ -64,92 +50,56 @@ export default function ForgotPassword({ onBackToSignIn }) {
       const n = attempts + 1;
       setAttempts(n);
       if (n >= 5) setLockLeft(30);
-      setShake(true);
-      setTimeout(() => setShake(false), 450);
       return;
     }
     setError("");
     send(false);
   };
 
-  const back = (e) => { e.preventDefault(); onBackToSignIn && onBackToSignIn(); };
-
-  const BackLink = (
-    <div className="fp-back">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#18f5a0" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
-      <a href="#signin" className="fp-link" onClick={back}>Back to Sign In</a>
-    </div>
-  );
+  if (sent) {
+    return (
+      <AuthFrame
+        title="Check your email"
+        sub={`We sent a password reset link to ${email}.`}
+        footer={
+          <button type="button" onClick={onBackToSignIn} className="cursor-pointer font-bold text-teal-800 underline dark:text-teal-300">Back to sign in</button>
+        }
+      >
+        <div className="flex items-center gap-2.5 rounded-xl border border-emerald-600/20 bg-emerald-50 p-4 dark:border-emerald-400/20 dark:bg-white/5">
+          <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-700 dark:text-emerald-300" aria-hidden="true" />
+          <p className="text-[14px] font-semibold text-emerald-900 dark:text-emerald-200">
+            {resent ? "A new reset link is on its way." : "If the address is registered, the link is on its way."}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <BeuiButton loading={loading} disabled={resendIn > 0} onClick={() => send(true)} className="flex-1">
+            {resendIn > 0 ? `Resend in ${resendIn}s` : "Resend link"}
+          </BeuiButton>
+          <BeuiButton variant="ghost" onClick={() => { setSent(false); setResent(false); }}>Different email</BeuiButton>
+        </div>
+        <LockNote locked={locked} lockLeft={lockLeft} />
+      </AuthFrame>
+    );
+  }
 
   return (
-    <div className="fp">
-
-      <section className="fp-left">
-        <ForgotScene />
-        <div className="fp-flash" />
-        <div className="fp-caption">
-          <h2>Get Back on Safe Roads</h2>
-          <p>We'll email you a secure reset link.</p>
-        </div>
-      </section>
-
-      <section className="fp-right">
-        <div className="fp-splash tr"><WaterSplash id="fg1" /></div>
-        <div className="fp-splash br"><WaterSplash id="fg2" flip /></div>
-
-        <div className="fp-box">
-          <div className="fp-logo"><Logo /> Safeway</div>
-
-          {!sent ? (
-            <div className="fp-view" key="form">
-              <h1 className="fp-title">Forgot Password?</h1>
-              <p className="fp-sub">No worries. Enter your email and we'll send you a link to reset it.</p>
-
-              <form className={`fp-form ${shake ? "fp-shake" : ""}`} onSubmit={submit} noValidate>
-                <div className="fp-field">
-                  <label htmlFor="fp-email">Email</label>
-                  <input id="fp-email" type="email" placeholder="Email" autoComplete="email" value={email}
-                    aria-invalid={!!error} className={error ? "err" : ""}
-                    onChange={(e) => { setEmail(e.target.value); setError(""); }} />
-                  {error && <div className="fp-msg" role="alert">{error}</div>}
-                </div>
-                <button className="fp-btn" type="submit" disabled={loading || locked}>
-                  {loading ? <span className="fp-spin" /> : "Send Reset Link"}
-                </button>
-              </form>
-              {BackLink}
-            </div>
-          ) : (
-            <div className="fp-view" key="sent">
-              <svg className="fp-sent" width="96" height="96" viewBox="0 0 96 96" aria-hidden="true">
-                <circle className="halo" cx="48" cy="48" r="40" />
-                <circle cx="48" cy="48" r="40" pathLength="1" />
-                <path className="ck" pathLength="1" d="M30 49l13 13 24-27" />
-              </svg>
-              <h1 className="fp-title" style={{ marginTop: 22 }}>Check Your Email</h1>
-              <p className="fp-sub">We sent a password reset link to <span className="fp-email">{email}</span></p>
-
-              <div className="fp-actions">
-                <button className="fp-btn ghost" type="button" disabled={loading || resendIn > 0} onClick={() => send(true)}>
-                  {loading ? <span className="fp-spin" style={{ borderColor: "rgba(255,255,255,.3)", borderTopColor: "#fff" }} />
-                    : resendIn > 0 ? `Resend link in ${resendIn}s` : "Resend Link"}
-                </button>
-                <button className="fp-link" type="button" onClick={() => { setSent(false); setResent(false); }}>Use a different email</button>
-              </div>
-              {resent && !loading && <div className="fp-ok" role="status">A new reset link is on its way.</div>}
-              {BackLink}
-            </div>
-          )}
-
-          <div className={`fp-note ${locked ? "lock" : ""}`} role="status">
-            <svg width="22" height="24" viewBox="0 0 24 26" aria-hidden="true">
-              <path d="M12 1l10 4v8c0 6-4.5 10.5-10 12C6.5 23.5 2 19 2 13V5z" fill={locked ? "#ff6b6b" : "#f5b81c"} />
-              <path d="M7.5 13l3 3 6-6.500" fill="none" stroke="#0d1b3a" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            {locked ? `Too many attempts. Try again in ${lockLeft}s.` : "Rate limiting active to protect your account"}
-          </div>
-        </div>
-      </section>
-    </div>
+    <AuthFrame
+      title="Forgot password?"
+      sub="No worries. Enter your email and we'll send you a link to reset it."
+      footer={
+        <button type="button" onClick={onBackToSignIn} className="cursor-pointer font-bold text-teal-800 underline dark:text-teal-300">Back to sign in</button>
+      }
+    >
+      <form onSubmit={submit} noValidate className="space-y-4">
+        <Field label="Email" error={error}>
+          <TextInput type="email" placeholder="Email" autoComplete="email" value={email} error={error}
+            onChange={(e) => { setEmail(e.target.value); setError(""); }} />
+        </Field>
+        <BeuiButton type="submit" loading={loading} disabled={locked} className="w-full">
+          {locked ? `Wait ${lockLeft}s` : "Send reset link"}
+        </BeuiButton>
+      </form>
+      <LockNote locked={locked} lockLeft={lockLeft} />
+    </AuthFrame>
   );
 }

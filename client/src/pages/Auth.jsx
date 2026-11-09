@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate, useSearchParams } from "react-router-do
 import BeuiButton from "../components/beui/BeuiButton";
 import BeuiBadge from "../components/beui/BeuiBadge";
 import AuthFrame from "../components/auth/AuthFrame";
-import AuthLayout from "../components/auth/AuthLayout";
 import SignIn from "../components/auth/SignIn";
 import SignUp from "../components/auth/SignUp";
 import ForgotPassword from "../components/auth/ForgotPassword";
@@ -12,9 +11,6 @@ import { useSession } from "../lib/session";
 import { friendlyError } from "../lib/errors";
 import { useCooldown } from "../lib/useCooldown";
 import { wipeThen } from "../lib/wipe";
-// Stylesheets last, so the responsive rules override the page styles
-import "../components/auth/auth.css";
-import "../components/auth/responsive.css";
 
 export function Login() {
   const nav = useNavigate();
@@ -31,9 +27,9 @@ export function Login() {
   const cameForPage = typeof from === "string" && from.startsWith("/") && !from.startsWith("//");
 
   return (
-    <AuthLayout pageKey={view}>
+    <>
       {cameForPage && view === "signin" && (
-        <p className="mb-4 text-center text-[13.5px] font-semibold text-teal-800 dark:text-teal-300">
+        <p className="mx-auto mb-4 mt-6 max-w-md text-center text-[13.5px] font-semibold text-teal-800 dark:text-teal-300">
           Sign in to continue to your map.
         </p>
       )}
@@ -46,7 +42,7 @@ export function Login() {
       ) : (
         <ForgotPassword onBackToSignIn={() => go("signin")} />
       )}
-    </AuthLayout>
+    </>
   );
 }
 
@@ -57,10 +53,7 @@ export function Signup() {
     if (!loading && user) nav("/dashboard", { replace: true });
   }, [loading, user, nav]);
   return (
-    <AuthLayout pageKey="signup">
-      {/* Account + session already exist after signup — straight to the app. */}
-      <SignUp onSignIn={() => wipeThen(() => nav("/login"))} onSuccess={() => nav("/dashboard", { replace: true })} />
-    </AuthLayout>
+    <SignUp onSignIn={() => wipeThen(() => nav("/login"))} onSuccess={() => nav("/dashboard", { replace: true })} />
   );
 }
 
