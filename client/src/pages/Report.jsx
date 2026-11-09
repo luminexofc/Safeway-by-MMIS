@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import { MapPin, Camera, ClipboardCheck, Check, LocateFixed } from "lucide-react";
 import BeuiButton from "../components/beui/BeuiButton";
+import PageHeader from "../components/PageHeader";
 import BeuiBadge from "../components/beui/BeuiBadge";
 import { BeuiCard, BeuiInput } from "../components/beui/beui";
 import MapView from "../components/MapView";
@@ -110,17 +111,14 @@ export default function Report() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="mt-1 text-[26px] font-bold tracking-tight sm:text-[30px]">Report waterlogging</h1>
-        <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">Three quick steps. Verified reports update the map; false ones are discarded.</p>
-      </div>
+      <PageHeader title="Report waterlogging" description="Three quick steps. Verified reports update the map; false ones are discarded." />
 
       <ol className="grid grid-cols-3 gap-2" aria-label="Report progress">
         {STEPS.map((s) => {
           const active = step === s.n, past = step > s.n;
           return (
             <li key={s.n} className={cn("flex items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-[13.5px] font-bold",
-              active ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900" : past ? "border-teal-600/30 bg-teal-50 text-teal-900 dark:border-teal-400/30 dark:bg-white/5 dark:text-teal-300" : "border-slate-200 bg-white text-slate-500 dark:border-white/10 dark:bg-transparent dark:text-slate-400")}>
+              active ? "border-teal-700 bg-teal-700 text-white dark:border-teal-300 dark:bg-teal-600 dark:text-white" : past ? "border-teal-600/30 bg-teal-50 text-teal-900 dark:border-teal-400/30 dark:bg-white/5 dark:text-teal-300" : "border-slate-200 bg-white text-slate-500 dark:border-white/10 dark:bg-transparent dark:text-slate-400")}>
               {past ? <Check className="h-4 w-4" /> : <s.icon className="h-4 w-4" />}
               {s.n}. {s.t}
             </li>
@@ -168,7 +166,7 @@ export default function Report() {
                   {DEPTHS.map((d) => (
                     <motion.button key={d.value} type="button" onClick={() => setDepth(d.value)} aria-pressed={depth === d.value} whileTap={{ scale: 0.96 }}
                       className={cn("min-h-[52px] cursor-pointer rounded-2xl border-2 px-3 text-[13.5px] font-bold transition-colors",
-                        depth === d.value ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900" : "border-slate-200 bg-white text-slate-600 hover:border-slate-400 dark:border-white/10 dark:bg-transparent dark:text-slate-300 dark:hover:border-white/30")}>{d.label}</motion.button>
+                        depth === d.value ? "border-teal-700 bg-teal-700 text-white dark:border-teal-300 dark:bg-teal-600 dark:text-white" : "border-slate-200 bg-white text-slate-600 hover:border-slate-400 dark:border-white/10 dark:bg-transparent dark:text-slate-300 dark:hover:border-white/30")}>{d.label}</motion.button>
                   ))}
                 </div>
               </div>
