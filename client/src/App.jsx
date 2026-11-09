@@ -15,7 +15,7 @@ function NotFound() {
     <div className="mx-auto max-w-xl px-4 py-16 text-center">
       <h1 className="text-[32px] font-bold">Page not found</h1>
       <p className="mt-2 text-slate-600 dark:text-slate-400">That road is not on the map. Head back to safety:</p>
-      <Link to="/dashboard" className="mt-5 inline-flex min-h-[44px] items-center rounded-xl bg-brand-700 px-5 font-bold text-white">Back to dashboard</Link>
+      <Link to="/dashboard" className="mt-5 inline-flex min-h-[44px] items-center rounded-xl bg-teal-700 px-5 font-bold text-white hover:bg-teal-800">Back to dashboard</Link>
     </div>
   );
 }

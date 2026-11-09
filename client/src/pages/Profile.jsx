@@ -5,6 +5,7 @@ import { useSession } from "../lib/session";
 import { account, getProfile, upsertProfile, tablesDB, DATABASE_ID, TABLES } from "../lib/appwrite";
 import { friendlyError } from "../lib/errors";
 import BeuiButton from "../components/beui/BeuiButton";
+import PageHeader from "../components/PageHeader";
 import BeuiBadge from "../components/beui/BeuiBadge";
 import { BeuiCard, BeuiInput } from "../components/beui/beui";
 
@@ -93,10 +94,7 @@ export default function Profile() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <div>
-        <h1 className="mt-1 text-[26px] font-bold tracking-tight sm:text-[30px]">Profile</h1>
-        <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">Your identity in the app and your account. Nothing here is shared publicly.</p>
-      </div>
+      <PageHeader title="Profile" description="Your identity in the app and your account. Nothing here is shared publicly." />
 
       <BeuiCard className="p-6">
         <div className="flex items-center gap-4">

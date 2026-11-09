@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import BeuiButton from "../components/beui/BeuiButton";
+import PageHeader from "../components/PageHeader";
 import BeuiBadge from "../components/beui/BeuiBadge";
 import { BeuiCard } from "../components/beui/beui";
 import { useGeolocation, BD_DIVISIONS } from "../services/geo";
@@ -75,10 +76,7 @@ export default function Settings() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <div>
-        <h1 className="mt-1 text-[26px] font-bold tracking-tight sm:text-[30px]">Settings</h1>
-        <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">App preferences. Your identity lives under Profile.</p>
-      </div>
+      <PageHeader title="Settings" description="App preferences. Your identity lives under Profile." />
 
       <BeuiCard className="p-6">
         <div className="flex items-center justify-between gap-3">
