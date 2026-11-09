@@ -352,13 +352,20 @@ export default function Navigate() {
 }
 
 function SuggestionList({ t, items, loading, onPick }) {
+  const btnRefs = useRef([]);
+  const onKey = (e, i) => {
+    if (e.key === "ArrowDown") { e.preventDefault(); btnRefs.current[i + 1]?.focus(); }
+    if (e.key === "ArrowUp") { e.preventDefault(); btnRefs.current[i - 1]?.focus(); }
+  };
   return (
     <div className="absolute inset-x-0 top-full z-[700] mt-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-pop dark:border-white/10 dark:bg-slate-900" role="listbox" aria-label={t.suggestions}>
       {loading && items.length === 0 && <p className="px-4 py-3 text-[13.5px] text-slate-500 dark:text-slate-400">{t.searching}</p>}
       {items.map((s, i) => (
         <button key={`${s.lat}-${s.lng}-${i}`} type="button" role="option" aria-selected="false"
+          ref={(el) => { btnRefs.current[i] = el; }}
+          onKeyDown={(e) => onKey(e, i)}
           onClick={() => onPick(s)}
-          className="block w-full cursor-pointer px-4 py-2.5 text-left text-[13.5px] hover:bg-slate-50 dark:hover:bg-white/5">
+          className="block w-full cursor-pointer px-4 py-2.5 text-left text-[13.5px] hover:bg-slate-50 focus-visible:bg-slate-100 dark:hover:bg-white/5 dark:focus-visible:bg-white/10">
           <span className="font-semibold text-slate-800 dark:text-slate-100">{s.label}</span>
         </button>
       ))}

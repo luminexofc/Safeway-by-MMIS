@@ -156,7 +156,7 @@ function RouteCard({ route, routing, mode, setMode, dest, nearby, hazardText, ha
               "flex flex-1 cursor-pointer flex-col items-center gap-1 py-2.5 text-[11.5px] font-bold transition-colors",
               mode === key
                 ? "-mb-px border-b-2 border-teal-700 text-teal-700 dark:border-teal-400 dark:text-teal-400"
-                : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-200"
             )}
           >
             <Icon className="h-4 w-4" />
@@ -167,7 +167,7 @@ function RouteCard({ route, routing, mode, setMode, dest, nearby, hazardText, ha
 
       <div className={cn("space-y-3 p-4", compact && "py-3")}>
         {routing ? (
-          <p className="text-[13px] text-slate-400">Finding route…</p>
+          <p className="text-[13px] text-slate-500 dark:text-slate-400">Finding route…</p>
         ) : route ? (
           <>
             {/* ETA + distance */}
@@ -175,7 +175,7 @@ function RouteCard({ route, routing, mode, setMode, dest, nearby, hazardText, ha
               <span className="text-[22px] font-bold leading-none text-slate-900 dark:text-slate-100 sm:text-[26px]">
                 {fmtTime(route.duration)}
               </span>
-              <span className="text-[13px] text-slate-400">{fmtDist(route.distance)}</span>
+              <span className="text-[13px] text-slate-500 dark:text-slate-400">{fmtDist(route.distance)}</span>
             </div>
 
             {/* Safety banner */}
@@ -197,7 +197,7 @@ function RouteCard({ route, routing, mode, setMode, dest, nearby, hazardText, ha
             )}
           </>
         ) : (
-          <p className="text-[13px] text-slate-400">Select a destination to get directions.</p>
+          <p className="text-[13px] text-slate-500 dark:text-slate-400">Select a destination to get directions.</p>
         )}
 
         <button
@@ -247,6 +247,16 @@ export default function Dashboard() {
   const [toast,      setToast]      = useState("");
   const [legendOpen, setLegendOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useRef(null);
+
+  useEffect(() => {
+    if (!filterOpen) return;
+    const onDoc = (e) => { if (filterRef.current && !filterRef.current.contains(e.target)) setFilterOpen(false); };
+    const onKey = (e) => { if (e.key === "Escape") setFilterOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
+  }, [filterOpen]);
 
   const base    = userPos || DEFAULT_CENTER;
   const reports = useMemo(() => feed.map((r) => ({
@@ -434,7 +444,7 @@ export default function Dashboard() {
       {/* Leaflet overrides — minimal: popup chrome + crosshair cursor */}
       <style>{`
         .leaflet-popup-content-wrapper{
-          border-radius:14px!important;padding:0!important;
+          border-radius:16px!important;padding:0!important;
           box-shadow:0 4px 20px rgba(0,0,0,.13)!important;
           border:1px solid #e2e8f0;
         }
@@ -548,7 +558,7 @@ export default function Dashboard() {
             <div className="flex items-center gap-2 px-3 py-2.5">
               {dest
                 ? <Navigation className="h-4 w-4 shrink-0 text-teal-700 dark:text-teal-400" />
-                : <Search     className="h-4 w-4 shrink-0 text-slate-400" />
+                : <Search     className="h-4 w-4 shrink-0 text-slate-500 dark:text-slate-400" />
               }
               <input
                 value={query}
@@ -556,13 +566,13 @@ export default function Dashboard() {
                 onFocus={() => results.length > 0 && setDropOpen(true)}
                 placeholder="Search anywhere in Bangladesh…"
                 aria-label="Search destinations"
-                className="flex-1 bg-transparent text-[14px] text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+                className="flex-1 bg-transparent text-[14px] text-slate-800 outline-none placeholder:text-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400"
               />
               {(query || dest) && (
                 <button
                   onClick={clearRoute}
                   aria-label="Clear"
-                  className="shrink-0 cursor-pointer rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10"
+                  className="shrink-0 cursor-pointer rounded-full p-1 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/10"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -573,7 +583,7 @@ export default function Dashboard() {
             {dropOpen && (results.length > 0 || searching) && (
               <div className="max-h-[40vh] overflow-y-auto border-t border-slate-100 dark:border-white/10">
                 {searching && (
-                  <p className="px-4 py-2.5 text-[13px] text-slate-400">Searching…</p>
+                  <p className="px-4 py-2.5 text-[13px] text-slate-500 dark:text-slate-400">Searching…</p>
                 )}
                 {results.map((r) => (
                   <button
@@ -581,10 +591,10 @@ export default function Dashboard() {
                     onClick={() => pickResult(r)}
                     className="flex w-full cursor-pointer items-start gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
                   >
-                    <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
+                    <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-500 dark:text-slate-400" />
                     <span className="text-[13px] leading-snug text-slate-700 dark:text-slate-200">
                       <span className="font-semibold">{r.display_name.split(",")[0]}</span>
-                      <span className="text-slate-400 dark:text-slate-500">
+                      <span className="text-slate-500 dark:text-slate-400">
                         {", " + r.display_name.split(",").slice(1, 3).join(",")}
                       </span>
                     </span>
@@ -652,11 +662,12 @@ export default function Dashboard() {
         {/* ╔══════════════════════════════════════════════════════════════╗
             ║  TOP-RIGHT  — Layer / filter toggle                          ║
             ╚══════════════════════════════════════════════════════════════╝ */}
-        <div className="absolute right-3 top-3 z-[1000]">
+        <div className="absolute right-3 top-3 z-[1000]" ref={filterRef}>
           <div className="relative">
             <button
               onClick={() => setFilterOpen((o) => !o)}
               aria-label="Filter map markers"
+              aria-expanded={filterOpen}
               title="Filter layers"
               className={cn(
                 "flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border shadow-md transition-colors",
@@ -670,7 +681,7 @@ export default function Dashboard() {
 
             {filterOpen && (
               <div className="absolute right-0 top-12 w-48 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl dark:border-white/10 dark:bg-slate-900 sm:w-52">
-                <p className="mb-2 text-[10.5px] font-bold uppercase tracking-widest text-slate-400">
+                <p className="mb-2 text-[12px] font-bold text-slate-500 dark:text-slate-400">
                   Show on map
                 </p>
                 {Object.entries(TYPES).map(([key, { label, color }]) => (
@@ -724,7 +735,7 @@ export default function Dashboard() {
           >
             <div className="border-b border-slate-100 px-4 py-3 dark:border-white/10">
               <p className="text-[14px] font-bold text-slate-900 dark:text-slate-100">Pin placed</p>
-              <p className="mt-0.5 font-mono text-[11px] text-slate-400">
+              <p className="mt-0.5 font-mono text-[11px] text-slate-500 dark:text-slate-400">
                 {draft.lat.toFixed(5)}, {draft.lng.toFixed(5)}
               </p>
             </div>
@@ -758,7 +769,7 @@ export default function Dashboard() {
                 onChange={(e) => setDraft((d) => ({ ...d, note: e.target.value }))}
                 maxLength={140}
                 placeholder="Short note — e.g. ankle-deep, left lane passable"
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-800 outline-none placeholder:text-slate-400 focus:border-teal-600 dark:border-white/15 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-teal-400"
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-800 outline-none placeholder:text-slate-500 focus:border-teal-600 dark:border-white/15 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:border-teal-400"
               />
 
               {/* Actions */}
@@ -858,8 +869,8 @@ export default function Dashboard() {
               <span className="hidden sm:inline">Safety legend</span>
               <span className="sm:hidden">Legend</span>
               {legendOpen
-                ? <ChevronDown className="ml-auto h-3 w-3 text-slate-400" />
-                : <ChevronUp   className="ml-auto h-3 w-3 text-slate-400" />
+                ? <ChevronDown className="ml-auto h-3 w-3 text-slate-500 dark:text-slate-400" />
+                : <ChevronUp   className="ml-auto h-3 w-3 text-slate-500 dark:text-slate-400" />
               }
             </button>
 
@@ -873,7 +884,7 @@ export default function Dashboard() {
                   <div key={label} className="flex items-center gap-2">
                     <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: color }} />
                     <span className="text-[12px] font-bold text-slate-800 dark:text-slate-100">{label}</span>
-                    <span className="hidden text-[11px] text-slate-400 dark:text-slate-500 sm:inline">{sub}</span>
+                    <span className="hidden text-[11px] text-slate-500 dark:text-slate-400 sm:inline">{sub}</span>
                   </div>
                 ))}
                 <div className="flex items-center gap-1.5 border-t border-slate-100 pt-1.5 dark:border-white/10">
@@ -881,7 +892,7 @@ export default function Dashboard() {
                     className={`h-2 w-2 shrink-0 rounded-full ${feedBusy ? "bg-amber-400" : "bg-emerald-500"}`}
                     aria-hidden="true"
                   />
-                  <p className="text-[10.5px] text-slate-400">
+                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400">
                     {feedBusy ? "Loading live reports…" : `${reports.length} live report${reports.length === 1 ? "" : "s"} · tap markers for details`}
                   </p>
                 </div>

@@ -212,7 +212,7 @@ export default function AdminDashboard() {
                   {r.imageFileIds?.[0] ? (
                     <img
                       src={storage.getFileView({ bucketId: BUCKET.reportPhotos, fileId: r.imageFileIds[0] })}
-                      alt=""
+                      alt={r.placeLabel}
                       className="h-14 w-14 shrink-0 rounded-xl object-cover"
                       loading="lazy"
                     />

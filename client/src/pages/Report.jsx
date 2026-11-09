@@ -172,11 +172,11 @@ export default function Report() {
               </div>
               <div>
                 <span className="mb-1.5 block text-[13.5px] font-semibold">Photo evidence</span>
-                <label className="flex min-h-[130px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-center transition-colors hover:border-teal-600 hover:bg-teal-50/50 dark:border-white/15 dark:bg-white/5 dark:hover:border-teal-400">
+                <label className="flex min-h-[130px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-center transition-colors hover:border-teal-600 hover:bg-teal-50/50 focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-500 dark:border-white/15 dark:bg-white/5 dark:hover:border-teal-400 dark:focus-within:border-teal-400">
                   <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
                   <Camera className="h-8 w-8 text-slate-500 dark:text-slate-400" />
                   <span className="text-[14px] font-semibold text-slate-700 dark:text-slate-200">{photo ? `Attached: ${photo.name}` : "Tap to add photo"}</span>
-                  <span className="text-[12.5px] text-slate-500 dark:text-slate-400">JPG or PNG. A photo helps verification.</span>
+                  <span className="text-[12.5px] text-slate-500 dark:text-slate-400">{photo ? `${(photo.size / 1024 / 1024).toFixed(1)} MB · tap to replace` : "JPG or PNG. A photo helps verification."}</span>
                 </label>
               </div>
               <BeuiInput label="Short note" placeholder="e.g. Knee-deep, rickshaws stuck, bikes passable left lane" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} />

@@ -136,13 +136,13 @@ export default function Profile() {
             <div className="mt-3 rounded-2xl bg-red-50 p-4 dark:bg-red-500/10">
               <p className="text-[14px] font-bold text-red-800 dark:text-red-300">Type DELETE to confirm</p>
               <div className="mt-2 flex gap-2">
-                <BeuiInput placeholder="DELETE" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} />
+                <BeuiInput aria-label="Type DELETE to confirm" placeholder="DELETE" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} />
                 <BeuiButton variant="danger" onClick={doDelete} disabled={confirmText.trim() !== "DELETE" || deleting}>
                   {deleting ? "Deleting…" : "Confirm"}
                 </BeuiButton>
               </div>
               {deleteError && <p className="mt-2 text-[13px] font-semibold text-red-700 dark:text-red-300" role="alert">{deleteError}</p>}
-              <button onClick={() => setConfirmDelete(false)} className="mt-2 cursor-pointer text-[13px] font-bold underline">Cancel</button>
+              <button onClick={() => setConfirmDelete(false)} className="mt-2 inline-flex min-h-[44px] cursor-pointer items-center text-[13px] font-bold underline">Cancel</button>
             </div>
           )}
         </div>
