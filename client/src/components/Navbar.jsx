@@ -29,21 +29,21 @@ const LANG_SHORT = { en: "EN", bn: "বাং" };
 // Full labels are for the desktop bar and menus; the "S" labels are short ones for the phone bottom bar.
 const DICT = {
   en: {
-    brand: "Safeway", home: "Home", findRoute: "Find Route", trackReport: "Track Report",
-    threads: "Threads", login: "Login", signup: "Sign Up", myReport: "My Report", profile: "Profile",
+    brand: "Safeway", home: "Home", findRoute: "Find Route", trackReport: "Report flooding",
+    login: "Login", signup: "Sign Up", myReport: "My Report", profile: "Profile",
     settings: "Settings", logout: "Logout", theme: "Theme", light: "Light", dark: "Dark",
     language: "Language", switchTo: "Switch to", account: "Account menu",
     main: "Main navigation", mobileNav: "Mobile navigation",
-    homeS: "Home", routeS: "Route", trackS: "Track", threadsS: "Threads", loginS: "Login",
+    homeS: "Home", routeS: "Route", trackS: "Report", loginS: "Login",
     signupS: "Sign Up", reportS: "Reports", profileS: "Profile",
   },
   bn: {
-    brand: "সেফওয়ে", home: "হোম", findRoute: "রুট খুঁজুন", trackReport: "রিপোর্ট ট্র্যাক",
-    threads: "থ্রেড", login: "লগইন", signup: "সাইন আপ", myReport: "আমার রিপোর্ট", profile: "প্রোফাইল",
+    brand: "সেফওয়ে", home: "হোম", findRoute: "রুট খুঁজুন", trackReport: "জলাবদ্ধতা রিপোর্ট",
+    login: "লগইন", signup: "সাইন আপ", myReport: "আমার রিপোর্ট", profile: "প্রোফাইল",
     settings: "সেটিংস", logout: "লগআউট", theme: "থিম", light: "লাইট", dark: "ডার্ক",
     language: "ভাষা", switchTo: "পরিবর্তন করুন:", account: "অ্যাকাউন্ট মেনু",
     main: "প্রধান নেভিগেশন", mobileNav: "মোবাইল নেভিগেশন",
-    homeS: "হোম", routeS: "রুট", trackS: "ট্র্যাক", threadsS: "থ্রেড", loginS: "লগইন",
+    homeS: "হোম", routeS: "রুট", trackS: "রিপোর্ট", loginS: "লগইন",
     signupS: "সাইন আপ", reportS: "রিপোর্ট", profileS: "প্রোফাইল",
   },
 };
@@ -250,7 +250,7 @@ export default function Navbar({ user = null, onLogout, lang: langProp, onLangCh
       {/* ---------------- Phone bottom navigation ---------------- */}
       <nav aria-label={t.mobileNav} className="fixed inset-x-3 z-[600] lg:hidden"
         style={{ bottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))" }}>
-        <div className="mx-auto grid max-w-xl grid-cols-5 gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 dark:border-white/10 dark:bg-slate-950">
+        <div className={`mx-auto grid max-w-xl gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 dark:border-white/10 dark:bg-slate-950 ${loggedIn ? "grid-cols-5" : "grid-cols-4"}`}>
           {bottom.map((n) => (
             <NavLink key={n.to} to={n.to} end={n.end}
               className="relative block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
