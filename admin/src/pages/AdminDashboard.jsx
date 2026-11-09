@@ -146,7 +146,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-700 text-white">
             <ShieldCheck className="h-5 w-5" aria-hidden="true" />

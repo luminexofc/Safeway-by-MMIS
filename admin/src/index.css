@@ -4,7 +4,27 @@
 
 body {
   @apply bg-[#eef2f5] text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
-  font-family: "Instrument Sans", Roboto, system-ui, sans-serif;
-  font-size: 15px;
+  font-family: "Instrument Sans", Roboto, "Noto Sans Bengali", system-ui, sans-serif;
+  font-size: 15.5px;
   line-height: 1.6;
 }
+
+/* Press feedback (matches client): independent `scale` property so it
+   never clobbers transforms. */
+.pressable {
+  transition: scale 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.pressable:active {
+  scale: 0.98;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pressable { transition: none; }
+  .pressable:active { scale: 1; }
+}
+
+/* Field-instrument helpers (matches client index.css) */
+.sw-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+.sw-rule { border-color: rgb(226 232 240); }
+.dark .sw-rule { border-color: rgba(255, 255, 255, 0.1); }
+.sw-eyebrow { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; color: #64748b; }
+.dark .sw-eyebrow { color: #94a3b8; }
