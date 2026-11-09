@@ -183,9 +183,6 @@ function RouteCard({ route, routing, mode, setMode, dest, nearby, hazardText, ha
               <HlIcon className={cn("mt-0.5 h-4 w-4 shrink-0", hl.iconCls)} />
               <div>
                 <p className={cn("text-[12.5px] font-bold", hl.textCls)}>{hazardText}</p>
-                <p className="mt-0.5 text-[11px] text-slate-400 dark:text-slate-500">
-                  Safety colors active once API connects
-                </p>
               </div>
             </div>
 

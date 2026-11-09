@@ -13,7 +13,7 @@ import { useLang } from "../lib/lang";
 const DICT = {
   en: {
     title: "Find a safe route",
-    subtitle: "Address search with road geometry drawn per search. Safety colors arrive with the API connection.",
+    subtitle: "Address search with road geometry drawn per search. Verified hazards re-route you around waterlogging.",
     fastest: "Fastest",
     shortest: "Shortest",
     from: "From",
@@ -28,9 +28,7 @@ const DICT = {
     loading: "Geocoding addresses & fetching the road network…",
     chipTo: "Route to ",
     chipDefault: "Your route",
-    safetyPending: "Safety check pending",
-    geomPre: "Road geometry is fetched per search. Waterlogging scoring lights up once",
-    geomPost: "is connected.",
+    safetyNote: "Verified waterlogging within 150 m re-routes you around it. Unverified reports never change routing.",
     routesFound: (n) => `${n} route${n > 1 ? "s" : ""} found on the road network`,
     selected: "Selected",
     alternative: "Alternative",
@@ -38,9 +36,7 @@ const DICT = {
     km: "km",
     recommended: "Recommended route",
     alternate: "Alternate route",
-    routeDesc: "Driving geometry for the addresses above. Safety check pending API connection. Tap to preview.",
-    howTitle: "How safety scoring will attach",
-    howBody: "Each segment gets a safety multiplier (clear, unverified, reported, waterlogged) and the cheapest safe path wins. The green, yellow, and red overlay draws on this exact geometry once connected.",
+    routeDesc: "Tap to preview this route on the map.",
     emptyTitle: "Type a destination to see its route on the map",
     emptyBody: "Addresses are geocoded across Bangladesh. Your origin can be your current GPS position.",
     suggestions: "Address suggestions",
@@ -50,7 +46,7 @@ const DICT = {
   },
   bn: {
     title: "নিরাপদ রুট খুঁজুন",
-    subtitle: "ঠিকানা দিয়ে খুঁজুন, প্রতিটি অনুসন্ধানে সড়কের রুট আঁকা হয়। API সংযোগ হলে নিরাপত্তার রঙ যোগ হবে।",
+    subtitle: "ঠিকানা দিয়ে খুঁজুন, প্রতিটি অনুসন্ধানে সড়কের রুট আঁকা হয়। যাচাইকৃত জলাবদ্ধতা এড়িয়ে রুট নির্ধারণ করা হয়।",
     fastest: "দ্রুততম",
     shortest: "সংক্ষিপ্ততম",
     from: "শুরু",
@@ -65,9 +61,7 @@ const DICT = {
     loading: "ঠিকানা খুঁজে সড়ক নেটওয়ার্ক আনা হচ্ছে…",
     chipTo: "গন্তব্য: ",
     chipDefault: "আপনার রুট",
-    safetyPending: "নিরাপত্তা যাচাই বাকি",
-    geomPre: "প্রতিটি অনুসন্ধানে সড়কের রুট আনা হয়। জলাবদ্ধতার স্কোর চালু হবে যখন",
-    geomPost: "সংযুক্ত হবে।",
+    safetyNote: "150 মিটারের মধ্যে যাচাইকৃত জলাবদ্ধতা এড়িয়ে রুট নির্ধারণ করা হয়। অযাচাইকৃত রিপোর্ট রুট বদলায় না।",
     routesFound: (n) => `সড়ক নেটওয়ার্কে ${n}টি রুট পাওয়া গেছে`,
     selected: "নির্বাচিত",
     alternative: "বিকল্প",
@@ -75,9 +69,7 @@ const DICT = {
     km: "কিমি",
     recommended: "প্রস্তাবিত রুট",
     alternate: "বিকল্প রুট",
-    routeDesc: "উপরের ঠিকানার জন্য গাড়ি চলাচলের রুট। API সংযোগের অপেক্ষায় নিরাপত্তা যাচাই বাকি। দেখতে ট্যাপ করুন।",
-    howTitle: "নিরাপত্তা স্কোর যেভাবে যুক্ত হবে",
-    howBody: "প্রতিটি অংশ একটি নিরাপত্তা গুণক পাবে (পরিষ্কার, অযাচাইকৃত, রিপোর্টকৃত, জলাবদ্ধ) এবং সবচেয়ে কম খরচের নিরাপদ পথ বেছে নেওয়া হবে। সংযোগ হলে এই একই রুটের ওপর সবুজ, হলুদ ও লাল স্তর আঁকা হবে।",
+    routeDesc: "এই রুটটি মানচিত্রে দেখতে ট্যাপ করুন।",
     emptyTitle: "মানচিত্রে রুট দেখতে গন্তব্য লিখুন",
     emptyBody: "বাংলাদেশজুড়ে ঠিকানা খোঁজা যায়। আপনার শুরুর স্থান হতে পারে আপনার বর্তমান জিপিএস অবস্থান।",
     suggestions: "ঠিকানার পরামর্শ",
@@ -317,8 +309,8 @@ export default function Navigate() {
               />
             </div>
             <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 p-4 dark:border-white/10">
-              <BeuiBadge tone="caution">{t.safetyPending}</BeuiBadge>
-              <span className="text-[13px] text-slate-500 dark:text-slate-400">{t.geomPre} <span className="font-mono">POST /v1/map/route</span> {t.geomPost}</span>
+              <BeuiBadge tone="safe">Live roads</BeuiBadge>
+              <span className="text-[13px] text-slate-500 dark:text-slate-400">{t.safetyNote}</span>
             </div>
           </BeuiCard>
 
@@ -342,8 +334,8 @@ export default function Navigate() {
               );
             })}
             <BeuiCard className="bg-slate-950 !border-slate-800 p-4 text-white">
-              <p className="text-[13.5px] font-bold text-teal-300">{t.howTitle}</p>
-              <p className="mt-1 text-[13px] leading-relaxed text-slate-300">{t.howBody}</p>
+              <p className="text-[13.5px] font-bold text-teal-300">How rerouting works</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-slate-300">Each road segment carries a safety weight: clear roads cost the least, waterlogged roads cost more, and blocked roads are skipped. The cheapest safe path wins, and the green, yellow, and red markers stay on the map while you travel.</p>
             </BeuiCard>
           </div>
         </div>
