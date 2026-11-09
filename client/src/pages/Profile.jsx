@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { User } from "lucide-react";
 import { useSession } from "../lib/session";
-import { account, getProfile, upsertProfile, tablesDB, DATABASE_ID, TABLES } from "../lib/appwrite";
+import { account, callFunction, getProfile, upsertProfile } from "../lib/appwrite";
 import { friendlyError } from "../lib/errors";
 import BeuiButton from "../components/beui/BeuiButton";
 import PageHeader from "../components/PageHeader";
@@ -10,7 +10,7 @@ import BeuiBadge from "../components/beui/BeuiBadge";
 import { BeuiCard, BeuiInput } from "../components/beui/beui";
 
 export default function Profile() {
-  const { user, refresh } = useSession();
+  const { user, refresh, logout } = useSession();
   const nav = useNavigate();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -61,13 +61,10 @@ export default function Profile() {
     setDeleting(true);
     setDeleteError("");
     try {
-      // Reports reference reporterId as a plain string, so they survive
-      // untouched (map shows location only, never identity).
-      await tablesDB
-        .deleteRow({ databaseId: DATABASE_ID, tableId: TABLES.profiles, rowId: user.$id })
-        .catch((e) => { if (e?.code !== 404) throw e; });
-      // Permanently blocks the account (client SDK cannot hard-delete).
-      await account.updateStatus();
+      // Server-side wipe: reports, photos, audit rows, profile, then the
+      // account itself (the client SDK cannot hard-delete users).
+      await callFunction("submit-report", { action: "account", confirm: "DELETE" });
+      await logout();
       setDeleted(true);
     } catch (err) {
       console.error("[profile] delete failed:", err?.code ?? err?.message ?? err);
@@ -82,7 +79,7 @@ export default function Profile() {
         <div className="rounded-2xl bg-slate-50 p-6 text-center dark:bg-white/5" role="status">
           <p className="text-[15px] font-bold text-slate-800 dark:text-slate-100">Account deleted</p>
           <p className="mx-auto mt-1 max-w-[46ch] text-[13.5px] text-slate-600 dark:text-slate-400">
-            Your profile is gone and the account can no longer sign in. Your reports stay on the map without your name.
+            Your profile, your reports and their photos are gone. This cannot be undone.
           </p>
           <div className="mt-4 flex justify-center">
             <BeuiButton onClick={() => nav("/login")}>Back to sign in</BeuiButton>
@@ -132,7 +129,7 @@ export default function Profile() {
         </Link>
         <div className="mt-4 border-t border-slate-100 pt-4 dark:border-white/10">
           <h3 className="text-[15px] font-bold text-red-700 dark:text-red-400">Delete account</h3>
-          <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">Deletes your profile. Your reports stay on the map without your name.</p>
+          <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">Deletes your profile, your reports and their photos. This cannot be undone.</p>
           {!confirmDelete ? (
             <div className="mt-3"><BeuiButton variant="danger" onClick={() => setConfirmDelete(true)}>Delete my account</BeuiButton></div>
           ) : (

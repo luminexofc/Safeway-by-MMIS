@@ -24,7 +24,7 @@ const json = (res, body, status = 200) => res.json(body, status);
 const callerId = (req) => req.headers["x-appwrite-user-id"] || null;
 
 function serverClient() {
-  const key = process.env.APPWRITE_API_KEY;
+  const key = process.env.SERVER_API_KEY || process.env.APPWRITE_API_KEY;
   if (!key) return null;
   return new Client()
     .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT || "https://cloud.appwrite.io/v1")
@@ -59,7 +59,7 @@ export default async ({ req, res, log, error }) => {
 
   const client = serverClient();
   if (!client) {
-    error("APPWRITE_API_KEY project variable is not set; see README -> Appwrite setup");
+    error("SERVER_API_KEY function variable is not set; see README -> Appwrite setup");
     return json(res, { error: "Verification is not configured on the server yet." }, 500);
   }
 

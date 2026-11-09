@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { Trash2 } from "lucide-react";
 import BeuiButton from "../components/beui/BeuiButton";
 import BeuiBadge from "../components/beui/BeuiBadge";
 import { BeuiCard } from "../components/beui/beui";
@@ -7,7 +8,7 @@ import PageHeader from "../components/PageHeader";
 import EmptyState from "../components/EmptyState";
 import { BeuiTabs, BeuiTabsList, BeuiTab } from "../components/beui/BeuiTabs";
 import { useSession } from "../lib/session";
-import { tablesDB, DATABASE_ID, TABLES, Query, depthLabel, shortReportId } from "../lib/appwrite";
+import { tablesDB, DATABASE_ID, TABLES, Query, callFunction, depthLabel, shortReportId } from "../lib/appwrite";
 import { friendlyError } from "../lib/errors";
 
 const STATUS_META = {
@@ -30,6 +31,47 @@ export default function MyReports() {
   const [filter, setFilter] = useState("queue");
   const [rows, setRows] = useState(null); // null = loading
   const [error, setError] = useState("");
+  const [confirmId, setConfirmId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
+
+  const removeReport = async (id) => {
+    if (deletingId) return;
+    setDeletingId(id);
+    setDeleteError("");
+    try {
+      await callFunction("submit-report", { action: "report", reportId: id });
+      setRows((prev) => (prev ?? []).filter((r) => r.$id !== id));
+      setConfirmId(null);
+    } catch (err) {
+      console.error("[my-reports] delete failed:", err?.code ?? err?.message ?? err);
+      setDeleteError(friendlyError(err, "Could not delete this report. Please try again."));
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const deleteControl = (id) =>
+    confirmId === id ? (
+      <span className="flex items-center gap-1.5">
+        <BeuiButton variant="danger" className="min-h-[36px] px-3 py-1.5 text-[13px]" loading={deletingId === id} onClick={() => removeReport(id)}>
+          Delete
+        </BeuiButton>
+        <BeuiButton variant="ghost" className="min-h-[36px] px-3 py-1.5 text-[13px]" disabled={deletingId === id} onClick={() => setConfirmId(null)}>
+          Cancel
+        </BeuiButton>
+      </span>
+    ) : (
+      <button
+        type="button"
+        aria-label={`Delete report ${shortReportId(id)}`}
+        title="Delete this report and its photos"
+        onClick={() => { setConfirmId(id); setDeleteError(""); }}
+        className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700 focus-visible:ring-2 focus-visible:ring-teal-500 dark:border-white/15 dark:text-slate-400 dark:hover:border-red-500/40 dark:hover:bg-red-500/10 dark:hover:text-red-300"
+      >
+        <Trash2 className="h-4 w-4" aria-hidden="true" />
+      </button>
+    );
 
   useEffect(() => {
     if (!user) return;
@@ -69,6 +111,12 @@ export default function MyReports() {
         </div>
       )}
 
+      {deleteError && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-[13.5px] font-semibold text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300" role="alert">
+          {deleteError}
+        </div>
+      )}
+
       <BeuiCard className="p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-[18px] font-bold">Verification queue</h2>
@@ -94,6 +142,7 @@ export default function MyReports() {
                   </p>
                 </div>
                 <BeuiBadge tone={meta.tone}>{meta.label}</BeuiBadge>
+                {deleteControl(r.$id)}
               </div>
             );
           })}
@@ -110,7 +159,7 @@ export default function MyReports() {
         </div>
         <div className="overflow-x-auto nice-scroll">
           <table className="w-full min-w-[560px] text-left text-[14px]">
-            <thead><tr className="border-b border-slate-200 text-[12px] uppercase tracking-wider text-slate-500 dark:border-white/10 dark:text-slate-400"><th className="py-2 pr-4 font-bold">ID</th><th className="py-2 pr-4 font-bold">Place</th><th className="py-2 pr-4 font-bold">Depth</th><th className="py-2 font-bold">Outcome</th></tr></thead>
+            <thead><tr className="border-b border-slate-200 text-[12px] uppercase tracking-wider text-slate-500 dark:border-white/10 dark:text-slate-400"><th className="py-2 pr-4 font-bold">ID</th><th className="py-2 pr-4 font-bold">Place</th><th className="py-2 pr-4 font-bold">Depth</th><th className="py-2 pr-4 font-bold">Outcome</th><th className="py-2 font-bold">Actions</th></tr></thead>
             <tbody>
               {(rows ?? []).filter((r) => r.status !== "pending").map((r) => {
                 const meta = STATUS_META[r.status] ?? STATUS_META.pending;
@@ -119,12 +168,13 @@ export default function MyReports() {
                     <td className="py-3 pr-4 font-mono text-[13px] text-slate-500 dark:text-slate-400">{shortReportId(r.$id)}</td>
                     <td className="py-3 pr-4 font-semibold">{r.placeLabel}</td>
                     <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">{depthLabel(r.depth)}</td>
-                    <td className="py-3"><BeuiBadge tone={meta.tone}>{meta.label}</BeuiBadge></td>
+                    <td className="py-3 pr-4"><BeuiBadge tone={meta.tone}>{meta.label}</BeuiBadge></td>
+                    <td className="py-3">{deleteControl(r.$id)}</td>
                   </tr>
                 );
               })}
               {rows !== null && past.length === 0 && (
-                <tr><td colSpan={4} className="py-6 text-center text-[13px] text-slate-500 dark:text-slate-400">No decided reports yet.</td></tr>
+                <tr><td colSpan={5} className="py-6 text-center text-[13px] text-slate-500 dark:text-slate-400">No decided reports yet.</td></tr>
               )}
             </tbody>
           </table>

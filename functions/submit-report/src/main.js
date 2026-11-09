@@ -5,12 +5,15 @@ import {
   Permission,
   Query,
   Role,
+  Storage,
   TablesDB,
 } from "node-appwrite";
+import { handleDeletion } from "./delete.js";
 
 const DATABASE_ID = "safeway";
 const REPORTS = "reports";
 const AUDIT = "audit_events";
+const BUCKET = "report-photos";
 const OPERATORS_TEAM = "operators";
 
 const DIVISIONS = new Set([
@@ -27,12 +30,53 @@ const json = (res, body, status = 200) => res.json(body, status);
 const callerId = (req) => req.headers["x-appwrite-user-id"] || null;
 
 function serverClient() {
-  const key = process.env.APPWRITE_API_KEY;
+  const key = process.env.SERVER_API_KEY || process.env.APPWRITE_API_KEY;
   if (!key) return null;
   return new Client()
     .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT || "https://cloud.appwrite.io/v1")
     .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
     .setKey(key);
+}
+
+// A signed-in user can only upload with their own read permission (sessions
+// may only grant roles they hold, and reporters are not in the operators
+// team). So the client uploads with read("user:<self>") and this function
+// widens the file to operators server-side, after proving the caller owns
+// the file. No mutation happens before every file is verified.
+export async function tightenPhotoPermissions(storage, userId, fileIds) {
+  const ownPerm = `read("user:${userId}")`;
+  const verified = [];
+  for (const fileId of fileIds) {
+    const file = await storage.getFile({ bucketId: BUCKET, fileId }).catch((e) => {
+      if (e instanceof AppwriteException && e.code === 404) return null;
+      throw e;
+    });
+    if (!file) return "missing";
+    if (!file.$permissions.includes(ownPerm)) return "foreign";
+    verified.push({ fileId, name: file.name });
+  }
+
+  try {
+    for (const { fileId, name } of verified) {
+      await storage.updateFile({
+        bucketId: BUCKET,
+        fileId,
+        name,
+        permissions: [
+          Permission.read(Role.user(userId)),
+          Permission.read(Role.team(OPERATORS_TEAM)),
+        ],
+      });
+    }
+  } catch (e) {
+    // Tightening failed: remove the caller's uploads so nothing stays
+    // readable by a wider audience than intended. Best effort.
+    await Promise.allSettled(
+      verified.map(({ fileId }) => storage.deleteFile({ bucketId: BUCKET, fileId }).catch(() => {})),
+    );
+    throw e;
+  }
+  return "ok";
 }
 
 export default async ({ req, res, log, error }) => {
@@ -44,6 +88,16 @@ export default async ({ req, res, log, error }) => {
     body = JSON.parse(req.body || "{}");
   } catch {
     return json(res, { error: "Body must be JSON." }, 400);
+  }
+
+  // One function, three actions: the plan caps functions per project.
+  if (body.action === "report" || body.action === "account") {
+    const client = serverClient();
+    if (!client) {
+      error("SERVER_API_KEY function variable is not set; see README -> Appwrite setup");
+      return json(res, { error: "Deletion is not configured on the server yet." }, 500);
+    }
+    return handleDeletion({ client, res, body, userId, log, error });
   }
 
   const placeLabel = typeof body.placeLabel === "string" ? body.placeLabel.trim() : "";
@@ -64,10 +118,25 @@ export default async ({ req, res, log, error }) => {
 
   const client = serverClient();
   if (!client) {
-    error("APPWRITE_API_KEY project variable is not set; see README -> Appwrite setup");
+    error("SERVER_API_KEY function variable is not set; see README -> Appwrite setup");
     return json(res, { error: "Reports are not configured on the server yet." }, 500);
   }
   const db = new TablesDB(client);
+
+  // Photos arrive with only the uploader's read permission; widen them to
+  // operators before the row references them.
+  if (imageFileIds?.length) {
+    const storage = new Storage(client);
+    let check = "ok";
+    try {
+      check = await tightenPhotoPermissions(storage, userId, imageFileIds);
+    } catch (e) {
+      error(e instanceof AppwriteException ? `${e.code}: ${e.message}` : String(e));
+      return json(res, { error: "Could not file the report. Please retry." }, 500);
+    }
+    if (check === "missing") return json(res, { error: "A photo could not be found. Please upload it again." }, 400);
+    if (check === "foreign") return json(res, { error: "You can only attach photos you uploaded." }, 403);
+  }
 
   try {
     // Abuse telemetry, not an auto-block: identical photo seen before is logged.

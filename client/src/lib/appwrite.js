@@ -83,11 +83,13 @@ export async function sha256Hex(file) {
 
 export async function uploadReportPhoto(file, userId) {
   if (!file) return null;
+  // Sessions may only grant roles they hold, so upload with own read only;
+  // submit-report widens the file to operators server-side when filed.
   return storage.createFile({
     bucketId: BUCKET.reportPhotos,
     fileId: ID.unique(),
     file,
-    permissions: [Permission.read(Role.user(userId)), Permission.read(Role.team("operators"))],
+    permissions: [Permission.read(Role.user(userId))],
   });
 }
 

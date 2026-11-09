@@ -22,8 +22,8 @@ the Appwrite Web SDK; there is no custom REST API anymore.
 |---|---|---|
 | Auth | Appwrite Auth (`client/src/lib/appwrite.js`) | email/password + Google OAuth2, recovery, email verification |
 | Database | TablesDB `safeway` | `divisions`, `districts`, `profiles`, `reports`, `audit_events` |
-| Storage | bucket `report-photos` | 5 MB max, jpg/png/webp, encryption + antivirus, per-file perms |
-| Functions | `submit-report`, `verify-report` | forced-pending creation; operator decisions + audit + FCM push |
+| Storage | bucket `report-photos` | 5 MB max, jpg/png/webp, encryption + antivirus, per-file perms (uploader-only at upload; `submit-report` adds operator read) |
+| Functions | `submit-report`, `verify-report` | forced-pending creation + user-driven report/account deletion; operator decisions + audit + FCM push |
 | Push | Messaging topics `division-*` | one per division; FCM provider created only when configured |
 
 Roles: public users authenticate normally; only members of the `operators`
@@ -31,14 +31,33 @@ team can sign into the console. Test accounts are never in that team.
 
 ### Appwrite setup (one-time)
 
-Functions need a runtime API key they must NOT be able to escalate with.
-The MCP/provisioning identity cannot mint keys, so create it once by hand:
+Functions need two project API keys; the runtime key must NOT be able to
+escalate (mint keys or deploy code). The MCP/provisioning identity cannot
+mint keys, so create them once by hand:
 
-1. Console → Safeway project → **Settings → API keys** → create `safeway-functions`
-   with scopes: `rows.read`, `rows.write`, `teams.read`, `messages.write`.
-2. Put the key in `.env.appwrite` as `APPWRITE_FUNCTIONS_API_KEY`
-   (gitignored) and tell the agent; it stores it as a secret project
-   variable and redeploys the functions.
+1. Console → Safeway project → **Settings → API keys** → create `safeway-deploy`
+   with scopes: `functions.read`, `functions.write`. This one only creates and
+   deploys functions.
+2. Create `safeway-functions` with scopes: `rows.read`, `rows.write`,
+   `files.read`, `files.write`, `users.write`, `teams.read`, `messages.write`.
+3. Put both in `.env.appwrite` as `APPWRITE_DEPLOY_API_KEY` and
+   `APPWRITE_FUNCTIONS_API_KEY` (gitignored) and tell the agent; it deploys
+   the functions and stores the runtime key as each function's secret
+   `SERVER_API_KEY` variable (the platform's own `APPWRITE_API_KEY` injection
+   is invalid on this project, so the code prefers `SERVER_API_KEY`).
+
+Function settings (console): `submit-report` executes for `users` and
+deploys with build command `npm install`; `verify-report` executes for
+`team:operators`. API key scopes per function are assigned in the console —
+save them with the page's **Save** button, or the change stays an unsaved
+draft. REST deployments from a key only run `npm install` when the function
+has a build command, so `verify-report` must be deployed with
+`node_modules` bundled (what the agent does), or give it `npm install` as
+its console build command.
+
+Per-photo permissions: a signed-in uploader may only grant roles they hold,
+so reports are uploaded with own-read only; `submit-report` proves ownership
+and widens the file to `team:operators` server-side when the report is filed.
 
 FCM push (optional): console → Messaging → create an FCM provider with your
 Firebase service-account JSON, or put its path in

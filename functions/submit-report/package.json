@@ -3,8 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Create a waterlogging report row as the calling user (forced status=pending).",
+  "description": "Create a waterlogging report row, or delete one owned report / the calling account.",
   "engines": { "node": ">=20" },
+  "scripts": { "test": "node --test test/*.test.js" },
   "dependencies": {
     "node-appwrite": "^31.1.0"
   }
