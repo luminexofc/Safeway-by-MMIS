@@ -421,6 +421,8 @@ export default function Dashboard() {
   const cancelReport = () => { setDraft(null); setTapping(false); };
 
   /* ── Tiles ────────────────────────────────────────────────────────── */
+  const [tileFailed, setTileFailed] = useState(false);
+  const [tileBust,   setTileBust]   = useState(0);
 
   /* ─────────────────────────────────────────────────────────────────── *
    *  Responsive bottom offset                                           *
@@ -468,7 +470,7 @@ export default function Dashboard() {
           zoomControl={false}
           className={`h-full w-full${dark ? " sw-dark-tiles" : ""}`}
         >
-          <BaseTiles />
+          <BaseTiles key={tileBust} onFailed={setTileFailed} />
           <MapBridge
             mapRef={mapRef}
             onZoom={() => {}}
@@ -594,6 +596,18 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+
+          {tileFailed && (
+            <div className={`${CARD} flex items-center gap-2 px-3 py-2.5`} role="alert">
+              <p className="flex-1 text-[13px] font-semibold text-slate-700 dark:text-slate-200">Map tiles are not loading. Check your connection.</p>
+              <button
+                onClick={() => { setTileFailed(false); setTileBust((b) => b + 1); }}
+                className="pressable shrink-0 cursor-pointer rounded-xl bg-slate-900 px-3 py-1.5 text-[12.5px] font-bold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+              >
+                Retry
+              </button>
+            </div>
+          )}
 
           {/* ── Route card — DESKTOP ONLY (lg+) ─────────────────────── */}
           {dest && (
