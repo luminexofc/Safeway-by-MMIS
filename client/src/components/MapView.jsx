@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { MapContainer, TileLayer, Polyline, Circle, CircleMarker, Marker, ZoomControl, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, Polyline, Circle, CircleMarker, Marker, ZoomControl, useMap, useMapEvents } from "react-leaflet";
+import BaseTiles from "./BaseTiles";
 import L from "leaflet";
 import { COUNTRY_FALLBACK, COUNTRY_CENTER } from "../services/geo";
 import { useTheme } from "../../../shared/theme";
@@ -87,12 +88,8 @@ export default function MapView({
   const { resolved } = useTheme();
   const darkTiles = resolved === "dark";
 
-  useEffect(() => {
-    setTileFailed(false);
-  }, [tileBust]);
-
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900" style={{ minHeight: 320, height }}>
+    <div className={`relative h-full w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900${darkTiles ? " sw-dark-tiles" : ""}`} style={{ minHeight: 320, height }}>
       <MapContainer
         center={resolvedCenter}
         zoom={resolvedZoom}
@@ -102,12 +99,7 @@ export default function MapView({
         style={{ height: "100%", width: "100%", minHeight: 320 }}
       >
         <ZoomControl position="bottomright" />
-        <TileLayer
-          key={`${tileBust}-${darkTiles ? "dark" : "light"}`}
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url={darkTiles ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"}
-          eventHandlers={{ tileerror: () => setTileFailed(true) }}
-        />
+        <BaseTiles key={tileBust} onFailed={setTileFailed} />
         {radius && (
           <Circle
             center={radius.at}
@@ -171,7 +163,7 @@ export default function MapView({
         <div className="absolute bottom-3 left-3 right-3 z-[500] flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900" role="alert">
           <p className="min-w-[200px] flex-1 text-[13px] font-semibold text-slate-700 dark:text-slate-200">Map tiles are not loading. Check your connection.</p>
           <button
-            onClick={() => setTileBust((b) => b + 1)}
+            onClick={() => { setTileFailed(false); setTileBust((b) => b + 1); }}
             className="pressable min-h-[40px] cursor-pointer rounded-xl bg-slate-900 px-4 text-[13.5px] font-bold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
           >
             Retry map

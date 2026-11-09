@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Polyline, Circle, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, Marker, Popup, Polyline, Circle, useMap, useMapEvents } from "react-leaflet";
+import BaseTiles from "../components/BaseTiles";
 import { Link } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -421,17 +422,6 @@ export default function Dashboard() {
 
   /* ── Tiles ────────────────────────────────────────────────────────── */
 
-  // CARTO light is the primary in both modes (free, keyless, reliable here);
-  // the OSM tile server blocks clients en masse (it serves a 403 text tile),
-  // so OSM only survives as the fallback if CARTO errors out.
-  const [tileFailed, setTileFailed] = useState(false);
-  const tileUrl   = tileFailed
-    ? "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-    : (dark ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png");
-  const tileAttr  = tileUrl.includes("cartocdn") || tileUrl.includes("carto")
-    ? '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-    : '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors';
-
   /* ─────────────────────────────────────────────────────────────────── *
    *  Responsive bottom offset                                           *
    *  < lg  : AppShell shows a fixed bottom nav (pb-28 = 7rem = 112px). *
@@ -476,14 +466,9 @@ export default function Dashboard() {
           center={base}
           zoom={userPos ? 15 : 7}
           zoomControl={false}
-          className="h-full w-full"
+          className={`h-full w-full${dark ? " sw-dark-tiles" : ""}`}
         >
-          <TileLayer
-            key={`${dark ? "dark" : "light"}-${tileFailed ? "fb" : "primary"}`}
-            attribution={tileAttr}
-            url={tileUrl}
-            eventHandlers={{ tileerror: () => setTileFailed(true) }}
-          />
+          <BaseTiles />
           <MapBridge
             mapRef={mapRef}
             onZoom={() => {}}

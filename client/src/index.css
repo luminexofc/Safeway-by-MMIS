@@ -22,6 +22,11 @@ body {
   z-index: 10;
   background: #dbe4ec;
 }
+/* Keyless tiles are light-only; invert just the tile pane for dark mode so
+   markers, routes and accuracy circles keep their real colors. */
+.sw-dark-tiles .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.9);
+}
 .leaflet-control-zoom a { color: #0f172a !important; }
 .dark .leaflet-bar {
   border-color: rgba(255, 255, 255, 0.12) !important;
