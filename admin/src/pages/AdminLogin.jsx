@@ -44,7 +44,7 @@ export default function AdminLogin() {
       </div>
       <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900">
         <div className="bg-slate-950 px-6 py-5 text-white dark:border-b dark:border-white/10">
-          <p className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-teal-300">
+          <p className="flex items-center gap-2 text-[11px] font-bold tracking-wide text-teal-300">
             <ShieldCheck className="h-4 w-4" aria-hidden="true" /> Restricted · Verification console
           </p>
           <h1 className="mt-1 text-[22px] font-bold tracking-tight">Safeway Console</h1>
@@ -69,7 +69,7 @@ export default function AdminLogin() {
             />
           </label>
           {error && <p className="text-[13px] font-semibold text-red-600 dark:text-red-400" role="alert">{error}</p>}
-          <button type="submit" disabled={loading} className="min-h-[48px] w-full cursor-pointer rounded-xl bg-slate-900 text-[15px] font-bold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
+          <button type="submit" disabled={loading} className="min-h-[48px] w-full cursor-pointer rounded-xl bg-teal-700 text-[15px] font-bold text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60">
             {loading ? "Signing in…" : "Log in to console"}
           </button>
           <p className="text-center text-[13px] text-slate-500 dark:text-slate-400">

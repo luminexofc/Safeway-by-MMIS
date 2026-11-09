@@ -134,7 +134,7 @@ export default function AdminDashboard() {
             Ask an admin to add you, or sign in with an operator account.
           </p>
           <div className="mt-4 flex justify-center gap-2">
-            <button onClick={logout} className="min-h-[44px] cursor-pointer rounded-xl bg-slate-900 px-5 text-[14px] font-bold text-white dark:bg-white dark:text-slate-900">Sign out</button>
+            <button onClick={logout} className="min-h-[44px] cursor-pointer rounded-xl bg-teal-700 px-5 text-[14px] font-bold text-white">Sign out</button>
             <a href={MAIN_SITE} className="inline-flex min-h-[44px] items-center rounded-xl border border-slate-200 px-5 text-[14px] font-semibold dark:border-white/15">Open main app</a>
           </div>
         </div>
@@ -148,7 +148,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen">
       <header className="sticky top-0 z-50 border-b border-slate-200 bg-white dark:border-white/10 dark:bg-slate-900">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-teal-300 dark:bg-white/10">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-700 text-white">
             <ShieldCheck className="h-5 w-5" aria-hidden="true" />
           </span>
           <div>
@@ -160,7 +160,7 @@ export default function AdminDashboard() {
               View main app
             </a>
             <ThemeToggle />
-            <button onClick={logout} className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl bg-slate-900 px-4 text-[14px] font-semibold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
+            <button onClick={logout} className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl bg-slate-950 px-4 text-[14px] font-semibold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
               <LogOut className="h-4 w-4" aria-hidden="true" /> Log out
             </button>
           </div>
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
             ["Median verify time (30 d)", fmtMinutes(stats.median)],
           ].map(([t, v]) => (
             <div key={t} className="border-l-2 border-slate-200 pl-3 dark:border-white/10">
-              <dt className="text-[12px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">{t}</dt>
+              <dt className="text-[12px] font-bold tracking-wide text-slate-500 dark:text-slate-400">{t}</dt>
               <dd className="mt-0.5 text-[24px] font-bold">{v}</dd>
             </div>
           ))}
