@@ -12,13 +12,13 @@ html { scroll-behavior: smooth; }
 
 body {
   @apply bg-[#eef2f5] text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
-  font-family: "Instrument Sans", Roboto, system-ui, sans-serif;
+  font-family: "Instrument Sans", Roboto, "Noto Sans Bengali", system-ui, sans-serif;
   font-size: 15.5px;
   line-height: 1.6;
 }
 
 .leaflet-container {
-  font-family: "Instrument Sans", Roboto, sans-serif;
+  font-family: "Instrument Sans", Roboto, "Noto Sans Bengali", sans-serif;
   z-index: 10;
   background: #dbe4ec;
 }
@@ -104,3 +104,10 @@ body {
   .bottom-safe       { bottom: 1.5rem; }
   .bottom-safe-toast { bottom: 2.75rem; }
 }
+
+/* ── Field-instrument helpers ──────────────────────────────────────── */
+.sw-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+.sw-rule { border-color: rgb(226 232 240); }
+.dark .sw-rule { border-color: rgba(255, 255, 255, 0.1); }
+.sw-eyebrow { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.02em; color: #64748b; }
+.dark .sw-eyebrow { color: #94a3b8; }

@@ -8,7 +8,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Instrument Sans"', 'Roboto', 'system-ui', 'sans-serif'],
+        sans: ['"Instrument Sans"', 'Roboto', '"Noto Sans Bengali"', 'system-ui', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
       },
       colors: {
         brand: {

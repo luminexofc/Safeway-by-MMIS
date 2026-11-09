@@ -189,7 +189,7 @@ export default function Navbar({ user = null, onLogout, theme: themeProp, onThem
         <div className="mx-auto flex h-16 max-w-[1400px] items-center gap-2 px-4 sm:gap-3 sm:px-6">
           {/* Brand */}
           <Link to={loggedIn ? ROUTES.dashboard : ROUTES.home} className="flex shrink-0 items-center gap-2 rounded-xl py-1 pr-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-900 text-teal-300 dark:bg-white dark:text-teal-700">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-teal-700 text-white">
               <ShieldCheck className="h-5 w-5" />
             </span>
             <span className="hidden text-[18px] font-bold tracking-tight text-slate-900 min-[340px]:inline dark:text-white">{t.brand}</span>
@@ -203,12 +203,12 @@ export default function Navbar({ user = null, onLogout, theme: themeProp, onThem
                   <span className={cn(
                     "relative flex min-h-[44px] items-center gap-2 rounded-xl px-3.5 text-[14.5px] font-semibold transition-colors",
                     isActive
-                      ? "text-white dark:text-slate-950"
+                      ? "text-teal-700 dark:text-teal-300"
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white"
                   )}>
                     {isActive && (
                       <motion.span layoutId="topnav-active-pill" transition={reduce ? { duration: 0 } : SPRING}
-                        className="absolute inset-0 rounded-xl bg-slate-900 dark:bg-white" />
+                        className="absolute inset-x-3 bottom-1.5 h-0.5 rounded-full bg-teal-700 dark:bg-teal-300" />
                     )}
                     <n.icon className="relative z-10 h-4 w-4 shrink-0" />
                     <span className="relative z-10 whitespace-nowrap">{n.label}</span>
@@ -288,7 +288,7 @@ export default function Navbar({ user = null, onLogout, theme: themeProp, onThem
                 )}>
                   {isActive && (
                     <motion.span layoutId="bottom-nav-pill" transition={reduce ? { duration: 0 } : SPRING}
-                      className="absolute inset-0 rounded-xl bg-slate-900 dark:bg-white" />
+                      className="absolute inset-0 rounded-xl bg-teal-700 dark:bg-teal-300" />
                   )}
                   <n.icon className="relative z-10 h-5 w-5 shrink-0" />
                   <span className="relative z-10 max-w-full truncate">{n.label}</span>

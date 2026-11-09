@@ -17,10 +17,14 @@ Reading: public-service routing for residents in monsoon season, utilitarian voi
 
 ## Typography (R-06 reason)
 
-- Instrument Sans (Roboto fallback) for everything. Reason: open apertures stay legible
-  at 12–13 px map labels and in sunlight glare; single family keeps a civic voice.
+- Instrument Sans (Roboto, Noto Sans Bengali fallback) for everything. Reason: open
+  apertures stay legible at 12–13 px map labels and in sunlight glare; single family
+  keeps a civic voice; Bengali fallback covers first-class `bn` locale.
 - Small-caps kickers are BANNED except map metadata density (chip labels). Headlines do
-  the work. Mono only for data (coordinates, endpoint names), never decor.
+  the work. Mono (system stack) only for data (coordinates, endpoint names, IDs),
+  never decor. Mono uses tabular-nums.
+- Nav active state: teal text + 2 px bottom rule (desktop), teal pill (mobile).
+  Brand mark is a teal square with the shield glyph. No dark slate pills.
 
 ## Shape and elevation (R-11, R-12, R-13, R-10)
 
@@ -64,5 +68,8 @@ Reading: public-service routing for residents in monsoon season, utilitarian voi
   saved choice follows the OS, pre-paint script prevents flash.
 - Dark surfaces: page `slate-950`, cards `slate-900`, borders `white/10`,
   body text `slate-100`, muted `slate-400` (7:1 measured family).
+- Shared components (client): `PageHeader` (title + optional eyebrow/description/actions,
+  hairline below), `StatusStamp` (pill, semantic tone, status-only), `EmptyState`
+  (dashed border, centered). Reuse before inventing. Admin stays plain React + tokens.
 - The map swaps to CARTO dark tiles in dark mode (same OSM data, attribution kept).
 - Safety hues stay fixed; only their text lightens (emerald/amber/red-300).
