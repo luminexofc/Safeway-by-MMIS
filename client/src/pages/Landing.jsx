@@ -17,7 +17,6 @@ import {
    ===================================================================== */
 
 /* ---------- Small helpers ---------- */
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 // Read the app's global theme (adds/removes the "dark" class on <html>)
 function readAppTheme() {
@@ -332,35 +331,7 @@ export default function Landing() {
   const rootRef = useRef(null);
   const theme = useAppTheme();
   const { user, loading: sessionLoading } = useSession();
-  const [email, setEmail] = useState("");
-  const [newsletterMessage, setNewsletterMessage] = useState({
-    type: "",
-    text: "",
-  });
   useScrollReveal(rootRef);
-
-  // Newsletter: checks the email format only (no server is contacted)
-  function handleNewsletterSubmit(event) {
-    event.preventDefault();
-    const value = email.trim();
-    if (!value) {
-      setNewsletterMessage({ type: "error", text: "Please enter your email address." });
-      return;
-    }
-    if (!EMAIL_PATTERN.test(value)) {
-      setNewsletterMessage({
-        type: "error",
-        text: "That email looks incorrect. Try name@example.com.",
-      });
-      return;
-    }
-    setNewsletterMessage({
-      type: "success",
-      text: "Email looks good. Newsletter sign-up is not connected to a server yet.",
-    });
-    setEmail("");
-  }
-
 
   return (
     <div className="sw-landing" data-theme={theme} ref={rootRef}>
@@ -566,33 +537,13 @@ export default function Landing() {
             </ul>
           </nav>
 
-          <div className="sw-footer-col sw-newsletter">
-            <h4 className="sw-footer-heading">Stay Informed</h4>
-            <p>Get the latest updates and alerts in your area.</p>
-            <form className="sw-newsletter-form" onSubmit={handleNewsletterSubmit} noValidate>
-              <label className="sw-visually-hidden" htmlFor="sw-newsletter-email">
-                Email address
-              </label>
-              <input
-                id="sw-newsletter-email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                aria-describedby="sw-newsletter-message"
-                autoComplete="email"
-              />
-              <button type="submit" aria-label="Subscribe to updates">
-                <Icon name="arrow" size={16} />
-              </button>
-            </form>
-            <p
-              id="sw-newsletter-message"
-              className={`sw-newsletter-message sw-newsletter-message--${newsletterMessage.type}`}
-              role="status"
-            >
-              {newsletterMessage.text}
-            </p>
+          <div className="sw-footer-col">
+            <h4 className="sw-footer-heading">Report a road</h4>
+            <p>See waterlogging? File a report and the team verifies it before it changes any route.</p>
+            <SiteLink className="sw-btn sw-btn-sm sw-btn-dark" to={landingRoutes.report}>
+              <Icon name="bell" size={16} />
+              Report an alert
+            </SiteLink>
           </div>
         </div>
 
