@@ -20,7 +20,7 @@ export const landingRoutes = {
 export const navLinks = [
   { label: "Home", href: landingRoutes.home, active: true },
   { label: "Track Report", href: landingRoutes.trackReport },
-  { label: "Thresholds", href: landingRoutes.thresholds },
+  { label: "Settings", href: landingRoutes.thresholds },
 ];
 
 export const featureCards = [
@@ -78,6 +78,6 @@ export const processSteps = [
 export const quickLinks = [
   { label: "Home", href: landingRoutes.home },
   { label: "Track Report", href: landingRoutes.trackReport },
-  { label: "Thresholds", href: landingRoutes.thresholds },
+  { label: "Settings", href: landingRoutes.thresholds },
   { label: "Verified Alerts", href: landingRoutes.alerts },
 ];
