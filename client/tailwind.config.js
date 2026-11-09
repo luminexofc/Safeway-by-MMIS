@@ -8,22 +8,38 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Instrument Sans"', 'Roboto', '"Noto Sans Bengali"', 'system-ui', 'sans-serif'],
-        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+        sans: ['"Noto Sans Bengali"', 'sans-serif'],
+        display: ['"Bricolage Grotesque"', '"Noto Sans Bengali"', 'sans-serif'],
+        mono: ['ui-monospace', '"SFMono-Regular"', 'Menlo', 'monospace'],
       },
       colors: {
-        brand: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          600: '#0d9488',
-          700: '#0f766e',
-          800: '#115e59',
-          900: '#134e4a',
+        ink: 'var(--color-ink)',
+        paper: 'var(--color-paper)',
+        slate: {
+          50: 'var(--color-paper)', 100: 'var(--color-paper-2)',
+          200: 'var(--color-rule)', 300: 'var(--color-rule-strong)',
+          400: 'var(--color-muted-2)', 500: 'var(--color-muted)',
+          600: 'var(--color-ink-2)', 700: 'var(--color-ink-2)',
+          800: 'var(--color-ink)', 900: 'var(--color-surface)',
+          950: 'var(--color-paper)',
         },
+        teal: {
+          50: 'var(--color-accent-weak)', 100: 'var(--color-accent-weak)',
+          200: 'var(--color-accent-weak)', 300: 'var(--color-accent)',
+          400: 'var(--color-accent)', 500: 'var(--color-accent)',
+          600: 'var(--color-accent)', 700: 'var(--color-accent)',
+          800: 'var(--color-accent-strong)', 900: 'var(--color-accent-strong)',
+        },
+        brand: {
+          50: 'var(--color-accent-weak)', 100: 'var(--color-accent-weak)',
+          600: 'var(--color-accent)', 700: 'var(--color-accent)',
+          800: 'var(--color-accent-strong)', 900: 'var(--color-accent-strong)',
+        },
+        safe: 'var(--color-safe)', caution: 'var(--color-caution)', danger: 'var(--color-danger)',
+        'map-ground': 'var(--color-map-ground)', 'map-road': 'var(--color-map-road)',
       },
-      boxShadow: {
-        pop: '0 12px 40px -12px rgba(15,23,42,.35)',
-      },
+      boxShadow: { pop: 'var(--shadow-overlay)' },
+      borderRadius: { xl: 'var(--radius-control)', '2xl': 'var(--radius-surface)', '3xl': 'var(--radius-overlay)' },
     },
   },
   plugins: [],

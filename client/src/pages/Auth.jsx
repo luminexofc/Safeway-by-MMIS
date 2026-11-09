@@ -11,11 +11,13 @@ import { useSession } from "../lib/session";
 import { friendlyError } from "../lib/errors";
 import { useCooldown } from "../lib/useCooldown";
 import { wipeThen } from "../lib/wipe";
+import { useAuthCopy } from "../components/auth/authCopy";
 
 export function Login() {
   const nav = useNavigate();
   const location = useLocation();
   const { user, loading } = useSession();
+  const { lang, t } = useAuthCopy();
   const [view, setView] = useState("signin"); // "signin" | "forgot"
   const go = (next) => next !== view && wipeThen(() => setView(next));
   // Already signed in? Login has nothing to offer — open the app.
@@ -29,8 +31,8 @@ export function Login() {
   return (
     <>
       {cameForPage && view === "signin" && (
-        <p className="mx-auto mb-4 mt-6 max-w-md text-center text-[13.5px] font-semibold text-teal-800 dark:text-teal-300">
-          Sign in to continue to your map.
+        <p lang={lang} className="mx-auto mb-4 mt-6 max-w-md text-center text-[13.5px] font-semibold text-teal-800 dark:text-teal-300">
+          {t.continueToMap}
         </p>
       )}
       {view === "signin" ? (
@@ -128,14 +130,14 @@ export function Verify() {
   if (state === "ok") {
     return (
       <AuthFrame title="Email verified" sub="Your address is confirmed. You are all set." footer={<Link to="/dashboard" className="font-bold text-teal-800 underline dark:text-teal-300">Go to dashboard</Link>}>
-        <BeuiBadge tone="safe">Verified</BeuiBadge>
+        <BeuiBadge tone="info">Verified</BeuiBadge>
       </AuthFrame>
     );
   }
   if (state === "fail") {
     return (
       <AuthFrame title="Link expired or invalid" sub="Verification links are single-use and expire." footer={<Link to="/signup" className="font-bold text-teal-800 underline dark:text-teal-300">Back to sign up</Link>}>
-        <BeuiBadge tone="danger">Not verified</BeuiBadge>
+        <BeuiBadge tone="neutral">Not verified</BeuiBadge>
       </AuthFrame>
     );
   }
@@ -184,7 +186,7 @@ export function ResetPassword() {
   if (!valid) {
     return (
       <AuthFrame title="Invalid reset link" sub="Reset links are single-use and expire." footer={<Link to="/login" className="font-bold text-teal-800 underline dark:text-teal-300">Back to login</Link>}>
-        <BeuiBadge tone="danger">Missing token</BeuiBadge>
+        <BeuiBadge tone="neutral">Missing token</BeuiBadge>
       </AuthFrame>
     );
   }
@@ -222,7 +224,7 @@ export function AuthError() {
   return (
     <AuthFrame title="Too many attempts" sub="Sign-in is paused to stop abuse. Try again when the timer ends." footer={<Link to="/login" className="font-bold text-teal-800 underline dark:text-teal-300">Back to login</Link>}>
       <div className="rounded-2xl border border-red-300 bg-red-50 p-5 dark:border-red-500/30 dark:bg-red-500/10">
-        <BeuiBadge tone="danger">Rate limit exceeded</BeuiBadge>
+        <BeuiBadge tone="neutral">Rate limit exceeded</BeuiBadge>
         <p className="mt-2 text-[14px] font-semibold text-red-800 dark:text-red-300" role="status">
           {left > 0 ? `Retry available in ${left} seconds.` : "Press Retry now below to try again."}
         </p>

@@ -1,75 +1,115 @@
-# Safeway DESIGN.md: locked direction for client + admin console
+# Safeway design system
 
-Civic flood-safety tool for Bangladesh. Calm, dense, trustworthy. Light app surfaces;
-dark is reserved for night-travel map context and alert contrast (R-21 reason).
+Safeway is a civic road-safety service for people making real travel decisions
+across Bangladesh. The interface should feel like a considered field guide:
+clear in rain or sun, calm under pressure, and specific to roads and reports.
 
-Dial: ENERGY 1 / RHYTHM 2 / MOTION 1.
-Reading: public-service routing for residents in monsoon season, utilitarian voice.
+## Design read
 
-## Palette (R-29: 2 cores + 1 accent + functional semantics)
+- Audience: residents and riders in Bangladesh, on phones and desktop, using
+  English or Bengali.
+- Job: check road conditions, compare a route, report waterlogging, and follow
+  the report through review.
+- Voice: direct, practical, human. State what is known and how it is known.
+- Dials: ENERGY 2 / RHYTHM 3 / MOTION 1.
 
-- Paper `#EEF2F5`, surface white, ink `#0F172A`, muted `#475569` (body 7.2:1 on paper).
-- Primary deep teal `#0F766E`: primary CTAs, active nav pill, links. Reason: high-contrast
-  action color distinct from the safety semantics below, so "go" never reads as "safe".
-- Safety semantics green `#15803D` / amber `#CA8A04` / red `#DC2626`: road states ONLY,
-  never decoration. Reason: they carry the routing algorithm's meaning (×1 / ×1.5–×5 / ×∞).
-- Small text never below `#64748b` on white (4.76:1 measured). `#94a3b8` banned for text.
+## Structure
 
-## Typography (R-06 reason)
+- Landing: Map / Diagram. The report-to-review-to-route relationship is the
+  composition. Use product states only; no sample incidents or invented totals.
+- Resident app: Map / Diagram. The map is the main working surface; route or
+  report controls sit beside it on wide screens and in a reachable sheet on
+  phones.
+- Operator console: decision-led queue. Evidence and the available decision
+  stay together; the operations log remains a separate record.
+- Forms and history keep their natural task structure. Do not force every route
+  into a dashboard, a card grid, or a marketing section sequence.
 
-- Instrument Sans (Roboto, Noto Sans Bengali fallback) for everything. Reason: open
-  apertures stay legible at 12–13 px map labels and in sunlight glare; single family
-  keeps a civic voice; Bengali fallback covers first-class `bn` locale.
-- Small-caps kickers are BANNED except map metadata density (chip labels). Headlines do
-  the work. Mono (system stack) only for data (coordinates, endpoint names, IDs),
-  never decor. Mono uses tabular-nums.
-- Nav active state: teal text + 2 px bottom rule (desktop), teal pill (mobile).
-  Brand mark is a teal square with the shield glyph. No dark slate pills.
+## Theme
 
-## Shape and elevation (R-11, R-12, R-13, R-10)
+The paper and ink lean toward rain-cooled green and blue. Deep rain-green is the
+single action accent. Road-condition colors are functional data: green means
+safe, amber means caution, red means danger or blocked. Pair every condition
+color with a label and icon. Never use these colors for decoration, account
+status, or general success and error states.
 
-- Radii by role: controls 12 px, surfaces 16 px, overlays 24 px, status badges pill.
-- Flat by default. Shadow only on overlays (palette, toasts) and the selected route.
-  No glow anywhere. Glass only on palette + toasts; header, nav, chips are solid.
+The token source is [`shared/design-tokens.css`](shared/design-tokens.css).
+Components must use tokens and semantic Tailwind aliases rather than introduce
+one-off colors.
 
-## Motif (identity)
+## Typography
 
-- Tri-color safety rule (green/amber/red segments) under the hero headline and re-used
-  sparingly. Product-derived, not decoration. Logo is the wordmark only.
+- Display: Bricolage Grotesque, 650–800, upright. Use for short headings.
+- Interface and body: Noto Sans Bengali, 400–700. It covers Bengali and Latin
+  UI text and remains legible at map-label sizes.
+- Numerals: tabular figures in the interface face. Coordinates and IDs may use
+  the system monospace stack only when alignment benefits the reader.
+- Body text is at least 14 px; helper text targets 13 px only where necessary.
+  Keep prose around 45–75 characters per line.
 
-## Icons (R-04 relevance note)
+## Color and states
 
-- One Lucide set for the whole tool. Reason: uniform 24 px stroke keeps map-adjacent
-  controls legible at small sizes; relevance first (pin, bell, camera), never sparkles
-  or orbs. No emoji in UI.
+- Light mode is the default for daylight legibility. Dark and System remain
+  available for night use and user preference.
+- Teal marks actions, selected navigation, and keyboard focus. Keep it sparse.
+- Road risk is communicated by a condition word, a relevant icon, and its
+  condition color. Pending review is neutral and must not look like a road
+  warning.
+- Base surfaces are tinted, not pure white or black. Verify text and control
+  contrast against WCAG AA before release.
 
-## Motion (MOTION 1)
+## Shape and depth
 
-- Hover/press feedback + state transitions (tab pills, dialog presence) only.
-- No endless loops. One static status dot marks position; nothing pulses or marquees.
+- Controls: 8 px radius. Cards and map sheets: 14 px. Dialogs: 20 px.
+- Most surfaces sit flat with a fine border. Use a restrained shadow only for
+  menus, dialogs, and panels that overlap the map.
+- A route trace and its segment markers are the product motif. They appear only
+  when explaining a real route or road state. No decorative grid, glow, or
+  ornamental traffic lights.
 
-## Voice
+## Layout and navigation
 
-- Verbs, no claims. Numbers appear only from live sources; everything else is cut or
-  labeled Sample. No em dashes; no arrow on every button (wizard progression only).
-- Dark hero reason: night-travel legibility + alert contrast; app stays light (R-21).
+- Keep a labeled desktop task rail for Map, Find route, Report road, and My
+  reports. On mobile, provide the same destinations in a fixed bottom bar with
+  safe-area padding and a clear text label for each icon.
+- The operator console has its own review-focused navigation and never exposes
+  operator actions to public users.
+- Maps remain usable at 320 px and never hide essential controls behind a
+  selected-report panel. Every map-only fact has a readable text alternative.
+- Use the 4 px spacing scale and vary section spacing according to the task.
 
-## Two sites, one system
+## Interaction and motion
 
-- Public app (`client/`) and verification console (`admin/`) share this file.
-  Console uses the same tokens in a denser table layout; no separate identity.
-  Both apps ship the Light/Dark/System control with the same behavior.
+- MOTION 1: hover, press, focus, and short state transitions only. No reveal on
+  scroll, looping animation, or motion that competes with map reading.
+- Focus appears immediately with a visible high-contrast ring. Interactive
+  targets are at least 44 px where practical.
+- Respect `prefers-reduced-motion`. Menus and sheets retain keyboard access,
+  Escape behavior, and logical focus order.
+- Geolocation is requested only after the person asks to use their location.
+  Manual location selection remains available.
 
-## Theme (R-21 reason)
+## Content and data integrity
 
-- Light is the default. Three modes: Light, Dark, System (follows the device,
-  reacts to OS changes live). Picker in the header dropdown plus a segmented
-  control in Settings; choice persists in `localStorage`, first visit with no
-  saved choice follows the OS, pre-paint script prevents flash.
-- Dark surfaces: page `slate-950`, cards `slate-900`, borders `white/10`,
-  body text `slate-100`, muted `slate-400` (7:1 measured family).
-- Shared components (client): `PageHeader` (title + optional eyebrow/description/actions,
-  hairline below), `StatusStamp` (pill, semantic tone, status-only), `EmptyState`
-  (dashed border, centered). Reuse before inventing. Admin stays plain React + tokens.
-- The map swaps to CARTO dark tiles in dark mode (same OSM data, attribution kept).
-- Safety hues stay fixed; only their text lightens (emerald/amber/red-300).
+- Verified waterlogging reports appear on the safety map. The route planner
+  uses OpenStreetMap road geometry and does not automatically reroute around
+  these reports. A pending report is clearly labeled and is not shown as a
+  verified road condition.
+- Do not invent incident pins, counts, testimonials, review-time estimates,
+  update times, or claims. Show timestamps only when supplied by the data.
+- Traffic and other blockage types are not presented as supported until the
+  report model, operator workflow, and route calculation support them.
+- Explain sign-in before a protected action. The map remains behind the current
+  authentication boundary unless access policy is deliberately changed.
+- Loading, empty, permission-denied, no-route, stale-data, and error states name
+  the cause and give the next useful action.
+
+## Shared product rules
+
+- The resident client and restricted operator console share tokens, typography,
+  theme behavior, and condition semantics.
+- Preserve current routes, Appwrite integration, auth, submission, verification,
+  audit, and routing behavior during visual redesign.
+- English and Bengali copy must fit without clipping or wrapped action labels.
+- Do not add a logo, photography, or illustration without a product need and
+  approved source.

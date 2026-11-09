@@ -14,7 +14,7 @@ export default function AppShell({ children }) {
 
   if (isAuth) {
     return (
-      <div className="min-h-screen bg-[#eef2f5] dark:bg-slate-950">
+      <div className="min-h-screen bg-paper dark:bg-slate-950">
         <main>{children}</main>
       </div>
     );
@@ -26,11 +26,10 @@ export default function AppShell({ children }) {
   };
 
   return (
-    <div className="min-h-screen pb-28 lg:pb-0">
-      {/* The only navigation: full top bar on desktop; slim top bar + bottom bar on phones */}
+    <div className="sw-app-shell min-h-screen pb-28 lg:pb-0">
       <Navbar user={user} onLogout={handleLogout} />
 
-      <main className="mx-auto w-full max-w-[1400px] px-4 py-5 sm:px-6">{children}</main>
+      <main className="sw-app-main w-full px-4 py-4 sm:px-6 lg:ml-64 lg:w-[calc(100%-16rem)] lg:px-8 lg:py-6">{children}</main>
     </div>
   );
 }

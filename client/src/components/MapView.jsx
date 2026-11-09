@@ -34,18 +34,18 @@ function ClickController({ onPick }) {
   return null;
 }
 
-function makeDot(color = "#0d9488", size = 18) {
+function makeDot(color = "var(--color-accent)", size = 18) {
   return L.divIcon({
     className: "",
-    html: `<div style="width:${size}px;height:${size}px;border-radius:9999px;background:${color};border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)"></div>`,
+    html: `<div style="width:${size}px;height:${size}px;border-radius:9999px;background:${color};border:3px solid var(--color-surface);box-shadow:0 2px 8px rgba(0,0,0,.22)"></div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
 }
 
-const dotIcon = makeDot("#0d9488", 18);
+const dotIcon = makeDot("var(--color-accent)", 18);
 
-const TONE_COLOR = { safe: "#15803d", caution: "#ca8a04", danger: "#dc2626", info: "#0d9488", neutral: "#64748b" };
+const TONE_COLOR = { safe: "var(--color-safe)", caution: "var(--color-caution)", danger: "var(--color-danger)", info: "var(--color-accent)", neutral: "var(--color-muted)" };
 
 /**
  * Live map. One API:
@@ -104,7 +104,7 @@ export default function MapView({
           <Circle
             center={radius.at}
             radius={radius.meters ?? 5000}
-            pathOptions={{ color: "#0d9488", weight: 1.5, dashArray: "6 6", fillColor: "#0d9488", fillOpacity: 0.06 }}
+            pathOptions={{ color: "var(--color-accent)", weight: 1.5, dashArray: "6 6", fillColor: "var(--color-accent)", fillOpacity: 0.06 }}
           />
         )}
         {lines.map((l) => (
@@ -112,7 +112,7 @@ export default function MapView({
             key={l.id}
             positions={l.positions}
             pathOptions={{
-              color: l.color || "#0d9488",
+              color: l.color || "var(--color-accent)",
               weight: l.weight || 6,
               opacity: 0.95,
               lineCap: "round",
@@ -131,7 +131,7 @@ export default function MapView({
               center={m.pos}
               radius={8}
               pathOptions={{
-                color: "#fff",
+                color: "var(--color-surface)",
                 weight: 2.5,
                 fillColor: TONE_COLOR[m.tone] || TONE_COLOR.neutral,
                 fillOpacity: 0.95,

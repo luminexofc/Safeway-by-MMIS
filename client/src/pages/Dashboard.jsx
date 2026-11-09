@@ -21,10 +21,10 @@ import RouteCard from "../components/dashboard/RouteCard";
 const DEFAULT_CENTER = COUNTRY_CENTER; // [23.685, 90.3563]
 
 const TYPES = {
-  safe:     { label: "Safe Route",   color: "#15803d" },
-  cautious: { label: "Caution",      color: "#ca8a04" },
-  danger:   { label: "Danger",       color: "#dc2626" },
-  blocked:  { label: "Blocked Road", color: "#dc2626" },
+  safe:     { label: "Safe Route",   color: "var(--color-safe)" },
+  cautious: { label: "Caution",      color: "var(--color-caution)" },
+  danger:   { label: "Danger",       color: "var(--color-danger)" },
+  blocked:  { label: "Blocked Road", color: "var(--color-danger)" },
 };
 
 // Walk uses Footprints; Bike and Car are standard Lucide glyphs.
@@ -38,21 +38,21 @@ const MODES = {
 const HL = {
   safe: {
     Icon: Check,
-    iconCls:   "text-emerald-700 dark:text-emerald-300",
-    bannerCls: "bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30",
-    textCls:   "text-emerald-800 dark:text-emerald-300",
+    iconCls:   "sw-hazard-safe-text",
+    bannerCls: "sw-hazard-safe-banner",
+    textCls:   "sw-hazard-safe-text",
   },
   cautious: {
     Icon: TriangleAlert,
-    iconCls:   "text-amber-600 dark:text-amber-400",
-    bannerCls: "bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/30",
-    textCls:   "text-amber-800 dark:text-amber-300",
+    iconCls:   "sw-hazard-caution-text",
+    bannerCls: "sw-hazard-caution-banner",
+    textCls:   "sw-hazard-caution-text",
   },
   danger: {
     Icon: TriangleAlert,
-    iconCls:   "text-red-600 dark:text-red-400",
-    bannerCls: "bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/30",
-    textCls:   "text-red-800 dark:text-red-300",
+    iconCls:   "sw-hazard-danger-text",
+    bannerCls: "sw-hazard-danger-banner",
+    textCls:   "sw-hazard-danger-text",
   },
 };
 
@@ -93,7 +93,7 @@ const makePinIcon = (color) =>
 const makeUserDot = () =>
   L.divIcon({
     className: "",
-    html: `<div style="width:18px;height:18px;border-radius:50%;background:#0d9488;border:3px solid white;box-shadow:0 0 0 3px rgba(13,148,136,.28),0 2px 8px rgba(0,0,0,.3)"></div>`,
+    html: `<div style="width:18px;height:18px;border-radius:50%;background:var(--color-accent);border:3px solid var(--color-surface);box-shadow:0 2px 8px rgba(0,0,0,.22)"></div>`,
     iconSize:   [18, 18],
     iconAnchor: [9, 9],
   });
@@ -107,12 +107,12 @@ const makeDraftDot = (color) =>
   });
 
 const userDotIcon = makeUserDot();
-const destPinIcon = makePinIcon("#0f766e");
+const destPinIcon = makePinIcon("var(--color-accent)");
 const reportIcons = {
-  safe:     makePinIcon("#15803d"),
-  cautious: makePinIcon("#ca8a04"),
-  danger:   makePinIcon("#dc2626"),
-  blocked:  makePinIcon("#dc2626"),
+  safe:     makePinIcon("var(--color-safe)"),
+  cautious: makePinIcon("var(--color-caution)"),
+  danger:   makePinIcon("var(--color-danger)"),
+  blocked:  makePinIcon("var(--color-danger)"),
 };
 
 /* ─── Map bridge sub-component ───────────────────────────────────────── */
@@ -415,7 +415,7 @@ export default function Dashboard() {
           {route && (
             <>
               <Polyline positions={route.coords} pathOptions={{ color: "#fff",    weight: 10, opacity: 0.85 }} />
-              <Polyline positions={route.coords} pathOptions={{ color: "#0f766e", weight: 5,  lineCap: "round", lineJoin: "round", smoothFactor: 0 }} />
+              <Polyline positions={route.coords} pathOptions={{ color: "var(--color-accent)", weight: 5,  lineCap: "round", lineJoin: "round", smoothFactor: 0 }} />
             </>
           )}
 
@@ -439,7 +439,7 @@ export default function Dashboard() {
               center={userPos}
               radius={userAcc}
               interactive={false}
-              pathOptions={{ color: "#0d9488", weight: 1, fillColor: "#0d9488", fillOpacity: 0.08 }}
+              pathOptions={{ color: "var(--color-accent)", weight: 1, fillColor: "var(--color-accent)", fillOpacity: 0.08 }}
             />
           )}
           {userPos && <Marker position={userPos} icon={userDotIcon} interactive={false} />}

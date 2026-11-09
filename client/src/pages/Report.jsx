@@ -111,7 +111,7 @@ export default function Report() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Report waterlogging" description="Three quick steps. Verified reports update the map; false ones are discarded." />
+      <PageHeader title="Report waterlogging" description="Mark the location, add what you saw, then review it before sending. An operator checks reports before they appear as road conditions on the map." />
 
       <ol className="grid grid-cols-3 gap-2" aria-label="Report progress">
         {STEPS.map((s) => {
@@ -142,7 +142,7 @@ export default function Report() {
                 />
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <BeuiBadge tone={precise ? "safe" : "caution"}>{pinResolving ? "Resolving…" : pinLabel}</BeuiBadge>
+                <BeuiBadge tone="info">{pinResolving ? "Resolving location…" : pinLabel}</BeuiBadge>
                 <button type="button" onClick={geo.locate} className="inline-flex min-h-[40px] cursor-pointer items-center gap-1.5 rounded-xl px-2 text-[13px] font-bold text-teal-800 hover:bg-teal-50 dark:text-teal-300 dark:hover:bg-white/5">
                   <LocateFixed className="h-4 w-4" aria-hidden="true" />
                   {geo.status === "locating" ? "Locating…" : "Re-center on me"}
@@ -189,7 +189,7 @@ export default function Report() {
           {step === 3 && (
             <div className="space-y-4">
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5">
-                <div className="flex items-center justify-between gap-2"><p className="font-bold">{pinLabel || "Pinned location"}</p><BeuiBadge tone="caution">Enters queue</BeuiBadge></div>
+                <div className="flex items-center justify-between gap-2"><p className="font-bold">{pinLabel || "Pinned location"}</p><BeuiBadge tone="neutral">Pending review</BeuiBadge></div>
                 <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">Depth: <b>{DEPTHS.find((d) => d.value === depth)?.label}</b> · Photo: <b>{photo ? photo.name : "none"}</b> · {pin.lat.toFixed(5)}, {pin.lng.toFixed(5)}</p>
                 <p className="mt-2 text-[12px] text-slate-500 dark:text-slate-400">Goes to the verification queue when you submit.</p>
               </div>
@@ -206,7 +206,7 @@ export default function Report() {
           <BeuiCard className="p-5">
             <h3 className="text-[15px] font-bold">What happens next?</h3>
             <ol className="mt-3 space-y-3 text-[13.5px]">
-              {[["Queue", "Joins verification with GPS plus photo.", "caution"], ["Verification", "The verification team plus nearby confirmations.", "neutral"], ["Verified", "Road turns yellow or red, and reroutes push out.", "safe"], ["Removed", "Fakes are removed and the reporter is warned.", "danger"]].map(([t, d, tone]) => (
+              {[["Submitted", "Your report enters the review queue.", "neutral"], ["Reviewed", "An operator checks the location and details.", "neutral"], ["Verified", "The report appears on the safety map.", "info"], ["Not verified", "It does not appear as a road condition on the map.", "neutral"]].map(([t, d, tone]) => (
                 <li key={t} className="flex gap-2.5"><BeuiBadge tone={tone}>{t}</BeuiBadge><span><b>{t}.</b> <span className="text-slate-600 dark:text-slate-400">{d}</span></span></li>
               ))}
             </ol>

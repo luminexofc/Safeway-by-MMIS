@@ -11,10 +11,10 @@ import { tablesDB, DATABASE_ID, TABLES, Query, callFunction, depthLabel, shortRe
 import { friendlyError } from "../lib/errors";
 
 const STATUS_META = {
-  pending: { label: "Pending review", tone: "caution" },
-  verified: { label: "Verified", tone: "safe" },
-  discarded: { label: "Discarded", tone: "danger" },
-  flagged_abuse: { label: "Flagged as abuse", tone: "danger" },
+  pending: { label: "Pending review", tone: "neutral" },
+  verified: { label: "Verified", tone: "neutral" },
+  discarded: { label: "Not verified", tone: "neutral" },
+  flagged_abuse: { label: "Under review", tone: "neutral" },
 };
 
 function timeAgo(iso) {

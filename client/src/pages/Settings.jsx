@@ -81,7 +81,7 @@ export default function Settings() {
       <BeuiCard className="p-6">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-[16px] font-bold">Notifications</h2>
-          <BeuiBadge tone={push ? "safe" : "neutral"}>{push ? "Push on" : "Push off"}</BeuiBadge>
+          <BeuiBadge tone={push ? "info" : "neutral"}>{push ? "Push on" : "Push off"}</BeuiBadge>
         </div>
         <div className="mt-3 flex items-center justify-between gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
           <div><p className="text-[14.5px] font-bold">Push alerts</p><p className="text-[13px] text-slate-500 dark:text-slate-400">A notice before a newly verified waterlogged road.</p></div>
@@ -114,7 +114,7 @@ export default function Settings() {
         </label>
         <div className="mt-4 flex items-center gap-3">
           <BeuiButton onClick={save} disabled={saving}>{saving ? "Saving…" : "Save settings"}</BeuiButton>
-          {saved && <BeuiBadge tone={saved === "Saved" ? "safe" : "danger"}>{saved}</BeuiBadge>}
+          {saved && <BeuiBadge tone="neutral">{saved}</BeuiBadge>}
         </div>
       </BeuiCard>
 

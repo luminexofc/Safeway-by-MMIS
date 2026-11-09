@@ -10,14 +10,9 @@ import { friendlyError } from "../lib/errors";
 const MAIN_SITE = import.meta.env.VITE_MAIN_SITE_URL || "http://localhost:5173";
 
 const DEPTH_LABEL = { ankle: "ankle-deep", knee: "knee-deep", waist: "waist-deep", road_closed: "road closed" };
-const STATUS_LABEL = { pending: "Pending", verified: "Verified", discarded: "Discarded", flagged_abuse: "Flagged as Abuse" };
+const STATUS_LABEL = { pending: "Pending review", verified: "Verified", discarded: "Not verified", flagged_abuse: "Flagged for review" };
 
-const toneBadge = (s) =>
-  s === "Verified"
-    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-    : s === "Discarded" || s === "Flagged as Abuse"
-      ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300"
-      : "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300";
+const toneBadge = () => "sw-status-neutral";
 
 const timeAgo = (iso) => {
   const s = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -81,8 +76,6 @@ export default function AdminDashboard() {
 
   const stats = useMemo(() => {
     const rows = reports ?? [];
-    const dayStart = new Date();
-    dayStart.setUTCHours(0, 0, 0, 0);
     const monthAgo = Date.now() - 30 * 24 * 3600 * 1000;
     const deltas = rows
       .filter((r) => r.status === "verified" && r.verifiedAt && new Date(r.verifiedAt).getTime() >= monthAgo)
@@ -90,7 +83,6 @@ export default function AdminDashboard() {
       .filter((m) => Number.isFinite(m) && m >= 0)
       .sort((a, b) => a - b);
     return {
-      today: rows.filter((r) => new Date(r.$createdAt) >= dayStart).length,
       median: deltas.length ? Math.round(deltas[Math.floor(deltas.length / 2)]) : null,
       pending: rows.filter((r) => r.status === "pending").length,
     };
@@ -170,8 +162,8 @@ export default function AdminDashboard() {
       <main className="mx-auto w-full max-w-6xl space-y-4 px-4 py-6 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="mt-1 text-[26px] font-bold tracking-tight">Review queue ({pending} pending)</h1>
-            <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">Decisions update the public map and send push alerts.</p>
+            <h1 className="mt-1 text-[26px] font-bold tracking-tight">Review queue · latest 50 reports</h1>
+            <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">{pending} pending in this list. Verified reports appear on the public map.</p>
           </div>
           <button onClick={load} className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-[14px] font-semibold hover:bg-slate-50 dark:border-white/15 dark:bg-slate-900 dark:hover:bg-white/5">
             <RefreshCw className="h-4 w-4" aria-hidden="true" /> Refresh
@@ -186,11 +178,11 @@ export default function AdminDashboard() {
 
         <dl className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-3 dark:border-white/10 dark:bg-slate-900">
           {[
-            ["Reports today", reports === null ? "…" : String(stats.today)],
-            ["Pending", reports === null ? "…" : String(stats.pending)],
-            ["Median verify time (30 d)", fmtMinutes(stats.median)],
+            ["Reports loaded", reports === null ? "…" : String(reports.length)],
+            ["Pending · recent 50", reports === null ? "…" : String(stats.pending)],
+            ["Median verification · recent sample", fmtMinutes(stats.median)],
           ].map(([t, v]) => (
-            <div key={t} className="border-l-2 border-slate-200 pl-3 dark:border-white/10">
+            <div key={t} className="border-t border-slate-200 pt-3 dark:border-white/10">
               <dt className="text-[12px] font-bold tracking-wide text-slate-500 dark:text-slate-400">{t}</dt>
               <dd className="mt-0.5 text-[24px] font-bold">{v}</dd>
             </div>
@@ -198,8 +190,8 @@ export default function AdminDashboard() {
         </dl>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-slate-900">
-          <h2 className="text-[18px] font-bold">Reports from all divisions</h2>
-          <div className="mt-3 space-y-3">
+          <h2 className="text-[18px] font-bold">Recent reports across Bangladesh</h2>
+          <div className="mt-3 space-y-0">
             {reports === null && <p className="py-6 text-center text-[13.5px] text-slate-500 dark:text-slate-400">Loading reports…</p>}
             {reports !== null && reports.length === 0 && (
               <p className="py-6 text-center text-[13.5px] text-slate-500 dark:text-slate-400">No reports yet. New public submissions land here.</p>
@@ -208,7 +200,7 @@ export default function AdminDashboard() {
               const statusLabel = STATUS_LABEL[r.status] ?? r.status;
               const working = acting === r.$id;
               return (
-                <div key={r.$id} className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 p-4 dark:border-white/10">
+                <div key={r.$id} className="flex flex-wrap items-center gap-3 border-t border-slate-200 py-4 dark:border-white/10">
                   {r.imageFileIds?.[0] ? (
                     <img
                       src={storage.getFileView({ bucketId: BUCKET.reportPhotos, fileId: r.imageFileIds[0] })}
@@ -234,13 +226,13 @@ export default function AdminDashboard() {
                   <span className={cn("inline-flex items-center rounded-full border px-3 py-1 text-[12px] font-bold", toneBadge(statusLabel))}>{statusLabel}</span>
                   {r.status === "pending" && (
                     <div className="flex gap-2">
-                      <button disabled={working} onClick={() => decide(r.$id, "verify")} className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl bg-emerald-700 px-4 text-[14px] font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60">
+                      <button disabled={working} onClick={() => decide(r.$id, "verify")} className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg bg-teal-800 px-4 text-[14px] font-bold text-white hover:bg-teal-900 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-teal-600 dark:hover:bg-teal-500">
                         <Check className="h-4 w-4" aria-hidden="true" /> {working ? "Saving…" : "Verify"}
                       </button>
-                      <button disabled={working} onClick={() => decide(r.$id, "flag")} className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border border-amber-300 px-4 text-[14px] font-bold text-amber-700 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-500/30 dark:text-amber-300 dark:hover:bg-amber-500/10">
+                      <button disabled={working} onClick={() => decide(r.$id, "flag")} className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 px-4 text-[14px] font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5">
                         <Flag className="h-4 w-4" aria-hidden="true" /> Flag
                       </button>
-                      <button disabled={working} onClick={() => decide(r.$id, "discard")} className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border border-red-200 px-4 text-[14px] font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-500/30 dark:text-red-300 dark:hover:bg-red-500/10">
+                      <button disabled={working} onClick={() => decide(r.$id, "discard")} className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 px-4 text-[14px] font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5">
                         <X className="h-4 w-4" aria-hidden="true" /> Discard
                       </button>
                     </div>

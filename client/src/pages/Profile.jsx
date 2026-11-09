@@ -117,7 +117,7 @@ export default function Profile() {
           </div>
           <div className="mt-4 flex items-center gap-3">
             <BeuiButton type="submit" disabled={saving}>{saving ? "Saving…" : "Save profile"}</BeuiButton>
-            {saved && <BeuiBadge tone={saved === "Saved" ? "safe" : "danger"}>{saved}</BeuiBadge>}
+            {saved && <BeuiBadge tone="neutral">{saved}</BeuiBadge>}
           </div>
         </form>
       </BeuiCard>

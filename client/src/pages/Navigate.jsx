@@ -12,8 +12,8 @@ import { useLang } from "../lib/lang";
 
 const DICT = {
   en: {
-    title: "Find a safe route",
-    subtitle: "Address search with road geometry drawn per search. Verified hazards re-route you around waterlogging.",
+    title: "Compare routes",
+    subtitle: "Compare driving routes from the OpenStreetMap road network. Road conditions are shown separately from these route estimates.",
     fastest: "Fastest",
     shortest: "Shortest",
     from: "From",
@@ -28,15 +28,18 @@ const DICT = {
     loading: "Geocoding addresses & fetching the road network…",
     chipTo: "Route to ",
     chipDefault: "Your route",
-    safetyNote: "Verified waterlogging within 150 m re-routes you around it. Unverified reports never change routing.",
+    safetyNote: "These route estimates come from the road network. Verified waterlogging reports are not used to calculate these alternatives.",
     routesFound: (n) => `${n} route${n > 1 ? "s" : ""} found on the road network`,
     selected: "Selected",
     alternative: "Alternative",
     min: "min",
     km: "km",
-    recommended: "Recommended route",
-    alternate: "Alternate route",
-    routeDesc: "Tap to preview this route on the map.",
+    fastestOption: "Fastest by estimate",
+    shortestOption: "Shortest by distance",
+    alternate: "Other road option",
+    routeDesc: "Select to preview this road route on the map.",
+    estimateTitle: "About these estimates",
+    estimateBody: "Routes use OpenStreetMap road geometry and estimated travel time. This screen does not adjust routes based on reported waterlogging.",
     emptyTitle: "Type a destination to see its route on the map",
     emptyBody: "Addresses are geocoded across Bangladesh. Your origin can be your current GPS position.",
     suggestions: "Address suggestions",
@@ -45,8 +48,8 @@ const DICT = {
     generic: "Something went wrong. Try again.",
   },
   bn: {
-    title: "নিরাপদ রুট খুঁজুন",
-    subtitle: "ঠিকানা দিয়ে খুঁজুন, প্রতিটি অনুসন্ধানে সড়কের রুট আঁকা হয়। যাচাইকৃত জলাবদ্ধতা এড়িয়ে রুট নির্ধারণ করা হয়।",
+    title: "রুট তুলনা করুন",
+    subtitle: "OpenStreetMap সড়ক নেটওয়ার্ক থেকে গাড়ির রুট তুলনা করুন। রুটের হিসাব থেকে সড়কের অবস্থা আলাদাভাবে দেখানো হয়।",
     fastest: "দ্রুততম",
     shortest: "সংক্ষিপ্ততম",
     from: "শুরু",
@@ -61,15 +64,18 @@ const DICT = {
     loading: "ঠিকানা খুঁজে সড়ক নেটওয়ার্ক আনা হচ্ছে…",
     chipTo: "গন্তব্য: ",
     chipDefault: "আপনার রুট",
-    safetyNote: "150 মিটারের মধ্যে যাচাইকৃত জলাবদ্ধতা এড়িয়ে রুট নির্ধারণ করা হয়। অযাচাইকৃত রিপোর্ট রুট বদলায় না।",
+    safetyNote: "রুটের হিসাব সড়ক নেটওয়ার্ক থেকে আসে। যাচাইকৃত জলাবদ্ধতার রিপোর্ট এই বিকল্প রুট গণনায় ব্যবহৃত হয় না।",
     routesFound: (n) => `সড়ক নেটওয়ার্কে ${n}টি রুট পাওয়া গেছে`,
     selected: "নির্বাচিত",
     alternative: "বিকল্প",
     min: "মিনিট",
     km: "কিমি",
-    recommended: "প্রস্তাবিত রুট",
-    alternate: "বিকল্প রুট",
-    routeDesc: "এই রুটটি মানচিত্রে দেখতে ট্যাপ করুন।",
+    fastestOption: "হিসাব অনুযায়ী দ্রুততম",
+    shortestOption: "দূরত্বে সবচেয়ে ছোট",
+    alternate: "অন্য সড়কপথ",
+    routeDesc: "মানচিত্রে দেখতে এই রুট বেছে নিন।",
+    estimateTitle: "এই হিসাব সম্পর্কে",
+    estimateBody: "রুট OpenStreetMap সড়ক নেটওয়ার্ক ও আনুমানিক সময় ব্যবহার করে। রিপোর্ট করা জলাবদ্ধতা অনুযায়ী এই স্ক্রিনে রুট বদলায় না।",
     emptyTitle: "মানচিত্রে রুট দেখতে গন্তব্য লিখুন",
     emptyBody: "বাংলাদেশজুড়ে ঠিকানা খোঁজা যায়। আপনার শুরুর স্থান হতে পারে আপনার বর্তমান জিপিএস অবস্থান।",
     suggestions: "ঠিকানার পরামর্শ",
@@ -219,7 +225,7 @@ export default function Navigate() {
   const lines = ordered.map((r) => ({
     id: r.id,
     positions: r.coords,
-    color: r.id === active?.id ? "#0f766e" : "#94a3b8",
+    color: r.id === active?.id ? "var(--color-accent)" : "var(--color-rule-strong)",
     weight: r.id === active?.id ? 7 : 5,
   }));
   const markers = [];
@@ -309,7 +315,7 @@ export default function Navigate() {
               />
             </div>
             <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 p-4 dark:border-white/10">
-              <BeuiBadge tone="safe">Live roads</BeuiBadge>
+              <BeuiBadge tone="neutral">OSM road network</BeuiBadge>
               <span className="text-[13px] text-slate-500 dark:text-slate-400">{t.safetyNote}</span>
             </div>
           </BeuiCard>
@@ -327,15 +333,15 @@ export default function Navigate() {
                     <span className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{r.timeMin} {t.min} · {r.distanceKm.toFixed(1)} {t.km}</span>
                   </div>
                   <p className="mt-2 text-[16px] font-bold tracking-tight">
-                    {r.id === ordered[0].id ? t.recommended : t.alternate}
+                    {r.id === ordered[0].id ? (tab === "shortest" ? t.shortestOption : t.fastestOption) : t.alternate}
                   </p>
                   <p className="text-[13.5px] text-slate-600 dark:text-slate-400">{t.routeDesc}</p>
                 </motion.button>
               );
             })}
-            <BeuiCard className="bg-slate-950 !border-slate-800 p-4 text-white">
-              <p className="text-[13.5px] font-bold text-teal-300">How rerouting works</p>
-              <p className="mt-1 text-[13px] leading-relaxed text-slate-300">Each road segment carries a safety weight: clear roads cost the least, waterlogged roads cost more, and blocked roads are skipped. The cheapest safe path wins, and the green, yellow, and red markers stay on the map while you travel.</p>
+            <BeuiCard className="p-4">
+              <p className="text-[13.5px] font-bold">{t.estimateTitle}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-slate-600 dark:text-slate-400">{t.estimateBody}</p>
             </BeuiCard>
           </div>
         </div>
