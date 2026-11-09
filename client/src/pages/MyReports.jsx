@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 import BeuiButton from "../components/beui/BeuiButton";
 import BeuiBadge from "../components/beui/BeuiBadge";
@@ -149,35 +148,6 @@ export default function MyReports() {
           {rows !== null && shown.length === 0 && (
             <EmptyState title="Nothing here yet" description={filter === "queue" ? "Reports you file land in the verification queue." : "Decided reports appear here once operators review them."} action={<BeuiButton to="/report">Report flooding</BeuiButton>} />
           )}
-        </div>
-      </BeuiCard>
-
-      <BeuiCard className="p-5 sm:p-6">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-[18px] font-bold">Past submissions</h2>
-          <Link to="/navigate" className="text-[13.5px] font-bold text-teal-800 hover:underline dark:text-teal-300">Plan a route</Link>
-        </div>
-        <div className="overflow-x-auto nice-scroll">
-          <table className="w-full min-w-[560px] text-left text-[14px]">
-            <thead><tr className="border-b border-slate-200 text-[12px] uppercase tracking-wider text-slate-500 dark:border-white/10 dark:text-slate-400"><th className="py-2 pr-4 font-bold">ID</th><th className="py-2 pr-4 font-bold">Place</th><th className="py-2 pr-4 font-bold">Depth</th><th className="py-2 pr-4 font-bold">Outcome</th><th className="py-2 font-bold">Actions</th></tr></thead>
-            <tbody>
-              {(rows ?? []).filter((r) => r.status !== "pending").map((r) => {
-                const meta = STATUS_META[r.status] ?? STATUS_META.pending;
-                return (
-                  <tr key={r.$id} className="border-b border-slate-100 last:border-0 dark:border-white/10">
-                    <td className="py-3 pr-4 font-mono text-[13px] text-slate-500 dark:text-slate-400">{shortReportId(r.$id)}</td>
-                    <td className="py-3 pr-4 font-semibold">{r.placeLabel}</td>
-                    <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">{depthLabel(r.depth)}</td>
-                    <td className="py-3 pr-4"><BeuiBadge tone={meta.tone}>{meta.label}</BeuiBadge></td>
-                    <td className="py-3">{deleteControl(r.$id)}</td>
-                  </tr>
-                );
-              })}
-              {rows !== null && past.length === 0 && (
-                <tr><td colSpan={5} className="py-6 text-center text-[13px] text-slate-500 dark:text-slate-400">No decided reports yet.</td></tr>
-              )}
-            </tbody>
-          </table>
         </div>
       </BeuiCard>
     </div>

@@ -86,13 +86,13 @@ export default function Settings() {
         <div className="mt-3 flex items-center justify-between gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
           <div><p className="text-[14.5px] font-bold">Push alerts</p><p className="text-[13px] text-slate-500 dark:text-slate-400">A notice before a newly verified waterlogged road.</p></div>
           <button role="switch" aria-checked={push} onClick={() => toggle(setPush)(!push)} className={`relative h-8 w-14 shrink-0 cursor-pointer rounded-full transition-colors ${push ? "bg-teal-700 dark:bg-teal-500" : "bg-slate-300 dark:bg-slate-600"}`}>
-            <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-[left] duration-200 ease-out ${push ? "left-7" : "left-1"}`} />
+            <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ease-out ${push ? "translate-x-6" : "translate-x-0"}`} />
           </button>
         </div>
         <div className="mt-3 flex items-center justify-between gap-4 rounded-2xl bg-slate-50 p-4 dark:bg-white/5">
           <div><p className="text-[14.5px] font-bold">Your report updates</p><p className="text-[13px] text-slate-500 dark:text-slate-400">When operators decide one of your reports.</p></div>
           <button role="switch" aria-checked={notifyOwn} onClick={() => toggle(setNotifyOwn)(!notifyOwn)} className={`relative h-8 w-14 shrink-0 cursor-pointer rounded-full transition-colors ${notifyOwn ? "bg-teal-700 dark:bg-teal-500" : "bg-slate-300 dark:bg-slate-600"}`}>
-            <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-[left] duration-200 ease-out ${notifyOwn ? "left-7" : "left-1"}`} />
+            <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-transform duration-200 ease-out ${notifyOwn ? "translate-x-6" : "translate-x-0"}`} />
           </button>
         </div>
         <div className="mt-3">

@@ -104,7 +104,7 @@ export default function Profile() {
           </span>
           <div>
             <h2 className="text-[16px] font-bold">{name.trim() || "Your name"}</h2>
-            <p className="text-[13px] text-slate-500 dark:text-slate-400">Initial avatar, generated from your name.</p>
+            <p className="text-[13px] text-slate-500 dark:text-slate-400">Shown in the app header. Your phone is only used for verification.</p>
           </div>
         </div>
         <form onSubmit={save}>

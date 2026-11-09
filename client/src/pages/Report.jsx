@@ -206,8 +206,8 @@ export default function Report() {
           <BeuiCard className="p-5">
             <h3 className="text-[15px] font-bold">What happens next?</h3>
             <ol className="mt-3 space-y-3 text-[13.5px]">
-              {[["Queue", "Joins verification with GPS plus photo.", "caution"], ["Verification", "The verification team plus nearby confirmations.", "neutral"], ["Verified", "Road turns yellow or red, and reroutes push out.", "safe"], ["False reports", "Fakes are removed and the reporter is warned.", "danger"]].map(([t, d, tone]) => (
-                <li key={t} className="flex gap-2.5"><BeuiBadge tone={tone}>{t.split(" ")[0]}</BeuiBadge><span><b>{t}.</b> <span className="text-slate-600 dark:text-slate-400">{d}</span></span></li>
+              {[["Queue", "Joins verification with GPS plus photo.", "caution"], ["Verification", "The verification team plus nearby confirmations.", "neutral"], ["Verified", "Road turns yellow or red, and reroutes push out.", "safe"], ["Removed", "Fakes are removed and the reporter is warned.", "danger"]].map(([t, d, tone]) => (
+                <li key={t} className="flex gap-2.5"><BeuiBadge tone={tone}>{t}</BeuiBadge><span><b>{t}.</b> <span className="text-slate-600 dark:text-slate-400">{d}</span></span></li>
               ))}
             </ol>
           </BeuiCard>
