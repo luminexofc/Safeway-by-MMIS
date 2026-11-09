@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import BeuiButton from "../components/beui/BeuiButton";
 import BeuiBadge from "../components/beui/BeuiBadge";
 import { BeuiCard } from "../components/beui/beui";
+import PageHeader from "../components/PageHeader";
+import EmptyState from "../components/EmptyState";
 import { BeuiTabs, BeuiTabsList, BeuiTab } from "../components/beui/BeuiTabs";
 import { useSession } from "../lib/session";
 import { tablesDB, DATABASE_ID, TABLES, Query, depthLabel, shortReportId } from "../lib/appwrite";
@@ -59,13 +61,7 @@ export default function MyReports() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="mt-1 text-[26px] font-bold tracking-tight sm:text-[30px]">Your reports</h1>
-          <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">Submit, queue for review, then see the map update.</p>
-        </div>
-        <BeuiButton to="/report">Report flooding</BeuiButton>
-      </div>
+      <PageHeader title="Your reports" description="Submit, queue for review, then see the map update." actions={<BeuiButton to="/report">Report flooding</BeuiButton>} />
 
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-[13.5px] font-semibold text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300" role="alert">
@@ -102,13 +98,7 @@ export default function MyReports() {
             );
           })}
           {rows !== null && shown.length === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center dark:border-white/15 dark:bg-white/5">
-              <p className="text-[15px] font-bold text-slate-800 dark:text-slate-100">Nothing here yet</p>
-              <p className="mx-auto mt-1 max-w-[46ch] text-[14px] text-slate-600 dark:text-slate-400">
-                {filter === "queue" ? "Reports you file land in the verification queue." : "Decided reports appear here once operators review them."}
-              </p>
-              <div className="mt-4 flex justify-center"><BeuiButton to="/report">Report flooding</BeuiButton></div>
-            </div>
+            <EmptyState title="Nothing here yet" description={filter === "queue" ? "Reports you file land in the verification queue." : "Decided reports appear here once operators review them."} action={<BeuiButton to="/report">Report flooding</BeuiButton>} />
           )}
         </div>
       </BeuiCard>
