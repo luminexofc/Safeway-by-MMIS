@@ -6,6 +6,7 @@ import BeuiBadge from "../components/beui/BeuiBadge";
 import { BeuiCard, BeuiInput } from "../components/beui/beui";
 import { BeuiTabs, BeuiTabsList, BeuiTab } from "../components/beui/BeuiTabs";
 import MapView from "../components/MapView";
+import PageHeader from "../components/PageHeader";
 import { geocode, fetchRoutes, useGeolocation, emptyPointMessage } from "../services/geo";
 import { useLang } from "../lib/lang";
 
@@ -238,18 +239,18 @@ export default function Navigate() {
 
   return (
     <div className="space-y-4" lang={lang}>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="mt-1 text-[26px] font-bold tracking-tight sm:text-[30px]">{t.title}</h1>
-          <p className="mt-1 text-[14px] text-slate-600 dark:text-slate-400">{t.subtitle}</p>
-        </div>
-        <BeuiTabs value={tab} onValueChange={setTab}>
-          <BeuiTabsList>
-            <BeuiTab value="fastest">{t.fastest}</BeuiTab>
-            <BeuiTab value="shortest">{t.shortest}</BeuiTab>
-          </BeuiTabsList>
-        </BeuiTabs>
-      </div>
+      <PageHeader
+        title={t.title}
+        description={t.subtitle}
+        actions={
+          <BeuiTabs value={tab} onValueChange={setTab}>
+            <BeuiTabsList>
+              <BeuiTab value="fastest">{t.fastest}</BeuiTab>
+              <BeuiTab value="shortest">{t.shortest}</BeuiTab>
+            </BeuiTabsList>
+          </BeuiTabs>
+        }
+      />
 
       <BeuiCard className="p-5">
         <form onSubmit={check} className="grid gap-3 md:grid-cols-[1fr_1fr_auto]" ref={boxRef}>
@@ -328,7 +329,7 @@ export default function Navigate() {
               return (
                 <motion.button key={r.id} onClick={() => setSelected(r.id)} aria-pressed={isSel}
                   whileTap={reduce ? undefined : { scale: 0.985 }}
-                  className={`w-full cursor-pointer rounded-2xl border-2 p-4 text-left transition-colors ${isSel ? "border-slate-900 bg-slate-50 dark:border-white dark:bg-white/10" : "border-slate-200 bg-white hover:border-slate-400 dark:border-white/10 dark:bg-transparent dark:hover:border-white/30"}`}>
+                  className={`w-full cursor-pointer rounded-2xl border-2 p-4 text-left transition-colors ${isSel ? "border-teal-700 bg-teal-50/40 dark:border-teal-300 dark:bg-teal-900/20" : "border-slate-200 bg-white hover:border-slate-400 dark:border-white/10 dark:bg-transparent dark:hover:border-white/30"}`}>
                   <div className="flex items-center justify-between gap-2">
                     <BeuiBadge tone={isSel ? "info" : "neutral"}>{isSel ? t.selected : t.alternative}</BeuiBadge>
                     <span className="text-[13px] font-bold text-slate-700 dark:text-slate-200">{r.timeMin} {t.min} · {r.distanceKm.toFixed(1)} {t.km}</span>
