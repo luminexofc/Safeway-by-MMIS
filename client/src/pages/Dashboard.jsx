@@ -602,7 +602,7 @@ export default function Dashboard() {
               <p className="flex-1 text-[13px] font-semibold text-slate-700 dark:text-slate-200">Map tiles are not loading. Check your connection.</p>
               <button
                 onClick={() => { setTileFailed(false); setTileBust((b) => b + 1); }}
-                className="pressable shrink-0 cursor-pointer rounded-xl bg-slate-900 px-3 py-1.5 text-[12.5px] font-bold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+                className="pressable shrink-0 cursor-pointer rounded-xl bg-teal-700 px-3 py-1.5 text-[12.5px] font-bold text-white hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500"
               >
                 Retry
               </button>
@@ -918,7 +918,7 @@ export default function Dashboard() {
         {toast && (
           <div
             role="status"
-            className="absolute left-1/2 z-[2000] bottom-safe-toast -translate-x-1/2 rounded-2xl bg-slate-900 px-5 py-3 text-[13px] font-semibold text-white shadow-xl dark:bg-slate-800"
+            className="absolute left-1/2 z-[2000] bottom-safe-toast -translate-x-1/2 rounded-2xl bg-slate-950 px-5 py-3 text-[13px] font-semibold text-white shadow-xl dark:bg-slate-900"
           >
             {toast}
           </div>
