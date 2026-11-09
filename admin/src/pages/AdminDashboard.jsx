@@ -33,6 +33,15 @@ function fmtMinutes(m) {
   return `${Math.floor(m / 60)} h ${m % 60} min`;
 }
 
+// Redirect from an effect, not during render: navigating mid-render blanks the tree.
+function RedirectToLogin() {
+  const nav = useNavigate();
+  useEffect(() => {
+    nav("/login", { replace: true });
+  }, [nav]);
+  return null;
+}
+
 export default function AdminDashboard() {
   const nav = useNavigate();
   const { user, checks, logout: signOut } = useOperator();
@@ -111,8 +120,7 @@ export default function AdminDashboard() {
   }
 
   if (checks === "signed-out") {
-    nav("/login", { replace: true });
-    return null;
+    return <RedirectToLogin />;
   }
 
   if (checks === "rejected") {

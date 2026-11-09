@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import ThemeToggle from "../components/ThemeToggle";
 import { account } from "../lib/appwrite";
+import { useOperator } from "../lib/operator";
 import { friendlyError } from "../lib/errors";
 
 const MAIN_SITE = import.meta.env.VITE_MAIN_SITE_URL || "http://localhost:5173";
 
 export default function AdminLogin() {
   const nav = useNavigate();
+  const { refresh } = useOperator();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,6 +26,9 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       await account.createEmailPasswordSession({ email: email.trim(), password });
+      // The provider mounted while signed out; re-check before routing so the
+      // guard sees the new session instead of redirecting back to /login.
+      await refresh();
       nav("/", { replace: true });
     } catch (ex) {
       console.error("[console-login] failed:", ex?.code ?? ex?.message ?? ex);
