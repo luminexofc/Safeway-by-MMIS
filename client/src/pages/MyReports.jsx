@@ -13,8 +13,8 @@ import { friendlyError } from "../lib/errors";
 
 const STATUS_META = {
   pending: { label: "Pending review", tone: "caution" },
-  verified: { label: "Verified", tone: "danger" },
-  discarded: { label: "Discarded", tone: "neutral" },
+  verified: { label: "Verified", tone: "safe" },
+  discarded: { label: "Discarded", tone: "danger" },
   flagged_abuse: { label: "Flagged as abuse", tone: "danger" },
 };
 

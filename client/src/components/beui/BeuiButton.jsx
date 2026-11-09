@@ -9,7 +9,6 @@ import { SPRING_PRESS } from "../../lib/ease";
 const VARIANTS = {
   primary: "bg-teal-700 text-white hover:bg-teal-800",
   dark: "bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white",
-  safe: "bg-green-700 text-white hover:bg-green-800",
   danger: "bg-red-600 text-white hover:bg-red-700",
   ghost: "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50 dark:border-white/15 dark:bg-transparent dark:text-slate-100 dark:hover:border-white/30 dark:hover:bg-white/5",
   outlineLight: "border border-white/30 bg-transparent text-white hover:bg-white/10",
