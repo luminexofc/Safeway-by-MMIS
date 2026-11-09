@@ -145,7 +145,7 @@ export default function Settings() {
               onClick={() => setMode(o.id)}
               className={`min-h-[48px] cursor-pointer rounded-xl border-2 px-3 text-[14px] font-bold transition-colors ${
                 mode === o.id
-                  ? "border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-slate-900"
+                  ? "border-teal-700 bg-teal-700 text-white dark:border-teal-300 dark:bg-teal-600 dark:text-white"
                   : "border-slate-200 bg-white text-slate-600 hover:border-slate-400 dark:border-white/10 dark:bg-transparent dark:text-slate-300"
               }`}
             >

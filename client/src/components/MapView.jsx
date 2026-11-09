@@ -164,7 +164,7 @@ export default function MapView({
           <p className="min-w-[200px] flex-1 text-[13px] font-semibold text-slate-700 dark:text-slate-200">Map tiles are not loading. Check your connection.</p>
           <button
             onClick={() => { setTileFailed(false); setTileBust((b) => b + 1); }}
-            className="pressable min-h-[40px] cursor-pointer rounded-xl bg-slate-900 px-4 text-[13.5px] font-bold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
+            className="pressable min-h-[40px] cursor-pointer rounded-xl bg-teal-700 px-4 text-[13.5px] font-bold text-white hover:bg-teal-800"
           >
             Retry map
           </button>

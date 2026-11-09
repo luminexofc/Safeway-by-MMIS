@@ -98,7 +98,7 @@ export default function Profile() {
 
       <BeuiCard className="p-6">
         <div className="flex items-center gap-4">
-          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900" aria-hidden="true">
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-teal-700 text-white" aria-hidden="true">
             {initial ? (
               <span className="text-[24px] font-bold">{initial}</span>
             ) : (
