@@ -137,6 +137,7 @@ export default function Settings() {
           {[
             { id: "light", label: "Light" },
             { id: "dark", label: "Dark" },
+            { id: "system", label: "System" },
           ].map((o) => (
             <button
               key={o.id}

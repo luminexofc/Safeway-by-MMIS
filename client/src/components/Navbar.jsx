@@ -3,10 +3,10 @@ import { NavLink, Link, useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Home, Route, FileSearch, LogIn, UserPlus, ClipboardList, User, Settings,
-  LogOut, Sun, Moon, Languages, ChevronDown, ShieldCheck,
+  LogOut, Languages, ChevronDown, ShieldCheck,
 } from "lucide-react";
 import { useLang } from "../lib/lang";
-import { useTheme, nextThemeMode } from "../../../shared/theme";
+import ThemeToggle from "./ThemeToggle";
 
 /* ------------------------------------------------------------------ */
 /* Config: adjust the paths to match your router                       */
@@ -55,30 +55,6 @@ const ICON_BTN =
   "inline-flex h-11 min-w-[44px] cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-slate-300/60 bg-white/40 px-2.5 text-[12.5px] font-bold text-slate-700 transition-colors hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10";
 
 /* ------------------------------------------------------------------ */
-/* One-click theme button: light <-> dark                              */
-/* ------------------------------------------------------------------ */
-const THEME_ICONS = { light: Sun, dark: Moon };
-
-function ThemeButton({ mode, onChange, t, reduce }) {
-  const Icon = THEME_ICONS[mode] || Sun;
-  const next = nextThemeMode(mode);
-  const label = `${t.theme}: ${t[mode]}. ${t.switchTo} ${t[next]}`;
-  return (
-    <button type="button" onClick={() => onChange(next)} aria-label={label} title={label} className={ICON_BTN}>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span key={mode} className="flex"
-          initial={reduce ? false : { opacity: 0, rotate: -70, scale: 0.7 }}
-          animate={{ opacity: 1, rotate: 0, scale: 1 }}
-          exit={reduce ? { opacity: 0 } : { opacity: 0, rotate: 70, scale: 0.7 }}
-          transition={{ duration: reduce ? 0 : 0.14 }}>
-          <Icon className="h-5 w-5" />
-        </motion.span>
-      </AnimatePresence>
-    </button>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /* One-click language button: English <-> বাংলা                         */
 /* ------------------------------------------------------------------ */
 function LangButton({ lang, onChange, t }) {
@@ -98,18 +74,15 @@ function LangButton({ lang, onChange, t }) {
 /*  - Phones/tablets: slim top bar (name, language, theme, account)    */
 /*    plus an app-style bottom navigation.                             */
 /* Props: user (null when logged out), onLogout.                       */
-/* Optional controlled props: theme, onThemeChange, lang, onLangChange */
+/* Optional controlled props: lang, onLangChange                       */
 /* ------------------------------------------------------------------ */
-export default function Navbar({ user = null, onLogout, theme: themeProp, onThemeChange, lang: langProp, onLangChange }) {
+export default function Navbar({ user = null, onLogout, lang: langProp, onLangChange }) {
   const reduce = useReducedMotion();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { mode: ownTheme, setMode: setOwnTheme } = useTheme();
   const [ownLang, setOwnLang] = useLang();
-  const theme = themeProp ?? ownTheme;
   const lang = langProp ?? ownLang;
-  const setTheme = onThemeChange ?? setOwnTheme;
   const setLang = onLangChange ?? setOwnLang;
   const t = DICT[lang] || DICT.en;
 
@@ -222,7 +195,7 @@ export default function Navbar({ user = null, onLogout, theme: themeProp, onThem
 
           {/* Language + theme: on every screen size, one click each */}
           <LangButton lang={lang} onChange={setLang} t={t} />
-          <ThemeButton mode={theme} onChange={setTheme} t={t} reduce={reduce} />
+          <ThemeToggle />
 
           {/* Account menu (logged in) on every screen size */}
           {loggedIn && (

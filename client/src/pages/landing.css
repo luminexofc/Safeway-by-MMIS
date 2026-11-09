@@ -281,7 +281,7 @@
   white-space: nowrap;
 }
 
-.sw-theme-slot button {
+.sw-theme-slot > div > button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
