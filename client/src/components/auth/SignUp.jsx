@@ -68,9 +68,22 @@ export default function SignUp({ onSignIn, onSuccess }) {
       return;
     }
     setLoading(true);
+    let created = false;
     try {
       await account.create({ userId: ID.unique(), email: f.email.trim(), password: f.pw, name: f.name.trim() });
-      // Signed in the moment the account exists — no second sign-in needed.
+      created = true;
+    } catch (ex) {
+      console.error("[signup] create failed:", ex?.type ?? ex?.code, ex?.code, ex?.message ?? ex);
+      // 409: the account already exists (possibly created by an earlier attempt
+      // whose session call failed). Fall through and try signing in with the
+      // password just entered.
+      if (ex?.code !== 409) {
+        setServerError(friendlyError(ex, "Could not create your account. Please try again."));
+        setLoading(false);
+        return;
+      }
+    }
+    try {
       const session = await account.createEmailPasswordSession({ email: f.email.trim(), password: f.pw });
       setUser({ $id: session.userId });
       refresh();
@@ -80,8 +93,12 @@ export default function SignUp({ onSignIn, onSuccess }) {
       setDone(true);
       setTimeout(() => onSuccess && onSuccess(), 700);
     } catch (ex) {
-      console.error("[signup] failed:", ex?.code ?? ex?.message ?? ex);
-      setServerError(friendlyError(ex, "Could not create your account. Please try again."));
+      console.error("[signup] sign-in failed:", ex?.type ?? ex?.code, ex?.code, ex?.message ?? ex);
+      setServerError(
+        created
+          ? "Your account was created, but we couldn't sign you in. Please sign in below."
+          : "An account with this email already exists. Try signing in instead."
+      );
     } finally {
       setLoading(false);
     }
