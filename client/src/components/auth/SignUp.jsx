@@ -97,7 +97,7 @@ export default function SignUp({ onSignIn, onSuccess }) {
       setServerError(
         created
           ? "Your account was created, but we couldn't sign you in. Please sign in below."
-          : "An account with this email already exists. Try signing in instead."
+          : "This email already has an account — it may have been created with Google. Use “Sign up with Google”, or reset your password from the Login page."
       );
     } finally {
       setLoading(false);
