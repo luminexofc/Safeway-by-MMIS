@@ -77,12 +77,12 @@ export default function SignIn({ onSignUp, onForgot, onSuccess }) {
       }
     >
       <form onSubmit={submit} noValidate className="space-y-4">
-        <Field label={t.email} error={errors.email}>
-          <TextInput type="email" placeholder={t.emailHint} autoComplete="email" value={email} error={errors.email}
+        <Field label={t.email} error={errors.email} id="signin-email">
+          <TextInput id="signin-email" type="email" placeholder={t.emailHint} autoComplete="email" value={email} error={errors.email}
             onChange={(e) => setEmail(e.target.value)} />
         </Field>
-        <Field label={t.password} error={errors.password}>
-          <PasswordField placeholder={t.passwordHint} autoComplete="current-password" value={password} error={errors.password}
+        <Field label={t.password} error={errors.password} id="signin-password">
+          <PasswordField id="signin-password" placeholder={t.passwordHint} autoComplete="current-password" value={password} error={errors.password}
             onChange={(e) => setPassword(e.target.value)} />
         </Field>
         <div className="flex items-center justify-end">

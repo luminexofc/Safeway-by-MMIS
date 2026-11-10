@@ -113,3 +113,51 @@ one-off colors.
 - English and Bengali copy must fit without clipping or wrapped action labels.
 - Do not add a logo, photography, or illustration without a product need and
   approved source.
+
+## Redesign reference inventory
+
+The following resources were supplied for a future website redesign. Treat
+this as a reference inventory, not a mandate to use every library. Select
+components and patterns that fit Safeway's civic road-safety purpose, existing
+design rules, accessibility needs, and restrained motion. No redesign is
+authorized by this inventory alone.
+
+### React components, UI libraries, and design systems
+
+- [React Bits](https://reactbits.dev/get-started/index) — animated React components.
+- [Rare UI](https://www.rareui.com/components) — component inspiration.
+- [Spell UI](https://spell.sh/) — UI components and patterns.
+- [Cult UI](https://www.cult-ui.com/) — shadcn components, blocks, and templates.
+- [useLayouts](https://uselayouts.com/) — animated React components.
+- [beUI](https://beui.dev/) — animated React and Next.js components.
+- [Astryx Design System](https://astryx.atmeta.com/) — design system reference.
+- [Libraries.dev](https://libraries.dev/) — curated UI library discovery.
+- [Originkit](https://www.originkit.dev/) — animated component library.
+- [21st.dev](https://21st.dev/) — React components, templates, and themes.
+- [Shadcn Blocks](https://www.shadcnblocks.com/blocks) — shadcn page blocks.
+- [Allcomps](https://allcomps.vercel.app/) — component aggregator.
+
+### Motion, transitions, and visual effects
+
+- [Motion](https://motion.dev/) — JavaScript and React animation library.
+- [Transitions.dev](https://transitions.dev/) — transition patterns and discovery.
+- [ThreeUI](https://threeui.com/browse?sort=recent) — Three.js components, templates, and shaders.
+- [Glass3D](https://glass3d.dev/) — glass effect generator.
+
+### Website and section inspiration
+
+- [CTA.gallery](https://www.cta.gallery/) — call-to-action inspiration.
+- [Footer.design](https://www.footer.design/) — footer patterns.
+- [Curated.design](https://curated.design/) — live website design inspiration.
+- [Httpster](https://httpster.net/) — website design inspiration.
+- [Dark Mode Design](https://www.darkmodedesign.com/) — dark-mode website references.
+
+### Selection guidance for the future redesign
+
+- Favor useful map, route, reporting, trust, and navigation patterns over
+  decorative marketing effects.
+- Keep motion subtle and respect the MOTION 1 and reduced-motion rules above.
+- Review each candidate for mobile responsiveness, keyboard accessibility,
+  Bengali text fit, contrast, performance, and consistency with shared tokens.
+- Adapt or implement selected patterns to fit the current React app; avoid
+  introducing dependencies solely for visual novelty.

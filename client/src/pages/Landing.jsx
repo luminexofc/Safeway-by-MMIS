@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Check, FilePlus2, Map, ShieldCheck } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import ThemeToggle from "../components/ThemeToggle";
 import { useSession } from "../lib/session";
 import { setLang, useLang } from "../lib/lang";
@@ -52,8 +53,14 @@ export default function Landing() {
   const [lang] = useLang();
   const t = COPY[lang] || COPY.en;
   const { user, loading } = useSession();
+  const reduceMotion = useReducedMotion();
   const routePath = user ? "/navigate" : "/login";
   const reportPath = user ? "/report" : "/login";
+  const enter = (delay = 0) => reduceMotion ? {} : {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.28, delay, ease: [0.16, 1, 0.3, 1] },
+  };
 
   return (
     <div className="sw-landing" lang={lang}>
@@ -77,7 +84,7 @@ export default function Landing() {
 
       <main>
         <section className="sw-hero" aria-labelledby="sw-hero-title">
-          <div className="sw-hero-copy">
+          <motion.div className="sw-hero-copy" {...enter()}>
             <h1 id="sw-hero-title">{t.title}</h1>
             <p>{t.intro}</p>
             <div className="sw-hero-actions">
@@ -85,9 +92,9 @@ export default function Landing() {
               <Link className="sw-action sw-action-secondary" to={reportPath}><FilePlus2 size={18} aria-hidden="true" />{t.file}</Link>
             </div>
             {!user && <p className="sw-access-note">{t.access}</p>}
-          </div>
+          </motion.div>
 
-          <div className="sw-flow" aria-labelledby="sw-flow-title">
+          <motion.div className="sw-flow" aria-labelledby="sw-flow-title" {...enter(0.08)}>
             <div className="sw-flow-heading">
               <div><h2 id="sw-flow-title">{t.flowTitle}</h2><p>{t.flowIntro}</p></div>
               <ShieldCheck className="sw-flow-mark" size={24} aria-hidden="true" />
@@ -98,10 +105,10 @@ export default function Landing() {
               <li className="sw-flow-outcome"><span className="sw-flow-index"><Check size={15} aria-hidden="true" /></span><div><h3>{t.verified}</h3><p>{t.verifiedBody}</p></div></li>
               <li className="sw-flow-outcome sw-flow-discard"><span className="sw-flow-index">×</span><div><h3>{t.discarded}</h3><p>{t.discardedBody}</p></div></li>
             </ol>
-          </div>
+          </motion.div>
         </section>
 
-        <section className="sw-task-section" aria-label={lang === "bn" ? "সেবা ব্যবহার করুন" : "Use Safeway"}>
+        <motion.section className="sw-task-section" aria-label={lang === "bn" ? "সেবা ব্যবহার করুন" : "Use Safeway"} {...enter(0.14)}>
           <Link className="sw-task sw-task-route" to={routePath}>
             <span className="sw-task-icon"><Map size={20} aria-hidden="true" /></span>
             <span><strong>{t.primary}</strong><small>{t.primaryBody}</small></span>
@@ -112,13 +119,13 @@ export default function Landing() {
             <span><strong>{t.secondary}</strong><small>{t.secondaryBody}</small></span>
             <ArrowUpRight className="sw-task-arrow" size={18} aria-hidden="true" />
           </Link>
-        </section>
+        </motion.section>
       </main>
 
       <footer className="sw-footer">
         <Brand />
         <span>{t.footer}</span>
-        <div><Link to={routePath}>{t.browse}</Link><Link to={reportPath}>{t.contribute}</Link></div>
+        <div><Link to={routePath}>{t.browse}</Link><Link to={reportPath}>{t.contribute}</Link><Link to="/privacy">Privacy policy</Link></div>
       </footer>
     </div>
   );

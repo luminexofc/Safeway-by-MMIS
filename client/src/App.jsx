@@ -9,6 +9,7 @@ import Report from "./pages/Report";
 import MyReports from "./pages/MyReports";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 function NotFound() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="/reset" element={<Shell><ResetPassword /></Shell>} />
           <Route path="/auth-error" element={<Shell><AuthError /></Shell>} />
           <Route path="/auth/callback" element={<Shell><OAuthCallback /></Shell>} />
+          <Route path="/privacy" element={<Shell><PrivacyPolicy /></Shell>} />
           <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
           <Route path="/navigate" element={<Protected><NavigatePage /></Protected>} />
           <Route path="/report" element={<Protected><Report /></Protected>} />

@@ -103,17 +103,17 @@ export default function SignUp({ onSignIn, onSuccess }) {
       }
     >
       <form onSubmit={submit} noValidate className="space-y-4">
-        <Field label={t.fullName} error={errors.name}>
-          <TextInput type="text" placeholder={t.nameHint} autoComplete="name" value={f.name} error={errors.name} onChange={set("name")} />
+        <Field label={t.fullName} error={errors.name} id="signup-name">
+          <TextInput id="signup-name" type="text" placeholder={t.nameHint} autoComplete="name" value={f.name} error={errors.name} onChange={set("name")} />
         </Field>
-        <Field label={t.email} error={errors.email}>
-          <TextInput type="email" placeholder={t.emailHint} autoComplete="email" value={f.email} error={errors.email} onChange={set("email")} />
+        <Field label={t.email} error={errors.email} id="signup-email">
+          <TextInput id="signup-email" type="email" placeholder={t.emailHint} autoComplete="email" value={f.email} error={errors.email} onChange={set("email")} />
         </Field>
-        <Field label={t.password} error={errors.pw}>
-          <PasswordField placeholder={t.passwordHintNew} autoComplete="new-password" value={f.pw} error={errors.pw} onChange={set("pw")} />
+        <Field label={t.password} error={errors.pw} id="signup-password">
+          <PasswordField id="signup-password" placeholder={t.passwordHintNew} autoComplete="new-password" value={f.pw} error={errors.pw} onChange={set("pw")} />
         </Field>
-        <Field label={t.confirmPassword} error={errors.cpw}>
-          <PasswordField placeholder={t.confirmHint} autoComplete="new-password" value={f.cpw} error={errors.cpw} onChange={set("cpw")} />
+        <Field label={t.confirmPassword} error={errors.cpw} id="signup-confirm-password">
+          <PasswordField id="signup-confirm-password" placeholder={t.confirmHint} autoComplete="new-password" value={f.cpw} error={errors.cpw} onChange={set("cpw")} />
         </Field>
         <div>
           <label className="sw-auth-consent">

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Route } from "lucide-react";
 import { useAuthCopy } from "./authCopy";
 
 export default function AuthFrame({ title, sub, children, footer }) {
@@ -45,6 +45,10 @@ export default function AuthFrame({ title, sub, children, footer }) {
           <button type="button" className={lang === "bn" ? "is-current" : ""} lang="bn" aria-pressed={lang === "bn"} aria-label={t.switchToBangla} onClick={() => setLang("bn")}>বাংলা</button>
         </div>
         <div className="sw-auth-card">
+          <div className="sw-auth-brand" aria-label="Safeway">
+            <span className="sw-auth-brand-mark"><Route aria-hidden="true" /></span>
+            <span>Safeway</span>
+          </div>
           <h1>{title}</h1>
           {sub && <p className="sw-auth-subtitle">{sub}</p>}
           <div className="sw-auth-content">{children}</div>
@@ -55,12 +59,12 @@ export default function AuthFrame({ title, sub, children, footer }) {
   );
 }
 
-export function Field({ label, error, children }) {
+export function Field({ label, error, id, children }) {
   return (
-    <label className="sw-auth-field">
+    <label className="sw-auth-field" htmlFor={id}>
       <span className="sw-auth-field-label">{label}</span>
       {children}
-      {error && <span className="sw-auth-field-error" role="alert">{error}</span>}
+      {error && <span className="sw-auth-field-error" id={`${id}-error`} role="alert">{error}</span>}
     </label>
   );
 }
@@ -72,6 +76,7 @@ export function TextInput({ error, ...props }) {
     <input
       {...props}
       aria-invalid={!!error}
+      aria-describedby={error ? `${props.id}-error` : undefined}
       className={`${INPUT_CLS}${error ? " has-error" : ""}`}
     />
   );
@@ -86,6 +91,7 @@ export function PasswordField({ error, ...props }) {
         {...props}
         type={show ? "text" : "password"}
         aria-invalid={!!error}
+        aria-describedby={error ? `${props.id}-error` : undefined}
         className={`${INPUT_CLS} has-password-toggle${error ? " has-error" : ""}`}
       />
       <button
