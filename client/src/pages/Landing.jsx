@@ -84,6 +84,10 @@ export default function Landing() {
 
       <main>
         <section className="sw-hero" aria-labelledby="sw-hero-title">
+          <div className="sw-hero-video" aria-hidden="true">
+            <video className="sw-hero-video-light" src="/videos/landing-page.mp4" muted loop autoPlay playsInline preload="auto" />
+            <video className="sw-hero-video-dark" src="/videos/for-dark-theme.mp4" muted loop autoPlay playsInline preload="auto" />
+          </div>
           <motion.div className="sw-hero-copy" {...enter()}>
             <h1 id="sw-hero-title">{t.title}</h1>
             <p>{t.intro}</p>
@@ -94,10 +98,6 @@ export default function Landing() {
             {!user && <p className="sw-access-note">{t.access}</p>}
           </motion.div>
 
-        </section>
-
-        <section className="sw-hero-video" aria-hidden="true">
-          <video src="/videos/landing-page.mp4" muted loop autoPlay playsInline preload="auto" />
         </section>
 
         <section className="sw-hero-details">

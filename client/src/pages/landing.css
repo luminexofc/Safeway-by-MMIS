@@ -78,19 +78,27 @@
 .sw-account-link:hover { border-color: var(--color-accent); color: var(--color-accent); }
 
 .sw-hero { 
+  position: relative;
+  isolation: isolate;
   display: flex;
-  width: 100%;
-  min-height: min(820px, calc(100svh - 76px));
+  width: calc(100% - 56px);
+  min-height: min(610px, calc(100svh - 86px));
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 0;
-  gap: clamp(42px, 7vh, 76px);
-  padding: clamp(64px, 9vh, 110px) 24px;
+  margin: 16px auto 28px;
+  padding: clamp(34px, 5vh, 48px) 24px;
+  overflow: hidden;
+  border-radius: 30px;
 }
 
-.sw-hero-video { width: 100%; height: clamp(260px, 42vw, 560px); overflow: hidden; background: var(--color-paper-2); }
+.sw-hero-video { position: absolute; z-index: -1; inset: 0; overflow: hidden; background: var(--color-paper-2); }
 .sw-hero-video video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.sw-hero-video::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(255 255 255 / 76%) 0%, rgb(255 255 255 / 68%) 48%, rgb(255 255 255 / 18%) 100%); }
+.sw-hero-video-dark { display: none !important; }
+.dark .sw-hero-video-light { display: none !important; }
+.dark .sw-hero-video-dark { display: block !important; }
+.dark .sw-hero-video::after { background: linear-gradient(180deg, rgb(10 15 18 / 72%) 0%, rgb(10 15 18 / 56%) 48%, rgb(10 15 18 / 18%) 100%); }
 .sw-hero-copy { position: relative; z-index: 1; width: min(100%, 900px); text-align: center; }
 .sw-hero h1 {
   max-width: 11ch;
@@ -184,7 +192,7 @@
 .sw-landing button:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 
 @media (max-width: 900px) {
-  .sw-hero { padding-block: 60px; }
+  .sw-hero { min-height: 580px; }
   .sw-hero-copy { max-width: 700px; }
   .sw-hero h1 { max-width: 13ch; font-size: clamp(3.2rem, 9vw, 5.5rem); }
   .sw-flow { max-width: none; }
@@ -200,7 +208,7 @@
   .sw-header-actions { gap: 4px; margin-left: auto; }
   .sw-account-link { min-height: 40px; padding-inline: 11px; font-size: 0.82rem; }
   .sw-language { min-height: 40px; padding-inline: 8px; }
-  .sw-hero { width: 100%; gap: 34px; padding: 50px 16px; }
+  .sw-hero { width: calc(100% - 32px); min-height: 560px; gap: 0; margin-top: 12px; padding: 36px 18px; border-radius: 24px; }
   .sw-hero h1 { max-width: 12ch; font-size: clamp(2.7rem, 12vw, 4.2rem); }
   .sw-hero-copy > p { margin-top: 18px; font-size: 0.98rem; }
   .sw-hero-actions { display: grid; grid-template-columns: 1fr; margin-top: 22px; }
