@@ -14,7 +14,18 @@ export default {
       },
       colors: {
         ink: 'var(--color-ink)',
+        'ink-2': 'var(--color-ink-2)',
         paper: 'var(--color-paper)',
+        'paper-2': 'var(--color-paper-2)',
+        surface: 'var(--color-surface)',
+        rule: 'var(--color-rule)',
+        'rule-strong': 'var(--color-rule-strong)',
+        muted: 'var(--color-muted)',
+        'muted-2': 'var(--color-muted-2)',
+        accent: 'var(--color-accent)',
+        'accent-strong': 'var(--color-accent-strong)',
+        'accent-weak': 'var(--color-accent-weak)',
+        'accent-ink': 'var(--color-accent-ink)',
         slate: {
           50: 'var(--color-paper)', 100: 'var(--color-paper-2)',
           200: 'var(--color-rule)', 300: 'var(--color-rule-strong)',

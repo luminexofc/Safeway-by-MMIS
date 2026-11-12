@@ -41,7 +41,7 @@ export default function ThemeToggle({ className = "" }) {
         aria-haspopup="menu"
         aria-label={`Theme: ${mode}. Change theme`}
         title={`Theme: ${mode}`}
-        className="inline-flex h-11 min-w-[44px] cursor-pointer items-center justify-center rounded-xl border border-slate-200 text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 dark:border-white/15 dark:text-slate-300 dark:hover:bg-white/10"
+        className="inline-flex h-11 min-w-[44px] cursor-pointer items-center justify-center rounded-xl border border-rule text-ink-2 transition-colors hover:bg-paper-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 dark:hover:bg-white/10"
       >
         <Current className="h-5 w-5" aria-hidden="true" />
       </button>
@@ -49,7 +49,7 @@ export default function ThemeToggle({ className = "" }) {
         <div
           role="menu"
           aria-label="Theme"
-          className="absolute right-0 top-full z-[800] mt-2 w-44 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_12px_40px_-12px_rgba(15,23,42,.35)] dark:border-white/10 dark:bg-slate-900"
+          className="absolute right-0 top-full z-[800] mt-2 w-44 overflow-hidden rounded-2xl border border-rule bg-surface p-1.5 shadow-pop"
         >
           {OPTIONS.map((o) => (
             <button
@@ -64,8 +64,8 @@ export default function ThemeToggle({ className = "" }) {
               className={cn(
                 "flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[14px] font-semibold",
                 mode === o.id
-                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
-                  : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
+                  ? "bg-accent text-accent-ink"
+                  : "text-ink-2 hover:bg-paper-2 dark:hover:bg-white/10"
               )}
             >
               <o.icon className="h-4 w-4 shrink-0" aria-hidden="true" />

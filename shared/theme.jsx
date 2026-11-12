@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 // One theme implementation for client + admin (DESIGN.md: Light / Dark /
-// System in both, default follows the OS until the visitor picks).
+// System in both, default is light until the visitor picks another mode.
 
 const KEY = "sp-theme";
 const ThemeCtx = createContext({ mode: "system", resolved: "light", setMode: () => {} });
@@ -13,7 +13,7 @@ function storedMode() {
   } catch {
     /* private mode: fall through to system */
   }
-  return "system";
+  return "light";
 }
 
 function systemIsDark() {
