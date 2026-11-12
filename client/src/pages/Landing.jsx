@@ -94,6 +94,13 @@ export default function Landing() {
             {!user && <p className="sw-access-note">{t.access}</p>}
           </motion.div>
 
+        </section>
+
+        <section className="sw-hero-video" aria-hidden="true">
+          <video src="/videos/landing-page.mp4" muted loop autoPlay playsInline preload="auto" />
+        </section>
+
+        <section className="sw-hero-details">
           <motion.div className="sw-flow" aria-labelledby="sw-flow-title" {...enter(0.08)}>
             <div className="sw-flow-heading">
               <div><h2 id="sw-flow-title">{t.flowTitle}</h2><p>{t.flowIntro}</p></div>
