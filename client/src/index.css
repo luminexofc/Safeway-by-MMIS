@@ -240,14 +240,14 @@ textarea {
   border: 1px solid var(--auth-border);
   border-radius: 18px;
   color: var(--auth-copy);
-  background: rgba(248, 253, 252, .9);
-  font-size: 11px;
-  font-weight: 500;
+  background: var(--auth-card);
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1;
 }
 .sw-auth-language button {
   display: grid;
-  min-width: 28px;
+  min-width: 32px;
   height: 30px;
   padding: 0 2px;
   place-items: center;
@@ -256,12 +256,14 @@ textarea {
   color: var(--auth-copy);
   background: transparent;
   font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1;
   cursor: pointer;
+  transition: color var(--duration-ui) ease, background-color var(--duration-ui) ease;
 }
-.sw-auth-language button.is-current { color: var(--auth-accent); font-weight: 700; }
+.sw-auth-language button:hover { color: var(--auth-ink); background: var(--color-paper-2); }
+.sw-auth-language button.is-current { color: var(--auth-accent); font-weight: 800; }
 .sw-auth-language button:focus-visible { outline: 2px solid var(--auth-accent); outline-offset: 1px; }
 .sw-auth-language-divider { width: 1px; height: 14px; background: var(--auth-border); }
 .sw-auth-card {
@@ -330,7 +332,10 @@ textarea {
 }
 .sw-auth-password-toggle:focus-visible, .sw-auth-inline-link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; border-radius: 4px; }
 .sw-auth-password-toggle svg { width: 18px; height: 18px; }
-.sw-auth-password-toggle:hover { color: var(--auth-ink); background: #eaf2f0; }
+.sw-auth-password-toggle:hover,
+.sw-auth-password-toggle:active,
+.sw-auth-password-toggle:focus { background: transparent; }
+.sw-auth-password-toggle:hover { color: var(--auth-ink); }
 .sw-auth-field-error { color: #b42318; font-size: 12px; font-weight: 600; line-height: 1.35; }
 .sw-auth-inline-link {
   padding: 0;

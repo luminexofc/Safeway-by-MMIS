@@ -11,6 +11,7 @@ export default defineConfig({
   // Bare imports inside shared/ must point at this app's node_modules.
   resolve: {
     alias: [
+      { find: /^@\//, replacement: `${fileURLToPath(new URL('./src/', import.meta.url))}` },
       { find: /^react$/, replacement: `${nodeModules}/react` },
       { find: /^react\/(.*)$/, replacement: `${nodeModules}/react/$1` },
       { find: /^clsx$/, replacement: `${nodeModules}/clsx` },

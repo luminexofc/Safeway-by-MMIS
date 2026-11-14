@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Check, FilePlus2, Map, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, FilePlus2, Map } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import ThemeToggle from "../components/ThemeToggle";
+import HowItWorksSectionWithZigzagTimeline from "@/components/wensity/blocks/how-it-works-section-with-zigzag-timeline";
 import { useSession } from "../lib/session";
 import { setLang, useLang } from "../lib/lang";
 import "./landing.css";
@@ -16,6 +17,9 @@ const COPY = {
     access: "A Safeway account is required to view the map and submit reports.",
     flowTitle: "From a road report to the safety map",
     flowIntro: "A report appears as a road condition only after an operator verifies it.",
+    flowEyebrow: "HOW IT WORKS",
+    flowStep: "STEP",
+    flowOutcome: "Review outcome",
     filed: "Report filed", filedBody: "Your location and road details enter the review queue.",
     review: "Team review", reviewBody: "An operator checks the report and its evidence.",
     verified: "Verified", verifiedBody: "The report appears on the safety map for people to review.",
@@ -34,6 +38,9 @@ const COPY = {
     access: "মানচিত্র দেখতে ও রিপোর্ট জমা দিতে সেফওয়ে অ্যাকাউন্ট প্রয়োজন।",
     flowTitle: "সড়ক রিপোর্ট থেকে নিরাপত্তা মানচিত্রে",
     flowIntro: "অপারেটর যাচাই করার পরেই রিপোর্টটি সড়কের অবস্থা হিসেবে দেখায়।",
+    flowEyebrow: "যেভাবে কাজ করে",
+    flowStep: "ধাপ",
+    flowOutcome: "যাচাইয়ের ফলাফল",
     filed: "রিপোর্ট জমা", filedBody: "আপনার অবস্থান ও সড়কের তথ্য যাচাইয়ের সারিতে যায়।",
     review: "যাচাই চলছে", reviewBody: "একজন অপারেটর রিপোর্ট ও প্রমাণ দেখেন।",
     verified: "যাচাইকৃত", verifiedBody: "যাত্রীরা দেখার জন্য রিপোর্টটি নিরাপত্তা মানচিত্রে দেখায়।",
@@ -101,17 +108,22 @@ export default function Landing() {
         </section>
 
         <section className="sw-hero-details">
-          <motion.div className="sw-flow" aria-labelledby="sw-flow-title" {...enter(0.08)}>
-            <div className="sw-flow-heading">
-              <div><h2 id="sw-flow-title">{t.flowTitle}</h2><p>{t.flowIntro}</p></div>
-              <ShieldCheck className="sw-flow-mark" size={24} aria-hidden="true" />
-            </div>
-            <ol className="sw-flow-list">
-              <li><span className="sw-flow-index">01</span><div><h3>{t.filed}</h3><p>{t.filedBody}</p></div><span className="sw-flow-line" aria-hidden="true" /></li>
-              <li><span className="sw-flow-index">02</span><div><h3>{t.review}</h3><p>{t.reviewBody}</p></div><span className="sw-flow-line" aria-hidden="true" /></li>
-              <li className="sw-flow-outcome"><span className="sw-flow-index"><Check size={15} aria-hidden="true" /></span><div><h3>{t.verified}</h3><p>{t.verifiedBody}</p></div></li>
-              <li className="sw-flow-outcome sw-flow-discard"><span className="sw-flow-index">×</span><div><h3>{t.discarded}</h3><p>{t.discardedBody}</p></div></li>
-            </ol>
+          <motion.div {...enter(0.08)}>
+            <HowItWorksSectionWithZigzagTimeline
+              eyebrow={t.flowEyebrow}
+              title={t.flowTitle}
+              description={t.flowIntro}
+              stepLabel={t.flowStep}
+              outcomeLabel={t.flowOutcome}
+              steps={[
+                { title: t.filed, description: t.filedBody },
+                { title: t.review, description: t.reviewBody },
+              ]}
+              outcomes={[
+                { title: t.verified, description: t.verifiedBody, status: "success" },
+                { title: t.discarded, description: t.discardedBody, status: "neutral" },
+              ]}
+            />
           </motion.div>
         </section>
 

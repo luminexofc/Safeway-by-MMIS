@@ -32,10 +32,9 @@ export default function AuthFrame({ title, sub, children, footer }) {
         loop
         playsInline
         preload="metadata"
-        poster="/images/auth/road-navigation.png"
         aria-hidden="true"
       >
-        <source src="/videos/auth/road-scene.mp4" type="video/mp4" />
+        <source src="/videos/auth/login-screen.mp4" type="video/mp4" />
       </video>
       <div className="sw-auth-fade" aria-hidden="true" />
       <section className="sw-auth-panel" aria-label="Account access">
