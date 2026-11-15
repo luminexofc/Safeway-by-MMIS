@@ -23,12 +23,27 @@ export const functions = new Functions(client);
 export const storage = new Storage(client);
 export { Query };
 
+// Mint a short-lived JWT for the signed-in operator. The functions derive the
+// caller from the Authorization header, never from x-appwrite-* headers.
+export async function callerJwt() {
+  try {
+    const jwt = await account.createJWT();
+    return jwt?.jwt ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // Call a function and parse its JSON body. Throws Error with the server's message.
 export async function callFunction(functionId, body = {}) {
+  const jwt = await callerJwt();
+  // Same dedicated header as the public app (see caller.js in the functions).
+  const headers = jwt ? { "x-safeway-jwt": jwt } : {};
   const execution = await functions.createExecution({
     functionId,
     body: JSON.stringify(body),
     method: "POST",
+    headers,
   });
   let data = {};
   try {

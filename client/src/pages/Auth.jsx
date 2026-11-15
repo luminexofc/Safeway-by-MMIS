@@ -17,7 +17,6 @@ export function Login() {
   const nav = useNavigate();
   const location = useLocation();
   const { user, loading } = useSession();
-  const { lang, t } = useAuthCopy();
   const [view, setView] = useState("signin"); // "signin" | "forgot"
   const go = (next) => next !== view && wipeThen(() => setView(next));
   // Already signed in? Login has nothing to offer — open the app.
@@ -28,23 +27,14 @@ export function Login() {
   const from = location.state?.from;
   const cameForPage = typeof from === "string" && from.startsWith("/") && !from.startsWith("//");
 
-  return (
-    <>
-      {cameForPage && view === "signin" && (
-        <p lang={lang} className="mx-auto mb-4 mt-6 max-w-md text-center text-[13.5px] font-semibold text-teal-800 dark:text-teal-300">
-          {t.continueToMap}
-        </p>
-      )}
-      {view === "signin" ? (
-        <SignIn
-          onSignUp={() => wipeThen(() => nav("/signup"))}
-          onForgot={() => go("forgot")}
-          onSuccess={() => nav(cameForPage ? from : "/dashboard", { replace: true })}
-        />
-      ) : (
-        <ForgotPassword onBackToSignIn={() => go("signin")} />
-      )}
-    </>
+  return view === "signin" ? (
+    <SignIn
+      onSignUp={() => wipeThen(() => nav("/signup"))}
+      onForgot={() => go("forgot")}
+      onSuccess={() => nav(cameForPage ? from : "/dashboard", { replace: true })}
+    />
+  ) : (
+    <ForgotPassword onBackToSignIn={() => go("signin")} />
   );
 }
 
@@ -61,6 +51,7 @@ export function Signup() {
 
 // Landing target for the Google OAuth2 token flow (…/auth/callback?userId&secret).
 export function OAuthCallback() {
+  const { t } = useAuthCopy();
   const [params] = useSearchParams();
   const nav = useNavigate();
   const { refresh } = useSession();
@@ -93,16 +84,16 @@ export function OAuthCallback() {
 
   if (failed) {
     return (
-      <AuthFrame title="Google sign-in didn't finish" sub="The sign-in link expired or was already used." footer={<Link to="/login" className="font-bold text-teal-800 underline dark:text-teal-300">Back to login</Link>}>
-        <BeuiButton to="/login">Try again</BeuiButton>
+      <AuthFrame title={t.googleFailed} sub={t.googleFailedSub} footer={<Link to="/login" className="font-bold text-accent-strong underline dark:text-accent">{t.backToLogin}</Link>}>
+        <BeuiButton to="/login">{t.tryAgain}</BeuiButton>
       </AuthFrame>
     );
   }
 
   return (
-    <AuthFrame title="Finishing sign-in" sub="Hold on a second…" footer={<></>}>
+    <AuthFrame title={t.finishingSignIn} sub={t.holdOn} footer={<></>}>
       <p className="text-[14px] text-slate-600 dark:text-slate-400">
-        Confirming your Google account and opening your dashboard.
+        {t.confirmingGoogle}
       </p>
     </AuthFrame>
   );
@@ -110,6 +101,7 @@ export function OAuthCallback() {
 
 // Landing target for the Appwrite verification email (…/verify?userId&secret).
 export function Verify() {
+  const { t } = useAuthCopy();
   const [params] = useSearchParams();
   const userId = params.get("userId");
   const secret = params.get("secret");
@@ -125,31 +117,31 @@ export function Verify() {
   }, []);
 
   if (state === "checking") {
-    return <AuthFrame title="Verifying your email" sub="Hold on a second…" footer={<></>}><p className="text-[14px] text-slate-600 dark:text-slate-400">Confirming your verification link.</p></AuthFrame>;
+    return <AuthFrame title={t.verifyingEmail} sub={t.holdOn} footer={<></>}><p className="text-[14px] text-slate-600 dark:text-slate-400">{t.confirmingLink}</p></AuthFrame>;
   }
   if (state === "ok") {
     return (
-      <AuthFrame title="Email verified" sub="Your address is confirmed. You are all set." footer={<Link to="/dashboard" className="font-bold text-teal-800 underline dark:text-teal-300">Go to dashboard</Link>}>
-        <BeuiBadge tone="info">Verified</BeuiBadge>
+      <AuthFrame title={t.emailVerified} sub={t.emailVerifiedSub} footer={<Link to="/dashboard" className="font-bold text-accent-strong underline dark:text-accent">{t.goToDashboard}</Link>}>
+        <BeuiBadge tone="info">{t.verified}</BeuiBadge>
       </AuthFrame>
     );
   }
   if (state === "fail") {
     return (
-      <AuthFrame title="Link expired or invalid" sub="Verification links are single-use and expire." footer={<Link to="/signup" className="font-bold text-teal-800 underline dark:text-teal-300">Back to sign up</Link>}>
-        <BeuiBadge tone="neutral">Not verified</BeuiBadge>
+      <AuthFrame title={t.linkExpired} sub={t.linkExpiredSub} footer={<Link to="/signup" className="font-bold text-accent-strong underline dark:text-accent">{t.backToSignUp}</Link>}>
+        <BeuiBadge tone="neutral">{t.notVerified}</BeuiBadge>
       </AuthFrame>
     );
   }
   return (
-    <AuthFrame title="Check your inbox" sub="A verification link is on its way. Click it, then come back and your map is waiting." footer={<>Wrong address? <Link to="/signup" className="font-bold text-teal-800 underline dark:text-teal-300">Start over</Link></>}>
-      <div className="rounded-2xl border border-teal-600/20 bg-teal-50 p-4 text-[14px] text-teal-900 dark:border-teal-400/20 dark:bg-white/5 dark:text-teal-200">
-        <p className="font-bold">Verification is optional</p>
-        <p className="mt-1">The link confirms your email for account recovery. You can keep using Safeway right away:</p>
+    <AuthFrame title={t.checkInbox} sub={t.checkInboxSub} footer={<>{t.wrongAddress} <Link to="/signup" className="font-bold text-accent-strong underline dark:text-accent">{t.startOver}</Link></>}>
+      <div className="rounded-2xl border border-rule bg-safe-soft p-4 text-[14px] text-ink dark:border-white/10 dark:bg-white/5 dark:text-ink-2">
+        <p className="font-bold">{t.verificationOptional}</p>
+        <p className="mt-1">{t.verificationNote}</p>
       </div>
       <div className="mt-4 flex flex-wrap gap-3">
-        <BeuiButton to="/dashboard" className="flex-1">Open dashboard</BeuiButton>
-        <BeuiButton to="/login" variant="ghost">Back to login</BeuiButton>
+        <BeuiButton to="/dashboard" className="flex-1">{t.openDashboard}</BeuiButton>
+        <BeuiButton to="/login" variant="ghost">{t.backToLogin}</BeuiButton>
       </div>
     </AuthFrame>
   );
@@ -157,6 +149,7 @@ export function Verify() {
 
 // Landing target for the reset email (…/reset?userId&secret).
 export function ResetPassword() {
+  const { t, lang } = useAuthCopy();
   const [params] = useSearchParams();
   const userId = params.get("userId") || "";
   const secret = params.get("secret") || "";
@@ -170,49 +163,49 @@ export function ResetPassword() {
   const submit = async (e) => {
     e.preventDefault();
     setError("");
-    if (password.length < 8) return setError("Password must be at least 8 characters.");
-    if (confirm !== password) return setError("Passwords do not match.");
+    if (password.length < 8) return setError(t.passwordShort);
+    if (confirm !== password) return setError(t.passwordMismatch);
     setLoading(true);
     try {
       await account.updateRecovery({ userId, secret, password });
       nav("/login", { replace: true });
     } catch (ex) {
       console.error("[reset] failed:", ex?.code ?? ex?.message ?? ex);
-      setError(friendlyError(ex, "This reset link is invalid or expired. Request a new one."));
+      setError(friendlyError(ex, t.resetInvalid, lang));
       setLoading(false);
     }
   };
 
   if (!valid) {
     return (
-      <AuthFrame title="Invalid reset link" sub="Reset links are single-use and expire." footer={<Link to="/login" className="font-bold text-teal-800 underline dark:text-teal-300">Back to login</Link>}>
-        <BeuiBadge tone="neutral">Missing token</BeuiBadge>
+      <AuthFrame title={t.invalidReset} sub={t.invalidResetSub} footer={<Link to="/login" className="font-bold text-accent-strong underline dark:text-accent">{t.backToLogin}</Link>}>
+        <BeuiBadge tone="neutral">{t.missingToken}</BeuiBadge>
       </AuthFrame>
     );
   }
 
   return (
-    <AuthFrame title="Choose a new password" sub="At least 8 characters. You will sign in with it next time." footer={<Link to="/login" className="font-bold text-teal-800 underline dark:text-teal-300">Back to login</Link>}>
+    <AuthFrame title={t.choosePassword} sub={t.choosePasswordSub} footer={<Link to="/login" className="font-bold text-accent-strong underline dark:text-accent">{t.backToLogin}</Link>}>
       <form onSubmit={submit} className="space-y-4" noValidate>
         <label className="block">
-          <span className="mb-1.5 block text-[13.5px] font-semibold">New password</span>
+          <span className="mb-1.5 block text-[13.5px] font-semibold">{t.newPassword}</span>
           <input
             type="password" required minLength={8} autoComplete="new-password" value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="min-h-[48px] w-full rounded-xl border border-slate-200 bg-white px-4 text-[15px] outline-none focus:border-teal-600 dark:border-white/15 dark:bg-slate-950 dark:focus:border-teal-400"
+            className="min-h-[48px] w-full rounded-xl border border-slate-200 bg-white px-4 text-[15px] outline-none focus:border-focus dark:border-white/15 dark:bg-paper dark:focus:border-focus"
           />
         </label>
         <label className="block">
-          <span className="mb-1.5 block text-[13.5px] font-semibold">Confirm new password</span>
+          <span className="mb-1.5 block text-[13.5px] font-semibold">{t.confirmNewPassword}</span>
           <input
             type="password" required minLength={8} autoComplete="new-password" value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
-            className="min-h-[48px] w-full rounded-xl border border-slate-200 bg-white px-4 text-[15px] outline-none focus:border-teal-600 dark:border-white/15 dark:bg-slate-950 dark:focus:border-teal-400"
+            className="min-h-[48px] w-full rounded-xl border border-slate-200 bg-white px-4 text-[15px] outline-none focus:border-focus dark:border-white/15 dark:bg-paper dark:focus:border-focus"
           />
         </label>
         {error && <p className="text-[13px] font-semibold text-red-600 dark:text-red-400" role="alert">{error}</p>}
         <BeuiButton type="submit" className="w-full" disabled={loading}>
-          {loading ? "Saving…" : "Save new password"}
+          {loading ? t.savingPassword : t.savePassword}
         </BeuiButton>
       </form>
     </AuthFrame>
@@ -220,18 +213,19 @@ export function ResetPassword() {
 }
 
 export function AuthError() {
+  const { t } = useAuthCopy();
   const [left, restart] = useCooldown(60);
   return (
-    <AuthFrame title="Too many attempts" sub="Sign-in is paused to stop abuse. Try again when the timer ends." footer={<Link to="/login" className="font-bold text-teal-800 underline dark:text-teal-300">Back to login</Link>}>
+    <AuthFrame title={t.tooMany} sub={t.tooManySub} footer={<Link to="/login" className="font-bold text-accent-strong underline dark:text-accent">{t.backToLogin}</Link>}>
       <div className="rounded-2xl border border-red-300 bg-red-50 p-5 dark:border-red-500/30 dark:bg-red-500/10">
-        <BeuiBadge tone="neutral">Rate limit exceeded</BeuiBadge>
+        <BeuiBadge tone="neutral">{t.rateLimited}</BeuiBadge>
         <p className="mt-2 text-[14px] font-semibold text-red-800 dark:text-red-300" role="status">
-          {left > 0 ? `Retry available in ${left} seconds.` : "Press Retry now below to try again."}
+          {left > 0 ? t.retryIn(left) : t.retryNowHint}
         </p>
       </div>
       <div className="mt-4">
         <BeuiButton variant="ghost" className="w-full" disabled={left > 0} onClick={restart}>
-          {left > 0 ? `Wait ${left}s` : "Retry now"}
+          {left > 0 ? t.waitSeconds.replace("{seconds}", String(left)) : t.retryNow}
         </BeuiButton>
       </div>
     </AuthFrame>

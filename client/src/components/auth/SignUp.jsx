@@ -118,7 +118,7 @@ export default function SignUp({ onSignIn, onSuccess }) {
         <div>
           <label className="sw-auth-consent">
             <input type="checkbox" checked={f.agree} onChange={set("agree")} aria-invalid={!!errors.agree}
-              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-teal-700" />
+              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-solid" />
             <span>{t.consent}</span>
           </label>
           {errors.agree && <p className="mt-1 text-[12.5px] font-semibold text-red-600 dark:text-red-400" role="alert">{errors.agree}</p>}

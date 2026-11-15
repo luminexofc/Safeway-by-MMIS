@@ -29,6 +29,13 @@ the Appwrite Web SDK; there is no custom REST API anymore.
 Roles: public users authenticate normally; only members of the `operators`
 team can sign into the console. Test accounts are never in that team.
 
+Function identity: both functions resolve the caller **only** from a session
+JWT (`account.createJWT()`), sent in the `x-safeway-jwt` header and verified
+server-side with `Client.setJWT` + `Account.get`. `x-appwrite-user-id` is
+never trusted — a caller can set arbitrary execution headers, so trusting it
+would let any signed-in user act as anyone else. The JWT is valid for 15
+minutes and dies with the session.
+
 ### Appwrite setup (one-time)
 
 Functions need two project API keys; the runtime key must NOT be able to

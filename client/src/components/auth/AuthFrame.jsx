@@ -23,26 +23,27 @@ export default function AuthFrame({ title, sub, children, footer }) {
 
   return (
     <main className="sw-auth-page" lang={lang}>
-      <div className="sw-auth-photo" aria-hidden="true" />
-      <video
-        ref={videoRef}
-        className="sw-auth-video"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        aria-hidden="true"
-      >
-        <source src="/videos/auth/login-screen.mp4" type="video/mp4" />
-      </video>
-      <div className="sw-auth-fade" aria-hidden="true" />
-      <section className="sw-auth-panel" aria-label="Account access">
-        <div className="sw-auth-language" role="group" aria-label={t.language}>
-          <button type="button" className={lang === "en" ? "is-current" : ""} aria-pressed={lang === "en"} aria-label={t.switchToEnglish} onClick={() => setLang("en")}>EN</button>
-          <span className="sw-auth-language-divider" aria-hidden="true" />
-          <button type="button" className={lang === "bn" ? "is-current" : ""} lang="bn" aria-pressed={lang === "bn"} aria-label={t.switchToBangla} onClick={() => setLang("bn")}>বাংলা</button>
-        </div>
+      <div className="sw-auth-language" role="group" aria-label={t.language}>
+        <button type="button" className={lang === "en" ? "is-current" : ""} aria-pressed={lang === "en"} aria-label={t.switchToEnglish} onClick={() => setLang("en")}>EN</button>
+        <span className="sw-auth-language-divider" aria-hidden="true" />
+        <button type="button" className={lang === "bn" ? "is-current" : ""} lang="bn" aria-pressed={lang === "bn"} aria-label={t.switchToBangla} onClick={() => setLang("bn")}>বাংলা</button>
+      </div>
+      <div className="sw-auth-media" aria-hidden="true">
+        <div className="sw-auth-photo" />
+        <video
+          ref={videoRef}
+          className="sw-auth-video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+        >
+          <source src="/videos/auth/login-screen.mp4" type="video/mp4" />
+        </video>
+        <div className="sw-auth-fade" />
+      </div>
+      <section className="sw-auth-panel" aria-label={t.accountAccess}>
         <div className="sw-auth-card">
           <div className="sw-auth-brand" aria-label="Safeway">
             <span className="sw-auth-brand-mark"><Route aria-hidden="true" /></span>

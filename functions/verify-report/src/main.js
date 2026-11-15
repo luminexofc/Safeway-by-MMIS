@@ -3,15 +3,19 @@ import {
   Client,
   ID,
   Messaging,
+  Permission,
   Query,
+  Role,
   TablesDB,
   Teams,
 } from "node-appwrite";
+import { resolveCaller, unauthorized } from "./caller.js";
 
 const DATABASE_ID = "safeway";
 const REPORTS = "reports";
 const AUDIT = "audit_events";
 const OPERATORS_TEAM = "operators";
+const AUDIT_READ = [Permission.read(Role.team(OPERATORS_TEAM))];
 
 const ACTIONS = {
   verify: { status: "verified", audit: "verified" },
@@ -21,7 +25,6 @@ const ACTIONS = {
 const DEPTH_LABEL = { ankle: "ankle-deep", knee: "knee-deep", waist: "waist-deep", road_closed: "road closed" };
 
 const json = (res, body, status = 200) => res.json(body, status);
-const callerId = (req) => req.headers["x-appwrite-user-id"] || null;
 
 function serverClient() {
   const key = process.env.SERVER_API_KEY || process.env.APPWRITE_API_KEY;
@@ -43,8 +46,11 @@ async function isOperator(client, userId) {
 }
 
 export default async ({ req, res, log, error }) => {
-  const userId = callerId(req);
-  if (!userId) return json(res, { error: "Sign in required." }, 401);
+  // Identity comes from the session JWT via the platform, never from a
+  // self-reported header; the operator check below is only as good as it.
+  const caller = await resolveCaller(req);
+  if (!caller.userId) return unauthorized(res, caller.reason);
+  const userId = caller.userId;
 
   let body = null;
   try {
@@ -96,6 +102,8 @@ export default async ({ req, res, log, error }) => {
       tableId: AUDIT,
       rowId: ID.unique(),
       data: { reportId, actorId: userId, action: action.audit },
+      // Ops log is operator-only; never leave it to a table default.
+      permissions: AUDIT_READ,
     });
 
     // FCM fan-out to the division topic. Needs a messaging-permitted key;
@@ -112,6 +120,7 @@ export default async ({ req, res, log, error }) => {
         await db.createRow({
           databaseId: DATABASE_ID, tableId: AUDIT, rowId: ID.unique(),
           data: { reportId, actorId: userId, action: "notify", meta: `topic:division-${report.division}` },
+          permissions: AUDIT_READ,
         });
       } catch (e) {
         const why = e instanceof AppwriteException ? `${e.code} ${e.message}` : String(e);
@@ -119,6 +128,7 @@ export default async ({ req, res, log, error }) => {
         await db.createRow({
           databaseId: DATABASE_ID, tableId: AUDIT, rowId: ID.unique(),
           data: { reportId, actorId: userId, action: "notify", meta: `skipped:${why.slice(0, 200)}` },
+          permissions: AUDIT_READ,
         }).catch(() => {});
       }
     }

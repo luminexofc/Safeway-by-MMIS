@@ -1,17 +1,17 @@
 import { useId } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  Check,
-  ClipboardCheck,
-  FilePlus2,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+  CancelCircleIcon,
+  CheckmarkCircle02Icon,
+  ClipboardCheckIcon,
+  FileAddIcon,
+  ShieldCheckIcon,
+} from "@hugeicons/core-free-icons";
 import "./how-it-works-section-with-zigzag-timeline.css";
 
-const STEP_ICONS = [FilePlus2, ClipboardCheck];
+const STEP_ICONS = [FileAddIcon, ClipboardCheckIcon];
 
 export default function HowItWorksSectionWithZigzagTimeline({
-  eyebrow,
   title,
   description,
   stepLabel = "STEP",
@@ -23,13 +23,13 @@ export default function HowItWorksSectionWithZigzagTimeline({
   const stages = [
     ...steps.slice(0, 2).map((step, index) => ({
       ...step,
-      icon: STEP_ICONS[index] || ClipboardCheck,
+      icon: STEP_ICONS[index] || ClipboardCheckIcon,
       kind: "step",
     })),
     {
       title: outcomeLabel,
       description: "",
-      icon: ShieldCheck,
+      icon: ShieldCheckIcon,
       kind: "outcome",
     },
   ];
@@ -37,19 +37,8 @@ export default function HowItWorksSectionWithZigzagTimeline({
   return (
     <section className="sw-zigzag" aria-labelledby={headingId}>
       <header className="sw-zigzag-heading">
-        <div className="sw-zigzag-heading-copy">
-          {eyebrow && (
-            <p className="sw-zigzag-eyebrow">
-              <span className="sw-zigzag-eyebrow-dot" aria-hidden="true" />
-              {eyebrow}
-            </p>
-          )}
-          <h2 id={headingId}>{title}</h2>
-          {description && <p className="sw-zigzag-intro">{description}</p>}
-        </div>
-        <span className="sw-zigzag-heading-mark" aria-hidden="true">
-          <ShieldCheck size={27} strokeWidth={1.65} />
-        </span>
+        <h2 id={headingId}>{title}</h2>
+        {description && <p className="sw-zigzag-intro">{description}</p>}
       </header>
 
       <ol className="sw-zigzag-timeline">
@@ -79,15 +68,14 @@ export default function HowItWorksSectionWithZigzagTimeline({
               )}
 
               <article className="sw-zigzag-card">
-                <span className={`sw-zigzag-tab ${index % 2 === 0 ? "is-green" : "is-light"}`}>
-                  <span>{stepLabel} {number}</span>
-                </span>
-
                 <div className="sw-zigzag-card-heading">
                   <span className="sw-zigzag-card-icon" aria-hidden="true">
-                    <Icon size={20} strokeWidth={1.7} />
+                    <HugeiconsIcon icon={Icon} size={18} strokeWidth={1.75} />
                   </span>
-                  <h3>{stage.title}</h3>
+                  <div className="sw-zigzag-card-titles">
+                    <p className="sw-zigzag-card-step">{stepLabel} {number}</p>
+                    <h3>{stage.title}</h3>
+                  </div>
                 </div>
 
                 {stage.description && <p className="sw-zigzag-card-description">{stage.description}</p>}
@@ -95,14 +83,14 @@ export default function HowItWorksSectionWithZigzagTimeline({
                 {isOutcome && outcomes.length > 0 && (
                   <ul className="sw-zigzag-outcome-list">
                     {outcomes.map((outcome, outcomeIndex) => {
-                      const OutcomeIcon = outcome.status === "success" ? Check : X;
+                      const OutcomeIcon = outcome.status === "success" ? CheckmarkCircle02Icon : CancelCircleIcon;
                       return (
                         <li
-                          className={`sw-zigzag-outcome-card ${outcome.status === "success" ? "is-success" : "is-neutral"}`}
+                          className={`sw-zigzag-outcome-row ${outcome.status === "success" ? "is-success" : "is-neutral"}`}
                           key={`${outcome.status || "outcome"}-${outcomeIndex}`}
                         >
                           <span className="sw-zigzag-outcome-icon" aria-hidden="true">
-                            <OutcomeIcon size={17} strokeWidth={2} />
+                            <HugeiconsIcon icon={OutcomeIcon} size={16} strokeWidth={1.75} />
                           </span>
                           <span className="sw-zigzag-outcome-copy">
                             <strong>{outcome.title}</strong>

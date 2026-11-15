@@ -126,7 +126,7 @@ export default function AdminDashboard() {
             Ask an admin to add you, or sign in with an operator account.
           </p>
           <div className="mt-4 flex justify-center gap-2">
-            <button onClick={logout} className="min-h-[44px] cursor-pointer rounded-xl bg-teal-700 px-5 text-[14px] font-bold text-white">Sign out</button>
+            <button onClick={logout} className="min-h-[44px] cursor-pointer rounded-xl bg-solid px-5 text-[14px] font-bold text-solid-ink">Sign out</button>
             <a href={MAIN_SITE} className="inline-flex min-h-[44px] items-center rounded-xl border border-slate-200 px-5 text-[14px] font-semibold dark:border-white/15">Open main app</a>
           </div>
         </div>
@@ -138,9 +138,9 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white dark:border-white/10 dark:bg-slate-950">
+      <header className="sticky top-0 z-50 border-b border-rule bg-surface dark:border-white/10 dark:bg-paper">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-700 text-white">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-solid text-solid-ink">
             <ShieldCheck className="h-5 w-5" aria-hidden="true" />
           </span>
           <div>
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
               View main app
             </a>
             <ThemeToggle />
-            <button onClick={logout} className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl bg-slate-950 px-4 text-[14px] font-semibold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
+            <button onClick={logout} className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-xl border border-rule-strong bg-surface px-4 text-[14px] font-semibold text-ink transition-colors hover:bg-paper-2 dark:border-white/15 dark:hover:bg-white/10">
               <LogOut className="h-4 w-4" aria-hidden="true" /> Log out
             </button>
           </div>
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
                   <span className={cn("inline-flex items-center rounded-full border px-3 py-1 text-[12px] font-bold", toneBadge(statusLabel))}>{statusLabel}</span>
                   {r.status === "pending" && (
                     <div className="flex gap-2">
-                      <button disabled={working} onClick={() => decide(r.$id, "verify")} className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg bg-teal-800 px-4 text-[14px] font-bold text-white hover:bg-teal-900 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-teal-600 dark:hover:bg-teal-500">
+                      <button disabled={working} onClick={() => decide(r.$id, "verify")} className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg bg-solid px-4 text-[14px] font-bold text-solid-ink hover:bg-solid-hover disabled:cursor-not-allowed disabled:opacity-60">
                         <Check className="h-4 w-4" aria-hidden="true" /> {working ? "Saving…" : "Verify"}
                       </button>
                       <button disabled={working} onClick={() => decide(r.$id, "flag")} className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 px-4 text-[14px] font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5">

@@ -61,7 +61,7 @@ export default function ThemeToggle({ className = "" }) {
               className={cn(
                 "flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[14px] font-semibold",
                 mode === o.id
-                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                  ? "bg-solid text-solid-ink"
                   : "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10"
               )}
             >

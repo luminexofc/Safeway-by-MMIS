@@ -1,8 +1,13 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, FilePlus2, Map } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { FileAddIcon, MapsIcon, PauseIcon, PlayIcon } from "@hugeicons/core-free-icons";
 import { motion, useReducedMotion } from "motion/react";
+import { useTheme } from "../../../shared/theme";
 import ThemeToggle from "../components/ThemeToggle";
 import HowItWorksSectionWithZigzagTimeline from "@/components/wensity/blocks/how-it-works-section-with-zigzag-timeline";
+import FaqScrollAccordion from "@/components/wensity/blocks/faq-scroll-accordion";
+import FooterWithFourColumnLinks from "@/components/wensity/blocks/footer-with-four-column-links";
 import { useSession } from "../lib/session";
 import { setLang, useLang } from "../lib/lang";
 import "./landing.css";
@@ -17,17 +22,14 @@ const COPY = {
     access: "A Safeway account is required to view the map and submit reports.",
     flowTitle: "From a road report to the safety map",
     flowIntro: "A report appears as a road condition only after an operator verifies it.",
-    flowEyebrow: "HOW IT WORKS",
     flowStep: "STEP",
     flowOutcome: "Review outcome",
     filed: "Report filed", filedBody: "Your location and road details enter the review queue.",
     review: "Team review", reviewBody: "An operator checks the report and its evidence.",
     verified: "Verified", verifiedBody: "The report appears on the safety map for people to review.",
     discarded: "Not verified", discardedBody: "The report does not appear as a road condition on the map.",
-    primary: "Open the route planner", primaryBody: "Set an origin and destination, then compare road-network route estimates.",
-    secondary: "Add a road report", secondaryBody: "Place a pin, describe the water depth, and attach a photo if you have one.",
-    browse: "Open route planner", contribute: "Start a report", language: "Switch language",
-    footer: "Road conditions for journeys across Bangladesh.",
+    language: "Switch language",
+    pauseVideo: "Pause background video", playVideo: "Play background video",
   },
   bn: {
     map: "সড়কের মানচিত্র", report: "জলাবদ্ধতা জানান", reports: "আমার রিপোর্ট",
@@ -38,17 +40,14 @@ const COPY = {
     access: "মানচিত্র দেখতে ও রিপোর্ট জমা দিতে সেফওয়ে অ্যাকাউন্ট প্রয়োজন।",
     flowTitle: "সড়ক রিপোর্ট থেকে নিরাপত্তা মানচিত্রে",
     flowIntro: "অপারেটর যাচাই করার পরেই রিপোর্টটি সড়কের অবস্থা হিসেবে দেখায়।",
-    flowEyebrow: "যেভাবে কাজ করে",
     flowStep: "ধাপ",
     flowOutcome: "যাচাইয়ের ফলাফল",
     filed: "রিপোর্ট জমা", filedBody: "আপনার অবস্থান ও সড়কের তথ্য যাচাইয়ের সারিতে যায়।",
     review: "যাচাই চলছে", reviewBody: "একজন অপারেটর রিপোর্ট ও প্রমাণ দেখেন।",
     verified: "যাচাইকৃত", verifiedBody: "যাত্রীরা দেখার জন্য রিপোর্টটি নিরাপত্তা মানচিত্রে দেখায়।",
     discarded: "যাচাই হয়নি", discardedBody: "রিপোর্টটি মানচিত্রে সড়কের অবস্থা হিসেবে দেখায় না।",
-    primary: "রুট পরিকল্পনা করুন", primaryBody: "শুরু ও গন্তব্য দিয়ে সড়ক নেটওয়ার্কের রুটের হিসাব তুলনা করুন।",
-    secondary: "সড়ক রিপোর্ট দিন", secondaryBody: "পিন দিন, পানির গভীরতা জানান, চাইলে ছবি যুক্ত করুন।",
-    browse: "রুট পরিকল্পনা খুলুন", contribute: "রিপোর্ট শুরু করুন", language: "ভাষা বদলান",
-    footer: "বাংলাদেশজুড়ে যাত্রার সড়ক পরিস্থিতি।",
+    language: "ভাষা বদলান",
+    pauseVideo: "পেছনের ভিডিও থামান", playVideo: "পেছনের ভিডিও চালান",
   },
 };
 
@@ -61,8 +60,23 @@ export default function Landing() {
   const t = COPY[lang] || COPY.en;
   const { user, loading } = useSession();
   const reduceMotion = useReducedMotion();
+  const { resolved } = useTheme();
+  const videoRef = useRef(null);
+  const [playing, setPlaying] = useState(!reduceMotion);
+  const videoSrc = resolved === "dark" ? "/videos/for-dark-theme.mp4" : "/videos/landing-page.mp4";
   const routePath = user ? "/navigate" : "/login";
   const reportPath = user ? "/report" : "/login";
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (playing) {
+      const attempt = video.play();
+      if (attempt && typeof attempt.catch === "function") attempt.catch(() => {});
+    } else {
+      video.pause();
+    }
+  }, [playing, videoSrc]);
+
   const enter = (delay = 0) => reduceMotion ? {} : {
     initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
@@ -92,25 +106,32 @@ export default function Landing() {
       <main>
         <section className="sw-hero" aria-labelledby="sw-hero-title">
           <div className="sw-hero-video" aria-hidden="true">
-            <video className="sw-hero-video-light" src="/videos/landing-page.mp4" muted loop autoPlay playsInline preload="auto" />
-            <video className="sw-hero-video-dark" src="/videos/for-dark-theme.mp4" muted loop autoPlay playsInline preload="auto" />
+            <video key={videoSrc} ref={videoRef} src={videoSrc} muted loop playsInline preload="metadata" />
           </div>
           <motion.div className="sw-hero-copy" {...enter()}>
             <h1 id="sw-hero-title">{t.title}</h1>
             <p>{t.intro}</p>
             <div className="sw-hero-actions">
-              <Link className="sw-action sw-action-primary" to={routePath}><Map size={18} aria-hidden="true" />{t.check}</Link>
-              <Link className="sw-action sw-action-secondary" to={reportPath}><FilePlus2 size={18} aria-hidden="true" />{t.file}</Link>
+              <Link className="sw-action sw-action-primary" to={routePath}><HugeiconsIcon icon={MapsIcon} size={18} strokeWidth={1.75} aria-hidden="true" />{t.check}</Link>
+              <Link className="sw-action sw-action-secondary" to={reportPath}><HugeiconsIcon icon={FileAddIcon} size={18} strokeWidth={1.75} aria-hidden="true" />{t.file}</Link>
             </div>
             {!user && <p className="sw-access-note">{t.access}</p>}
           </motion.div>
-
+          <button
+            type="button"
+            className="sw-hero-media-toggle"
+            onClick={() => setPlaying((value) => !value)}
+            aria-label={playing ? t.pauseVideo : t.playVideo}
+          >
+            {playing
+              ? <HugeiconsIcon icon={PauseIcon} size={16} strokeWidth={1.75} aria-hidden="true" />
+              : <HugeiconsIcon icon={PlayIcon} size={16} strokeWidth={1.75} aria-hidden="true" />}
+          </button>
         </section>
 
-        <section className="sw-hero-details">
+        <section className="sw-hero-details" id="how-it-works">
           <motion.div {...enter(0.08)}>
             <HowItWorksSectionWithZigzagTimeline
-              eyebrow={t.flowEyebrow}
               title={t.flowTitle}
               description={t.flowIntro}
               stepLabel={t.flowStep}
@@ -127,25 +148,18 @@ export default function Landing() {
           </motion.div>
         </section>
 
-        <motion.section className="sw-task-section" aria-label={lang === "bn" ? "সেবা ব্যবহার করুন" : "Use Safeway"} {...enter(0.14)}>
-          <Link className="sw-task sw-task-route" to={routePath}>
-            <span className="sw-task-icon"><Map size={20} aria-hidden="true" /></span>
-            <span><strong>{t.primary}</strong><small>{t.primaryBody}</small></span>
-            <ArrowUpRight className="sw-task-arrow" size={18} aria-hidden="true" />
-          </Link>
-          <Link className="sw-task" to={reportPath}>
-            <span className="sw-task-icon"><FilePlus2 size={20} aria-hidden="true" /></span>
-            <span><strong>{t.secondary}</strong><small>{t.secondaryBody}</small></span>
-            <ArrowUpRight className="sw-task-arrow" size={18} aria-hidden="true" />
-          </Link>
-        </motion.section>
+        <FaqScrollAccordion lang={lang} />
       </main>
 
-      <footer className="sw-footer">
-        <Brand />
-        <span>{t.footer}</span>
-        <div><Link to={routePath}>{t.browse}</Link><Link to={reportPath}>{t.contribute}</Link><Link to="/privacy">Privacy policy</Link></div>
-      </footer>
+      <FooterWithFourColumnLinks
+        lang={lang}
+        routePath={routePath}
+        reportPath={reportPath}
+        reportsPath={user ? "/my-reports" : "/login"}
+        privacyPath="/privacy"
+        accountPath={user ? "/dashboard" : "/login"}
+        isSignedIn={Boolean(user)}
+      />
     </div>
   );
 }

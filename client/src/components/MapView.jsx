@@ -2,8 +2,25 @@ import { useEffect, useRef, useState } from "react";
 import { MapContainer, Polyline, Circle, CircleMarker, Marker, ZoomControl, useMap, useMapEvents } from "react-leaflet";
 import BaseTiles from "./BaseTiles";
 import L from "leaflet";
+// Leaflet's positioning CSS must travel with the component, not with whichever
+// page happens to import it. Without it tiles and marker panes lose their
+// absolute positioning and everything drifts off its coordinate.
+import "leaflet/dist/leaflet.css";
 import { COUNTRY_FALLBACK, COUNTRY_CENTER } from "../services/geo";
+import { useLang } from "../lib/lang";
 import { useTheme } from "../../../shared/theme";
+import "./map-view.css";
+
+const MAP_COPY = {
+  en: {
+    tileError: "Map tiles are not loading. Check your connection.",
+    retry: "Retry map",
+  },
+  bn: {
+    tileError: "মানচিত্রের টাইল লোড হচ্ছে না। ইন্টারনেট সংযোগ দেখুন।",
+    retry: "মানচিত্র আবার লোড করুন",
+  },
+};
 
 const FALLBACK_CENTER = [COUNTRY_FALLBACK?.lat ?? COUNTRY_CENTER[0], COUNTRY_FALLBACK?.lng ?? COUNTRY_CENTER[1]];
 
@@ -37,7 +54,7 @@ function ClickController({ onPick }) {
 function makeDot(color = "var(--color-accent)", size = 18) {
   return L.divIcon({
     className: "",
-    html: `<div style="width:${size}px;height:${size}px;border-radius:9999px;background:${color};border:3px solid var(--color-surface);box-shadow:0 2px 8px rgba(0,0,0,.22)"></div>`,
+    html: `<div style="width:${size}px;height:${size}px;border-radius:9999px;background:${color};border:3px solid var(--color-surface);box-shadow:0 2px 8px oklch(20% 0.018 216 / 0.22)"></div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -56,7 +73,8 @@ const TONE_COLOR = { safe: "var(--color-safe)", caution: "var(--color-caution)",
  * - pin: {pos:[lat,lng]} + onPinMove({lat,lng}) for the draggable report pin
  * - onMapClick({lat,lng}) | null: tapping the map (report pin placement)
  * - fitSignal: bump to refit to current markers+lines
- * - chip: string | null (null hides the overlay chip)
+ * - chip: string | null (null hides the overlay chip; long text ellipsises in CSS)
+ * - tileErrorText / retryText: localised strings for the tile-failure notice
  */
 export default function MapView({
   center,
@@ -69,9 +87,14 @@ export default function MapView({
   onMapClick = null,
   fitSignal = 0,
   chip = null,
-  height = "100%",
+  tileErrorText = null,
+  retryText = null,
   interactive = true,
 }) {
+  const [lang] = useLang();
+  const copy = MAP_COPY[lang] || MAP_COPY.en;
+  const tileError = tileErrorText ?? copy.tileError;
+  const retry = retryText ?? copy.retry;
   const resolvedCenter = center || FALLBACK_CENTER;
   const resolvedZoom = zoom ?? 7;
 
@@ -89,14 +112,14 @@ export default function MapView({
   const darkTiles = resolved === "dark";
 
   return (
-    <div className={`relative h-full w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-slate-900${darkTiles ? " sw-dark-tiles" : ""}`} style={{ minHeight: 320, height }}>
+    <div className={`map-view${darkTiles ? " sw-dark-tiles" : ""}`}>
       <MapContainer
         center={resolvedCenter}
         zoom={resolvedZoom}
         zoomControl={false}
         scrollWheelZoom={interactive}
         dragging={interactive}
-        style={{ height: "100%", width: "100%", minHeight: 320 }}
+        className="map-view-map"
       >
         <ZoomControl position="bottomright" />
         <BaseTiles key={tileBust} onFailed={setTileFailed} />
@@ -160,21 +183,21 @@ export default function MapView({
       </MapContainer>
 
       {tileFailed && (
-        <div className="absolute bottom-3 left-3 right-3 z-[500] flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-white/10 dark:bg-slate-900" role="alert">
-          <p className="min-w-[200px] flex-1 text-[13px] font-semibold text-slate-700 dark:text-slate-200">Map tiles are not loading. Check your connection.</p>
+        <div className="map-tile-error" role="alert">
+          <p>{tileError}</p>
           <button
+            className="map-retry"
             onClick={() => { setTileFailed(false); setTileBust((b) => b + 1); }}
-            className="pressable min-h-[40px] cursor-pointer rounded-xl bg-teal-700 px-4 text-[13.5px] font-bold text-white hover:bg-teal-800"
           >
-            Retry map
+            {retry}
           </button>
         </div>
       )}
 
       {chip !== null && !tileFailed && (
-        <div className="pointer-events-none absolute left-3 top-3 z-[500] flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1.5 pl-2 pr-3 dark:border-white/10 dark:bg-slate-900">
-          <span className="h-2.5 w-2.5 rounded-full bg-teal-700 dark:bg-teal-400" aria-hidden="true" />
-          <span className="text-[12.5px] font-semibold text-slate-800 dark:text-slate-100">{chip}</span>
+        <div className="map-credit">
+          <span className="map-credit-dot" aria-hidden="true" />
+          <span className="map-credit-text">{chip}</span>
         </div>
       )}
     </div>

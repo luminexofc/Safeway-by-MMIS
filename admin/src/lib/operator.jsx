@@ -12,6 +12,8 @@ export function OperatorProvider({ children }) {
   const [user, setUser] = useState(null);
   const [checks, setChecks] = useState("loading");
 
+  // Resolves to the resulting check so a caller can act on the outcome
+  // (the login screen needs to tell "not an operator" from "no session kept").
   const refresh = useCallback(async () => {
     setChecks("loading");
     let me = null;
@@ -20,10 +22,12 @@ export function OperatorProvider({ children }) {
     } catch {
       setUser(null);
       setChecks("signed-out");
-      return;
+      return "signed-out";
     }
     setUser(me);
-    setChecks((await isOperator(me.$id)) ? "operator" : "rejected");
+    const next = (await isOperator(me.$id)) ? "operator" : "rejected";
+    setChecks(next);
+    return next;
   }, []);
 
   const logout = useCallback(async () => {

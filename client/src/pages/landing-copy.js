@@ -35,7 +35,7 @@ export const featureCards = [
   {
     id: "report",
     title: "Report in three steps",
-    color: "teal",
+    color: "accent",
     icon: "bell",
     href: landingRoutes.report,
     text: "Drop a pin, add a photo and depth, and submit. Every report goes to the verification team before it updates anyone's map.",

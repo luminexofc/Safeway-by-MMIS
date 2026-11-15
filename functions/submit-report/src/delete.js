@@ -49,7 +49,21 @@ export async function deleteReport(db, storage, report) {
 // Photos uploaded for a report that failed to submit are never referenced by
 // a row, but still carry the uploader's read permission. Collect first, then
 // delete, so offsets stay stable while paging.
-async function deleteOrphanFiles(storage, userId) {
+//
+// A filed report keeps the uploader's own read permission (see
+// tightenPhotoPermissions), so "carries read(user:<caller>)" alone also
+// matches live report photos. Every referenced id is therefore collected
+// first and skipped; only unreferenced uploads are deleted. That keeps this
+// sweep from ever reaching another user's photo, and from destroying a live
+// report's evidence.
+//
+// If the reference scan cannot be completed the sweep is abandoned (and the
+// error propagates), because deleting without knowing what is referenced is
+// exactly the case that would destroy evidence.
+async function deleteOrphanFiles(db, storage, userId) {
+  const ownPerm = `read("user:${userId}")`;
+  const referenced = await collectReferencedFileIds(db);
+
   const owned = [];
   for (let offset = 0; ; offset += 100) {
     const page = await storage.listFiles({
@@ -57,11 +71,31 @@ async function deleteOrphanFiles(storage, userId) {
       queries: [Query.limit(100), Query.offset(offset)],
       total: false,
     });
-    owned.push(...page.files.filter((f) => f.$permissions.includes(`read("user:${userId}")`)));
+    owned.push(
+      ...page.files.filter((f) => f.$permissions.includes(ownPerm) && !referenced.has(f.$id)),
+    );
     if (page.files.length < 100) break;
   }
   for (const file of owned) await deleteFile(storage, file.$id);
   return owned.length;
+}
+
+// Every file id any live report points at. Fails closed: a partial set would
+// make referenced photos look unreferenced.
+async function collectReferencedFileIds(db) {
+  const referenced = new Set();
+  for (let offset = 0; ; offset += 100) {
+    const page = await db.listRows({
+      databaseId: DATABASE_ID,
+      tableId: REPORTS,
+      queries: [Query.limit(100), Query.offset(offset), Query.isNotNull("imageFileIds")],
+      total: false,
+    });
+    for (const row of page.rows) {
+      for (const fileId of row.imageFileIds ?? []) referenced.add(fileId);
+    }
+    if (page.rows.length < 100) return referenced;
+  }
 }
 
 export async function deleteAccount(db, storage, users, userId) {
@@ -81,7 +115,7 @@ export async function deleteAccount(db, storage, users, userId) {
       reports += 1;
     }
   }
-  const files = await deleteOrphanFiles(storage, userId);
+  const files = await deleteOrphanFiles(db, storage, userId);
 
   // Operator decisions and notifications the user caused.
   for (;;) {
@@ -106,7 +140,9 @@ export async function deleteAccount(db, storage, users, userId) {
 }
 
 // Deletion is hosted in this function because the Appwrite plan allows two
-// functions per project. The caller id comes from the platform, never the body.
+// functions per project. The caller id is resolved from the session JWT by the
+// entry point and passed in; it is never read from the request body or from a
+// caller-controlled header.
 export async function handleDeletion({ client, res, body, userId, log, error }) {
   const db = new TablesDB(client);
   const storage = new Storage(client);

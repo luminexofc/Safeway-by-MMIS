@@ -1,0 +1,386 @@
+/* Hallmark · macrostructure: List / Ledger (records) · tone: utilitarian
+ * page: your reports · design-system: DESIGN.md · tokens: shared/design-tokens.css
+ * audit-fix: neutral errors · status as text not rainbow pills · list dividers
+ * instead of per-row cards · 44 px targets · inline destructive confirm
+ */
+
+.myr {
+  --myr-fs-body: 0.9375rem;
+  --myr-fs-meta: 0.8125rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 60rem;
+}
+
+/* ── Filters doubling as the count ────────────────────────────────── */
+
+.myr-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-paper);
+}
+
+.myr-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding-inline: var(--space-3);
+  border: 1px solid transparent;
+  border-radius: calc(var(--radius-control) - 2px);
+  background: transparent;
+  color: var(--color-ink-2);
+  font-family: var(--font-body);
+  font-size: var(--myr-fs-meta);
+  font-weight: 650;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-ui) var(--ease-out),
+    border-color var(--duration-ui) var(--ease-out),
+    color var(--duration-ui) var(--ease-out);
+}
+
+.myr-filter:hover {
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.myr-filter[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-weak);
+  color: var(--color-accent-strong);
+}
+
+.myr-filter-count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.myr-filter[aria-pressed="true"] .myr-filter-count {
+  color: var(--color-accent-strong);
+}
+
+/* ── Records: one surface, hairline dividers, no card per row ──────── */
+
+.myr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.myr-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+}
+
+.myr-row + .myr-row {
+  border-top: 1px solid var(--color-rule);
+}
+
+.myr-row-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.myr-row-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.myr-place {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--myr-fs-body);
+  font-weight: 650;
+  line-height: 1.35;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.myr-status {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--color-ink-2);
+}
+
+.myr-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--space-2);
+  margin: 0;
+  font-size: var(--myr-fs-meta);
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.myr-meta > * + *::before {
+  content: "·";
+  margin-right: var(--space-2);
+  color: var(--color-rule-strong);
+}
+
+.myr-id {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+}
+
+.myr-icon-btn {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-ui) var(--ease-out),
+    border-color var(--duration-ui) var(--ease-out),
+    color var(--duration-ui) var(--ease-out);
+}
+
+.myr-icon-btn:hover {
+  border-color: var(--color-rule-strong);
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+}
+
+/* ── Destructive confirm, inline in the row it affects ─────────────── */
+
+.myr-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.myr-confirm-text {
+  flex: 1 1 14rem;
+  margin: 0;
+  font-size: var(--myr-fs-meta);
+  line-height: 1.5;
+  color: var(--color-ink-2);
+}
+
+.myr-confirm-text .myr-id {
+  color: var(--color-ink);
+}
+
+.myr-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.myr-row-notice {
+  display: flex;
+  flex-basis: 100%;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--color-ink-2);
+}
+
+.myr-row-notice svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--color-ink-2);
+}
+
+/* ── Buttons (same shape language as the report screen) ────────────── */
+
+.myr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 46px;
+  padding-inline: var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-family: var(--font-body);
+  font-size: var(--myr-fs-meta);
+  font-weight: 650;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-ui) var(--ease-out),
+    border-color var(--duration-ui) var(--ease-out),
+    color var(--duration-ui) var(--ease-out);
+}
+
+.myr-btn:active {
+  transform: translateY(1px);
+}
+
+.myr-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.myr-btn--primary {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
+.myr-btn--primary:hover:not(:disabled) {
+  background: var(--color-accent-strong);
+}
+
+.myr-btn--ghost {
+  border-color: var(--color-rule-strong);
+  background: transparent;
+  color: var(--color-ink-2);
+}
+
+.myr-btn--ghost:hover:not(:disabled) {
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+}
+
+/* Deleting is not a road condition, so it gets weight, not a red fill. */
+
+/* Same treatment as the profile danger button: red marks permanence. */
+.myr-btn--danger {
+  background: var(--color-danger-strong);
+  color: var(--color-danger-ink);
+}
+
+.myr-btn--danger:hover:not(:disabled) {
+  background: var(--color-danger-strong-hover);
+}
+
+/* ── Notices: neutral; condition colour never marks an app error ───── */
+
+.myr-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  font-size: var(--myr-fs-meta);
+  line-height: 1.55;
+  color: var(--color-ink);
+}
+
+.myr-notice svg {
+  flex: 0 0 auto;
+  color: var(--color-ink-2);
+}
+
+.myr-notice p {
+  flex: 1 1 16rem;
+  margin: 0;
+}
+
+.myr-notice .myr-btn {
+  margin-left: auto;
+}
+
+/* ── States ───────────────────────────────────────────────────────── */
+
+.myr-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+}
+
+.myr-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: var(--space-1);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-paper);
+  color: var(--color-muted);
+}
+
+.myr-empty-title {
+  margin: 0;
+  font-size: var(--myr-fs-body);
+  font-weight: 650;
+  color: var(--color-ink);
+}
+
+.myr-empty-desc {
+  margin: 0;
+  max-width: 46ch;
+  font-size: var(--myr-fs-meta);
+  line-height: 1.55;
+  color: var(--color-muted);
+}
+
+.myr-empty .myr-btn {
+  margin-top: var(--space-2);
+}
+
+.myr-foot {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--color-muted);
+}
+
+/* ── Loading ──────────────────────────────────────────────────────── */
+
+.myr-row--skeleton {
+  align-items: center;
+}
+
+.myr-row--skeleton .myr-row-main {
+  flex: 1 1 auto;
+  gap: var(--space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .myr-filter,
+  .myr-btn,
+  .myr-icon-btn {
+    transition: none;
+  }
+
+  .myr-btn:active {
+    transform: none;
+  }
+}

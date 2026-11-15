@@ -26,6 +26,21 @@ export default {
         'accent-strong': 'var(--color-accent-strong)',
         'accent-weak': 'var(--color-accent-weak)',
         'accent-ink': 'var(--color-accent-ink)',
+        focus: 'var(--color-focus)',
+        'accent-soft': 'var(--color-accent-weak)',
+        // Solid action surface: stays dark in light mode and paper-bright in
+        // dark mode, so `bg-solid text-solid-ink` is legible in both themes
+        // without a `dark:` override at every call site.
+        solid: 'var(--color-solid)',
+        'solid-hover': 'var(--color-solid-hover)',
+        'solid-ink': 'var(--color-solid-ink)',
+        inverse: 'var(--color-inverse)',
+        'inverse-ink': 'var(--color-inverse-ink)',
+        'inverse-muted': 'var(--color-inverse-muted)',
+        'inverse-safe': 'var(--color-inverse-safe)',
+        'inverse-caution': 'var(--color-inverse-caution)',
+        'inverse-danger': 'var(--color-inverse-danger)',
+        overlay: 'var(--color-overlay)',
         slate: {
           50: 'var(--color-paper)', 100: 'var(--color-paper-2)',
           200: 'var(--color-rule)', 300: 'var(--color-rule-strong)',
@@ -34,6 +49,8 @@ export default {
           800: 'var(--color-ink)', 900: 'var(--color-surface)',
           950: 'var(--color-paper)',
         },
+        // Legacy green aliases. They now resolve to the neutral ramp so a
+        // missed `teal-*` / `emerald-*` class can never paint the old green.
         teal: {
           50: 'var(--color-accent-weak)', 100: 'var(--color-accent-weak)',
           200: 'var(--color-accent-weak)', 300: 'var(--color-accent)',
@@ -41,12 +58,22 @@ export default {
           600: 'var(--color-accent)', 700: 'var(--color-accent)',
           800: 'var(--color-accent-strong)', 900: 'var(--color-accent-strong)',
         },
+        emerald: {
+          50: 'var(--color-safe-soft)', 100: 'var(--color-safe-soft)',
+          200: 'var(--color-safe-soft)', 300: 'var(--color-safe)',
+          400: 'var(--color-safe)', 500: 'var(--color-safe)',
+          600: 'var(--color-safe)', 700: 'var(--color-safe)',
+          800: 'var(--color-safe)', 900: 'var(--color-safe)',
+          950: 'var(--color-safe-soft)',
+        },
         brand: {
           50: 'var(--color-accent-weak)', 100: 'var(--color-accent-weak)',
           600: 'var(--color-accent)', 700: 'var(--color-accent)',
           800: 'var(--color-accent-strong)', 900: 'var(--color-accent-strong)',
         },
         safe: 'var(--color-safe)', caution: 'var(--color-caution)', danger: 'var(--color-danger)',
+        'safe-soft': 'var(--color-safe-soft)', 'caution-soft': 'var(--color-caution-soft)',
+        'danger-soft': 'var(--color-danger-soft)',
         'map-ground': 'var(--color-map-ground)', 'map-road': 'var(--color-map-road)',
       },
       boxShadow: { pop: 'var(--shadow-overlay)' },

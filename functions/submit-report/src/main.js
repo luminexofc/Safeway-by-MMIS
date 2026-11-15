@@ -9,12 +9,15 @@ import {
   TablesDB,
 } from "node-appwrite";
 import { handleDeletion } from "./delete.js";
+import { autoVerifyCluster } from "./cluster.js";
+import { resolveCaller, unauthorized } from "./caller.js";
 
 const DATABASE_ID = "safeway";
 const REPORTS = "reports";
 const AUDIT = "audit_events";
 const BUCKET = "report-photos";
 const OPERATORS_TEAM = "operators";
+const AUDIT_READ = [Permission.read(Role.team(OPERATORS_TEAM))];
 
 const DIVISIONS = new Set([
   "dhaka", "chattogram", "khulna", "rajshahi",
@@ -24,10 +27,6 @@ const DEPTHS = new Set(["ankle", "knee", "waist", "road_closed"]);
 const HEX64 = /^[0-9a-f]{64}$/i;
 
 const json = (res, body, status = 200) => res.json(body, status);
-
-// Appwrite injects the caller's user id for executions started by a signed-in
-// user; client-supplied x-appwrite-* headers are ignored by the platform.
-const callerId = (req) => req.headers["x-appwrite-user-id"] || null;
 
 function serverClient() {
   const key = process.env.SERVER_API_KEY || process.env.APPWRITE_API_KEY;
@@ -62,8 +61,11 @@ export async function tightenPhotoPermissions(storage, userId, fileIds) {
         bucketId: BUCKET,
         fileId,
         name,
+        // Same audience as the report row: any signed-in user may read the
+        // map, and the photo is what they judge the blockage by. The uploader
+        // check above already proved ownership.
         permissions: [
-          Permission.read(Role.user(userId)),
+          Permission.read(Role.users()),
           Permission.read(Role.team(OPERATORS_TEAM)),
         ],
       });
@@ -80,8 +82,11 @@ export async function tightenPhotoPermissions(storage, userId, fileIds) {
 }
 
 export default async ({ req, res, log, error }) => {
-  const userId = callerId(req);
-  if (!userId) return json(res, { error: "Sign in to file a report." }, 401);
+  // Identity comes from the session JWT via the platform, never from a
+  // self-reported header. Without it, nothing below may run.
+  const caller = await resolveCaller(req);
+  if (!caller.userId) return unauthorized(res, caller.reason);
+  const userId = caller.userId;
 
   let body = null;
   try {
@@ -182,10 +187,19 @@ export default async ({ req, res, log, error }) => {
       tableId: AUDIT,
       rowId: ID.unique(),
       data: { reportId: row.$id, actorId: userId, action: "submitted", ...(hashSeen ? { meta: "image_hash_seen:true" } : {}) },
+      // The ops log is an operator artifact; never let a table default decide.
+      permissions: AUDIT_READ,
+    });
+
+    // Five different reporters on one spot publish it without an operator.
+    const autoVerified = await autoVerifyCluster(db, { lat, lng, log }).catch((e) => {
+      // Publishing is a bonus; a failure here must not lose the report.
+      error(`auto-verify skipped: ${e instanceof AppwriteException ? e.message : String(e)}`);
+      return [];
     });
 
     log(`report ${row.$id} created by ${userId} (${division})`);
-    return json(res, { id: row.$id }, 201);
+    return json(res, { id: row.$id, autoVerified }, 201);
   } catch (e) {
     error(e instanceof AppwriteException ? `${e.code}: ${e.message}` : String(e));
     return json(res, { error: "Could not file the report. Please retry." }, 500);

@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes wensity-shimmer-bg {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
 html,
 body {
   min-height: 100%;
@@ -43,9 +48,15 @@ textarea {
 
 .bg-white { background-color: var(--color-surface); }
 
-:focus-visible {
-  outline: 3px solid var(--color-focus);
-  outline-offset: 3px;
+/* Keyboard focus ring. This has to live in the base layer: unlayered, it ranked
+   above every utility and overrode `outline-none` on fields that draw their own
+   focus state, so a 3 px box appeared inside the map and route search bars as
+   soon as they were clicked. In base, the utilities and the field styles win. */
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
 }
 
 .leaflet-container {
@@ -115,7 +126,12 @@ textarea {
 .sw-hazard-caution-banner { color: var(--color-caution); border-color: var(--color-caution); background: var(--color-caution-soft); }
 .sw-hazard-danger-banner { color: var(--color-danger); border-color: var(--color-danger); background: var(--color-danger-soft); }
 
-.sw-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 700; display: none; width: 16rem; flex-direction: column; border-right: 1px solid var(--color-rule); background: var(--color-paper); padding: 24px 16px 18px; }
+.sw-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 700; display: none; width: 16rem; flex-direction: column; border-right: 1px solid var(--color-rule); background: var(--color-paper); padding: 24px 16px 18px; transition: width var(--duration-ui) var(--ease-out), padding var(--duration-ui) var(--ease-out); }
+.sw-sidebar.is-collapsed { width: 5rem; padding: 20px 10px 18px; }
+.sw-sidebar.is-collapsed .sw-side-task-nav { margin-top: 24px; }
+.sw-sidebar.is-collapsed .sw-task-link { justify-content: center; padding: 0; }
+.sw-sidebar.is-collapsed .sw-account-links a, .sw-sidebar.is-collapsed .sw-logout { justify-content: center; padding: 0; }
+.sw-sidebar-header { min-height: 38px; }
 .sw-app-brand { display: flex; align-items: center; gap: 11px; padding: 0 8px; color: var(--color-ink); font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; letter-spacing: -0.045em; text-decoration: none; }
 .sw-app-brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 9px; color: var(--color-accent-ink); background: var(--color-accent); }
 .sw-side-task-nav { display: grid; gap: 5px; margin-top: 48px; }
@@ -125,7 +141,8 @@ textarea {
 .sw-task-link.is-active svg { color: var(--color-accent); }
 .sw-sidebar-bottom { display: grid; gap: 14px; margin-top: auto; }
 .sw-account-summary { display: flex; min-width: 0; align-items: center; gap: 9px; padding: 12px 8px; border-top: 1px solid var(--color-rule); }
-.sw-account-mark { display: grid; width: 30px; height: 30px; flex: none; place-items: center; border: 1px solid var(--color-rule); border-radius: 50%; color: var(--color-ink-2); }
+.sw-account-mark { display: grid; width: 30px; height: 30px; flex: none; place-items: center; overflow: hidden; border: 1px solid var(--color-rule); border-radius: 50%; color: var(--color-ink-2); }
+.sw-account-mark-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .sw-account-name { overflow: hidden; color: var(--color-muted); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
 .sw-utility-row { display: flex; align-items: center; gap: 8px; }
 .sw-utility-button { min-height: 42px; padding: 0 10px; border: 1px solid var(--color-rule); border-radius: var(--radius-control); color: var(--color-ink-2); background: var(--color-surface); font-size: 0.8rem; font-weight: 700; cursor: pointer; }
@@ -184,39 +201,51 @@ textarea {
   display: flex;
   min-height: 100vh;
   min-height: 100svh;
-  overflow: hidden;
   color: var(--auth-ink);
   background: var(--auth-paper);
   isolation: isolate;
 }
+.sw-auth-media {
+  position: absolute;
+  z-index: 0;
+  inset: 0 45% 0 0;
+  width: 55%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
 .sw-auth-photo {
   position: absolute;
-  z-index: -2;
-  inset: 0 45% 0 0;
-  background-color: #182326;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-inverse);
   background-image: linear-gradient(rgba(8, 17, 20, .12), rgba(8, 17, 20, .12)), url("/images/auth/road-navigation.png");
   background-position: 61% center;
   background-size: cover;
+  z-index: 1;
 }
 .sw-auth-video {
   position: absolute;
-  z-index: -2;
-  inset: 0 45% 0 0;
-  width: 55%;
+  inset: 0;
+  width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: 61% center;
   pointer-events: none;
+  z-index: 2;
 }
 .sw-auth-fade {
   position: absolute;
-  z-index: -1;
-  inset: 0 45% 0 35%;
-  background: linear-gradient(90deg, rgba(240, 248, 246, 0), var(--auth-paper));
+  z-index: 3;
+  inset: 0 0 0 auto;
+  width: clamp(140px, 16vw, 240px);
+  background: linear-gradient(90deg, transparent 0%, var(--auth-paper) 100%);
   pointer-events: none;
 }
 .sw-auth-panel {
   position: relative;
+  z-index: 5;
   display: flex;
   width: 45%;
   min-height: 100vh;
@@ -231,6 +260,7 @@ textarea {
   position: absolute;
   top: 24px;
   right: 28px;
+  z-index: 20;
   display: flex;
   width: 122px;
   height: 36px;
@@ -240,10 +270,13 @@ textarea {
   border: 1px solid var(--auth-border);
   border-radius: 18px;
   color: var(--auth-copy);
-  background: var(--auth-card);
+  background: color-mix(in oklch, var(--auth-card) 92%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   font-size: 12px;
   font-weight: 600;
   line-height: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 .sw-auth-language button {
   display: grid;
@@ -312,7 +345,7 @@ textarea {
 }
 .sw-auth-input::placeholder { color: var(--auth-muted); opacity: 1; }
 .sw-auth-input:focus { border-color: var(--color-focus); box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-focus) 18%, transparent); }
-.sw-auth-input.has-error { border-color: #c8443e; }
+.sw-auth-input.has-error { border-color: var(--color-danger); }
 .sw-auth-input.has-password-toggle { padding-right: 54px; }
 .sw-auth-password { position: relative; display: block; }
 .sw-auth-password-toggle {
@@ -336,7 +369,7 @@ textarea {
 .sw-auth-password-toggle:active,
 .sw-auth-password-toggle:focus { background: transparent; }
 .sw-auth-password-toggle:hover { color: var(--auth-ink); }
-.sw-auth-field-error { color: #b42318; font-size: 12px; font-weight: 600; line-height: 1.35; }
+.sw-auth-field-error { color: var(--color-danger); font-size: 12px; font-weight: 600; line-height: 1.35; }
 .sw-auth-inline-link {
   padding: 0;
   border: 0;
@@ -368,47 +401,146 @@ textarea {
 .sw-auth-divider > span[aria-hidden="true"] { height: 1px; background: var(--auth-border); }
 .sw-auth-consent { display: flex; min-height: 38px; align-items: center; gap: 10px; color: var(--auth-copy); font-size: 12.5px; line-height: 1.4; cursor: pointer; }
 .sw-auth-consent input { width: 18px; height: 18px; flex: none; margin: 0; accent-color: var(--auth-accent); }
-.sw-auth-consent input[aria-invalid="true"] { outline: 1px solid #c8443e; outline-offset: 2px; }
+.sw-auth-consent input[aria-invalid="true"] { outline: 1px solid var(--color-danger); outline-offset: 2px; }
 .sw-auth-footer { margin-top: 15px; color: var(--auth-copy); font-size: 12.5px; line-height: 1.5; text-align: center; }
-.sw-auth-lock-note { margin: 0; padding: 9px 11px; border: 1px solid #e3a19c; border-radius: 9px; color: #8a211b; background: #fff5f4; font-size: 12px; font-weight: 600; }
+.sw-auth-lock-note { margin: 0; padding: 9px 11px; border: 1px solid var(--color-danger); border-radius: 9px; color: var(--color-danger); background: var(--color-danger-soft); font-size: 12px; font-weight: 600; }
 .sw-auth-lock-note:not(.is-locked) { display: none; }
 
-@media (max-width: 900px) and (min-width: 681px) {
-  .sw-auth-panel { width: 58%; padding-inline: 28px; }
-  .sw-auth-photo { right: 58%; }
-  .sw-auth-video { right: 58%; width: 42%; }
-  .sw-auth-fade { right: 58%; left: 28%; }
+@media (max-width: 900px) and (min-width: 769px) {
+  .sw-auth-panel { width: 56%; padding-inline: 28px; }
+  .sw-auth-media { inset: 0 56% 0 0; width: 44%; }
+  .sw-auth-fade { width: 140px; }
   .sw-auth-language { right: 20px; }
   .sw-auth-card { padding-inline: 28px; }
 }
-@media (max-width: 680px) {
-  .sw-auth-page { display: block; overflow: visible; }
-  .sw-auth-photo { inset: 0 0 auto; height: 196px; background-position: center 43%; }
-  .sw-auth-video { inset: 0 0 auto; height: 196px; object-position: center 43%; }
-  .sw-auth-fade { inset: 118px 0 auto; height: 80px; background: linear-gradient(180deg, rgba(240, 248, 246, 0), var(--auth-paper)); }
-  .sw-auth-panel {
-    width: 100%;
-    min-height: calc(100vh - 164px);
-    min-height: calc(100svh - 164px);
-    margin-top: 164px;
-    align-items: flex-start;
-    padding: 58px 12px calc(22px + env(safe-area-inset-bottom, 0px));
-    border-radius: 20px 20px 0 0;
+@media (max-width: 768px) {
+  .sw-auth-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100svh;
+    overflow-x: clip;
+    overflow-y: auto;
+    background: var(--auth-paper);
   }
-  .sw-auth-language { top: 12px; right: 16px; height: 32px; }
-  .sw-auth-card { padding: 22px 20px 23px; border-radius: var(--radius-overlay); }
-  .sw-auth-brand { margin-bottom: 18px; }
-  .sw-auth-card h1 { font-size: 30px; }
-  .sw-auth-subtitle { font-size: 13.5px; }
-  .sw-auth-content { gap: 14px; margin-top: 18px; }
-  .sw-auth-content form { gap: 14px; }
-  .sw-auth-input { height: 48px; }
+  .sw-auth-media {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: clamp(230px, 34vh, 320px);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .sw-auth-photo {
+    background-position: center 46%;
+  }
+  .sw-auth-video {
+    object-position: center 46%;
+  }
+  .sw-auth-fade {
+    inset: auto 0 0 0;
+    width: 100%;
+    height: clamp(100px, 16vh, 150px);
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      color-mix(in oklch, var(--auth-paper) 20%, transparent) 25%,
+      color-mix(in oklch, var(--auth-paper) 65%, transparent) 60%,
+      color-mix(in oklch, var(--auth-paper) 92%, transparent) 85%,
+      var(--auth-paper) 100%
+    );
+  }
+  .sw-auth-panel {
+    position: relative;
+    width: 100%;
+    min-height: auto;
+    margin-left: 0;
+    margin-top: -36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 16px calc(32px + env(safe-area-inset-bottom, 0px));
+    background: transparent;
+  }
+  .sw-auth-language {
+    top: 14px;
+    right: 14px;
+    height: 32px;
+    background: color-mix(in oklch, var(--auth-card) 85%, transparent);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+  .sw-auth-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 24px 20px 22px;
+    border-radius: var(--radius-overlay);
+    background: var(--auth-card);
+    box-shadow: var(--shadow-overlay);
+  }
+  .sw-auth-brand {
+    margin-bottom: 16px;
+  }
+  .sw-auth-card h1 {
+    font-size: 28px;
+    line-height: 1.2;
+  }
+  .sw-auth-subtitle {
+    font-size: 13.5px;
+  }
+  .sw-auth-content {
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .sw-auth-content form {
+    gap: 14px;
+  }
+  .sw-auth-input {
+    height: 48px;
+  }
 }
-@media (prefers-reduced-motion: reduce) {
-  .sw-auth-video { display: none; }
+@media (max-width: 420px) {
+  .sw-auth-media {
+    height: clamp(200px, 28vh, 250px);
+  }
+  .sw-auth-fade {
+    height: 96px;
+  }
+  .sw-auth-panel {
+    margin-top: -28px;
+    padding-inline: 12px;
+  }
+  .sw-auth-card {
+    padding: 20px 16px 20px;
+    border-radius: 18px;
+  }
+  .sw-auth-card h1 {
+    font-size: 25px;
+  }
+  .sw-auth-language {
+    top: 12px;
+    right: 12px;
+  }
 }
 @media (max-width: 360px) {
-  .sw-auth-card { padding-inline: 17px; }
-  .sw-auth-card h1 { font-size: 27px; }
-  .sw-auth-language { right: 12px; }
+  .sw-auth-card {
+    padding-inline: 13px;
+  }
+  .sw-auth-card h1 {
+    font-size: 23px;
+  }
+  .sw-auth-language {
+    right: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+  [style*="wensity-shimmer-bg"] {
+    animation: none !important;
+  }
+  .sw-auth-video { display: none; }
 }

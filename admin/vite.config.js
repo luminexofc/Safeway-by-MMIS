@@ -4,6 +4,9 @@ import { fileURLToPath } from 'node:url'
 
 // https://vite.dev/config/
 const nodeModules = fileURLToPath(new URL('./node_modules', import.meta.url))
+// Only the repo-root shared/ dir is served from outside this app. Granting
+// '..' would also expose .env.appwrite and .env.local at the repo root.
+const sharedDir = fileURLToPath(new URL('../shared', import.meta.url))
 
 export default defineConfig({
   plugins: [react()],
@@ -17,6 +20,6 @@ export default defineConfig({
       { find: /^tailwind-merge$/, replacement: `${nodeModules}/tailwind-merge` },
     ],
   },
-  server: { port: 5174, strictPort: false, fs: { allow: ['..'] } },
+  server: { port: 5174, strictPort: false, fs: { allow: [sharedDir] } },
   preview: { port: 4174 },
 })

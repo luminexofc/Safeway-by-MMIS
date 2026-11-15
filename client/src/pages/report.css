@@ -1,0 +1,734 @@
+/* Hallmark · macrostructure: Map / Diagram (task wizard) · tone: utilitarian
+ * page: report an occurrence · design-system: DESIGN.md · tokens: shared/design-tokens.css
+ * audit-fix: one accent (no per-type rainbow) · neutral error/pending states
+ * · radio-group choices · 44 px targets · no decorative arrows or motion
+ */
+
+.report {
+  --rep-fs-body: 0.9375rem;
+  --rep-fs-meta: 0.8125rem;
+  --rep-fs-title: 1.0625rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 60rem;
+}
+
+/* ── Step rail ────────────────────────────────────────────────────── */
+
+.rep-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 640px) {
+  .rep-steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.rep-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  font-size: var(--rep-fs-meta);
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.rep-step svg {
+  flex: 0 0 auto;
+}
+
+.rep-step[aria-current="step"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-weak);
+  color: var(--color-accent-strong);
+}
+
+.rep-step[data-done="true"] {
+  color: var(--color-ink-2);
+}
+
+/* ── Step surface ─────────────────────────────────────────────────── */
+
+.rep-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+}
+
+@media (min-width: 640px) {
+  .rep-card {
+    padding: var(--space-6);
+  }
+}
+
+.rep-title {
+  margin: 0;
+  font-size: var(--rep-fs-title);
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+  color: var(--color-ink);
+}
+
+.rep-help {
+  margin: var(--space-1) 0 0;
+  max-width: 62ch;
+  font-size: var(--rep-fs-meta);
+  line-height: 1.55;
+  color: var(--color-muted);
+}
+
+/* ── Choice groups (radiogroups) ──────────────────────────────────── */
+
+.rep-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.rep-group > legend {
+  padding: 0;
+  font-size: var(--rep-fs-meta);
+  font-weight: 700;
+  color: var(--color-ink-2);
+}
+
+.rep-choices {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Type cards need the full width on phones; a binary pair does not. */
+@media (min-width: 640px) {
+  .rep-choices--2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.rep-choices--pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 480px) {
+  .rep-choices--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.rep-choices--4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .rep-choices--4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.rep-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--rep-fs-body);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-ui) var(--ease-out),
+    background-color var(--duration-ui) var(--ease-out);
+}
+
+.rep-choice:hover {
+  border-color: var(--color-rule-strong);
+}
+
+.rep-choice:active {
+  transform: translateY(1px);
+}
+
+.rep-choice:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.rep-choice[aria-checked="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-weak);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+
+.rep-choice--compact {
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.rep-choice-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-paper);
+  color: var(--color-ink-2);
+}
+
+.rep-choice[aria-checked="true"] .rep-choice-icon {
+  border-color: var(--color-accent);
+  color: var(--color-accent-strong);
+}
+
+.rep-choice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rep-choice-label {
+  font-size: var(--rep-fs-body);
+  font-weight: 650;
+  color: var(--color-ink);
+}
+
+.rep-choice-sub {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.rep-choice-desc {
+  margin-top: var(--space-2);
+  font-size: var(--rep-fs-meta);
+  line-height: 1.5;
+  color: var(--color-ink-2);
+}
+
+.rep-choice-check {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--color-accent-strong);
+}
+
+/* ── Actions ──────────────────────────────────────────────────────── */
+
+.rep-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.rep-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 46px;
+  padding-inline: var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-family: var(--font-body);
+  font-size: var(--rep-fs-body);
+  font-weight: 650;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-ui) var(--ease-out),
+    border-color var(--duration-ui) var(--ease-out),
+    color var(--duration-ui) var(--ease-out);
+}
+
+.rep-btn:active {
+  transform: translateY(1px);
+}
+
+.rep-btn:disabled,
+.rep-btn[aria-busy="true"] {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.rep-btn--primary {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
+.rep-btn--primary:hover:not(:disabled) {
+  background: var(--color-accent-strong);
+}
+
+.rep-btn--ghost {
+  border-color: var(--color-rule-strong);
+  background: transparent;
+  color: var(--color-ink-2);
+}
+
+.rep-btn--ghost:hover:not(:disabled) {
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+}
+
+.rep-btn--grow {
+  flex: 1 1 12rem;
+}
+
+/* ── Notices: neutral; condition colour never marks an app error ───── */
+
+.rep-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  font-size: var(--rep-fs-meta);
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+
+.rep-notice svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--color-ink-2);
+}
+
+/* ── Location search ──────────────────────────────────────────────── */
+
+.rep-search {
+  position: relative;
+}
+
+.rep-search-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  transition: border-color var(--duration-ui) var(--ease-out);
+}
+
+.rep-search-field:focus-within {
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 3px var(--color-accent-weak);
+}
+
+.rep-search-field > svg {
+  flex: 0 0 auto;
+  color: var(--color-muted);
+}
+
+.rep-search-field input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--rep-fs-body);
+  font-weight: 500;
+  outline: none;
+}
+
+.rep-search-field input::placeholder {
+  color: var(--color-muted-2);
+  opacity: 1;
+}
+
+/* One clear control only: the custom button, not the browser's. */
+.rep-search-field input::-webkit-search-cancel-button,
+.rep-search-field input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.rep-search-clear {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-right: calc(var(--space-2) * -1);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.rep-search-clear:hover {
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+}
+
+.rep-search-clear:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.rep-suggest {
+  position: absolute;
+  z-index: 900;
+  inset-inline: 0;
+  top: calc(100% + var(--space-1));
+  max-height: 15rem;
+  overflow-y: auto;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-overlay);
+}
+
+.rep-suggest button {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 44px;
+  padding: 10px var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--rep-fs-meta);
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.rep-suggest button:hover,
+.rep-suggest button:focus-visible {
+  background: var(--color-paper-2);
+  outline: none;
+}
+
+.rep-suggest button svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--color-muted);
+}
+
+.rep-search-status {
+  margin: var(--space-1) 0 0;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+/* ── Map ──────────────────────────────────────────────────────────── */
+
+.rep-map {
+  height: 320px;
+  overflow: hidden;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-surface);
+  background: var(--color-map-ground);
+}
+
+/* ── Read-only facts (replaces fake input fields) ─────────────────── */
+
+.rep-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-paper);
+}
+
+.rep-summary > div {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.rep-summary dt {
+  font-size: var(--rep-fs-meta);
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.rep-summary dd {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--rep-fs-meta);
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.rep-coords {
+  display: block;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+}
+
+/* ── Photo ────────────────────────────────────────────────────────── */
+
+.rep-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 120px;
+  padding: var(--space-4);
+  border: 1px dashed var(--color-rule-strong);
+  border-radius: var(--radius-surface);
+  background: var(--color-paper);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--duration-ui) var(--ease-out);
+}
+
+.rep-photo:hover {
+  border-color: var(--color-accent);
+}
+
+.rep-photo:focus-within {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.rep-photo-icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-accent-strong);
+}
+
+.rep-photo-name {
+  font-size: var(--rep-fs-body);
+  font-weight: 650;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.rep-photo-meta {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+/* ── Note field ───────────────────────────────────────────────────── */
+
+.rep-note {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rep-note > span {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--rep-fs-meta);
+  font-weight: 700;
+  color: var(--color-ink-2);
+}
+
+.rep-note em {
+  font-size: 0.75rem;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rep-note textarea {
+  min-height: 96px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--rep-fs-body);
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.rep-note textarea::placeholder {
+  color: var(--color-muted-2);
+  opacity: 1;
+}
+
+.rep-note textarea:focus-visible {
+  border-color: var(--color-focus);
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+/* ── Review + next steps ──────────────────────────────────────────── */
+
+.rep-review {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-surface);
+  background: var(--color-paper);
+}
+
+.rep-review > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+
+@media (min-width: 480px) {
+  .rep-review > div {
+    grid-template-columns: 7rem minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+}
+
+.rep-review dt {
+  font-size: var(--rep-fs-meta);
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.rep-review dd {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--rep-fs-meta);
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.rep-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-surface);
+  background: var(--color-paper);
+}
+
+.rep-panel h3 {
+  margin: 0;
+  font-size: var(--rep-fs-body);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.rep-next {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rep-next li {
+  display: flex;
+  gap: var(--space-3);
+  font-size: var(--rep-fs-meta);
+}
+
+.rep-next-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-ink-2);
+}
+
+.rep-next strong {
+  display: block;
+  font-weight: 650;
+  color: var(--color-ink);
+}
+
+.rep-next p {
+  margin: 2px 0 0;
+  line-height: 1.5;
+  color: var(--color-ink-2);
+}
+
+.rep-foot {
+  margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-rule);
+  font-size: var(--rep-fs-meta);
+  line-height: 1.55;
+  color: var(--color-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rep-choice,
+  .rep-btn,
+  .rep-photo,
+  .rep-search-field {
+    transition: none;
+  }
+
+  .rep-choice:active,
+  .rep-btn:active {
+    transform: none;
+  }
+}
+
+/* Precision note: states the GPS accuracy or that the pin was moved to a road.
+   Neutral tone — this is information, not a warning. */
+.rep-precision {
+  margin: 0 0 var(--space-3);
+  padding: 8px 12px;
+  border: 1px solid var(--color-rule);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-control);
+  background: var(--color-accent-weak);
+  color: var(--color-ink-2);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}

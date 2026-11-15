@@ -27,11 +27,17 @@ clear in rain or sun, calm under pressure, and specific to roads and reports.
 
 ## Theme
 
-The paper and ink lean toward rain-cooled green and blue. Deep rain-green is the
-single action accent. Road-condition colors are functional data: green means
-safe, amber means caution, red means danger or blocked. Pair every condition
-color with a label and icon. Never use these colors for decoration, account
-status, or general success and error states.
+The paper and ink are neutral: a very slight cool grey in place of pure white
+and black, with graphite as the single action accent. Road-condition colors are
+functional data: solid ink means safe, amber means caution, red means danger or
+blocked. Pair every condition color with a label and icon. Never use these
+colors for decoration, account status, or general success and error states.
+
+Three surfaces stay deliberately dark regardless of theme: `--color-solid` (the
+primary button), `--color-inverse` (toasts, the operator masthead), and
+`--color-overlay` (dialog scrims). Pair them with their matching `-ink` token
+instead of `text-white`, so a dark-mode switch never leaves text on a
+near-white background.
 
 The token source is [`shared/design-tokens.css`](shared/design-tokens.css).
 Components must use tokens and semantic Tailwind aliases rather than introduce
@@ -51,12 +57,16 @@ one-off colors.
 
 - Light mode is the default for daylight legibility. Dark and System remain
   available for night use and user preference.
-- Teal marks actions, selected navigation, and keyboard focus. Keep it sparse.
+- Graphite marks actions, selected navigation, and keyboard focus. Keep it sparse.
 - Road risk is communicated by a condition word, a relevant icon, and its
   condition color. Pending review is neutral and must not look like a road
   warning.
 - Base surfaces are tinted, not pure white or black. Verify text and control
-  contrast against WCAG AA before release.
+  contrast against WCAG AA before release. Current token pairs measure
+  4.9:1–18:1 across both themes.
+- Never apply a Tailwind opacity modifier (`/10`, `/80`) to a token color.
+  Tokens resolve through `var()`, so those classes emit no CSS and the element
+  silently loses its border, ring, or background.
 
 ## Shape and depth
 

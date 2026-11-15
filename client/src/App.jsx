@@ -10,13 +10,30 @@ import MyReports from "./pages/MyReports";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import { SessionLoadingSkeleton } from "./components/Skeletons";
+import { useLang } from "./lib/lang";
+
+const NOT_FOUND = {
+  en: {
+    title: "Page not found",
+    text: "That road is not on the map. Head back to safety:",
+    back: "Back to dashboard",
+  },
+  bn: {
+    title: "পেজটি পাওয়া যায়নি",
+    text: "এই সড়কটি মানচিত্রে নেই। নিরাপদে ফিরে যান:",
+    back: "ড্যাশবোর্ডে ফিরে যান",
+  },
+};
 
 function NotFound() {
+  const [lang] = useLang();
+  const copy = NOT_FOUND[lang] || NOT_FOUND.en;
   return (
     <div className="mx-auto max-w-xl px-4 py-16 text-center">
-      <h1 className="text-[32px] font-bold">Page not found</h1>
-      <p className="mt-2 text-slate-600 dark:text-slate-400">That road is not on the map. Head back to safety:</p>
-      <Link to="/dashboard" className="mt-5 inline-flex min-h-[44px] items-center rounded-xl bg-teal-700 px-5 font-bold text-white hover:bg-teal-800">Back to dashboard</Link>
+      <h1 className="text-[32px] font-bold">{copy.title}</h1>
+      <p className="mt-2 text-slate-600 dark:text-slate-400">{copy.text}</p>
+      <Link to="/dashboard" className="mt-5 inline-flex min-h-[44px] items-center rounded-xl bg-solid px-5 font-bold text-solid-ink hover:bg-solid-hover">{copy.back}</Link>
     </div>
   );
 }
@@ -26,11 +43,7 @@ function Protected({ children }) {
   const { user, loading } = useSession();
   const location = useLocation();
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#eef2f5] text-[14px] font-semibold text-slate-500 dark:bg-slate-950 dark:text-slate-400">
-        Loading Safeway…
-      </div>
-    );
+    return <SessionLoadingSkeleton />;
   }
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   return <AppShell>{children}</AppShell>;

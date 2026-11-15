@@ -1,0 +1,509 @@
+/* Hallmark · macrostructure: Account sheet / single column · tone: plainspoken
+ * page: profile · design-system: DESIGN.md · tokens: shared/design-tokens.css
+ * audit-fix: initial in ink not accent · email shown as a fact not a fake input
+ * · one-line save status instead of a badge · delete account in ink weight, not
+ * red · pause editing when saved details fail to load · 44 px targets
+ */
+
+.prf {
+  --prf-fs-body: 0.9375rem;
+  --prf-fs-meta: 0.8125rem;
+  display: flex;
+  flex-direction: column;
+  max-width: 46rem;
+}
+
+/* ── Who you are ──────────────────────────────────────────────────── */
+
+.prf-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-bottom: var(--space-1);
+}
+
+.prf-avatar-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.prf-avatar {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  overflow: hidden;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-surface);
+  background: var(--color-paper-2);
+  color: var(--color-muted);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-heading);
+}
+
+/* The picture fills the square slot; object-fit keeps faces undistorted. */
+.prf-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Camera affordance pinned to the corner of the picture. */
+.prf-avatar-pick {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink-2);
+  cursor: pointer;
+  box-shadow: var(--shadow-overlay);
+  transition:
+    background-color var(--duration-ui) var(--ease-out),
+    color var(--duration-ui) var(--ease-out);
+}
+
+.prf-avatar-pick:hover:not(:disabled) {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  border-color: var(--color-accent);
+}
+
+.prf-avatar-pick:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.prf-avatar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.prf-linkbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-accent);
+  font-family: var(--font-body);
+  font-size: var(--prf-fs-meta);
+  font-weight: 650;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prf-linkbtn:hover:not(:disabled) {
+  color: var(--color-accent-strong);
+}
+
+.prf-linkbtn--muted {
+  color: var(--color-muted);
+  text-decoration: none;
+}
+
+.prf-linkbtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.prf-linkbtn:focus-visible,
+.prf-avatar-pick:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.prf-identity-body {
+  min-width: 0;
+}
+
+.prf-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: var(--tracking-heading);
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.prf-email {
+  margin: 2px 0 0;
+  font-size: var(--prf-fs-meta);
+  line-height: 1.5;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}
+
+/* ── Sections: hairlines, not a card inside a card ────────────────── */
+
+.prf-section {
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-rule);
+}
+
+.prf-h2 {
+  margin: 0 0 var(--space-3);
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--color-ink);
+}
+
+/* ── Form ─────────────────────────────────────────────────────────── */
+
+.prf-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.prf-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.prf-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.prf-label {
+  font-size: var(--prf-fs-meta);
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--color-ink-2);
+}
+
+.prf-input {
+  width: 100%;
+  min-height: 46px;
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--prf-fs-body);
+  transition:
+    border-color var(--duration-ui) var(--ease-out),
+    background-color var(--duration-ui) var(--ease-out);
+}
+
+.prf-input::placeholder {
+  color: var(--color-muted-2);
+}
+
+.prf-input:hover:not(:disabled) {
+  border-color: var(--color-muted-2);
+}
+
+.prf-input:focus {
+  border-color: var(--color-accent);
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.prf-input:disabled {
+  background: var(--color-paper-2);
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
+.prf-input--code {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+}
+
+.prf-hint {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+/* Email is a fact about your account, so it reads as text, not a field. */
+.prf-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-control);
+  background: var(--color-paper-2);
+}
+
+.prf-fact-value {
+  font-size: var(--prf-fs-body);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--color-ink);
+  overflow-wrap: anywhere;
+}
+
+.prf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.prf-save {
+  margin: 0;
+  font-size: var(--prf-fs-meta);
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+.prf-save--error {
+  flex: 1 1 16rem;
+  max-width: 46ch;
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+/* ── Account links ────────────────────────────────────────────────── */
+
+.prf-links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-surface);
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.prf-links li + li {
+  border-top: 1px solid var(--color-rule);
+}
+
+.prf-link {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: background-color var(--duration-ui) var(--ease-out);
+}
+
+.prf-link:hover {
+  background: var(--color-paper-2);
+}
+
+.prf-link-title {
+  font-size: var(--prf-fs-body);
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.prf-link:hover .prf-link-title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prf-link-desc {
+  font-size: var(--prf-fs-meta);
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+/* ── Buttons (same shape language as reports and report) ──────────── */
+
+.prf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 46px;
+  padding-inline: var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-family: var(--font-body);
+  font-size: var(--prf-fs-meta);
+  font-weight: 650;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-ui) var(--ease-out),
+    border-color var(--duration-ui) var(--ease-out),
+    color var(--duration-ui) var(--ease-out);
+}
+
+.prf-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.prf-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.prf-btn--primary {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
+.prf-btn--primary:hover:not(:disabled) {
+  background: var(--color-accent-strong);
+}
+
+.prf-btn--ghost {
+  border-color: var(--color-rule-strong);
+  background: transparent;
+  color: var(--color-ink-2);
+}
+
+.prf-btn--ghost:hover:not(:disabled) {
+  background: var(--color-paper-2);
+  color: var(--color-ink);
+}
+
+/* At rest the delete action is quiet and red-outlined; the filled red arrives
+   at the confirm, where the destructive step actually happens. */
+.prf-btn--quiet-danger {
+  border-color: var(--color-danger-strong);
+  background: transparent;
+  color: var(--color-danger-strong);
+}
+
+.prf-btn--quiet-danger:hover:not(:disabled) {
+  border-color: var(--color-danger-strong);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-strong);
+}
+
+/* Deleting is not a road condition, so it gets weight, not a condition fill.
+   Red here marks the action's permanence, not a map status. */
+.prf-btn--danger {
+  background: var(--color-danger-strong);
+  color: var(--color-danger-ink);
+}
+
+.prf-btn--danger:hover:not(:disabled) {
+  background: var(--color-danger-strong-hover);
+}
+
+/* ── Destructive confirm ──────────────────────────────────────────── */
+
+.prf-danger-text {
+  margin: 0 0 var(--space-3);
+  max-width: 60ch;
+  font-size: var(--prf-fs-body);
+  line-height: 1.55;
+  color: var(--color-ink-2);
+}
+
+.prf-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 34rem;
+}
+
+.prf-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ── Notices: neutral; condition colour never marks an app error ───── */
+
+.prf-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  font-size: var(--prf-fs-meta);
+  line-height: 1.55;
+  color: var(--color-ink);
+}
+
+.prf-notice svg {
+  flex: 0 0 auto;
+  color: var(--color-ink-2);
+}
+
+.prf-notice p,
+.prf-notice > span {
+  flex: 1 1 16rem;
+  margin: 0;
+}
+
+.prf-notice .prf-btn {
+  margin-left: auto;
+}
+
+/* ── After deletion ───────────────────────────────────────────────── */
+
+.prf--done {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  max-width: 38rem;
+  padding-top: var(--space-6);
+}
+
+.prf-done-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: var(--tracking-heading);
+  color: var(--color-ink);
+}
+
+.prf-done-text {
+  margin: 0;
+  max-width: 60ch;
+  font-size: var(--prf-fs-body);
+  line-height: 1.6;
+  color: var(--color-ink-2);
+}
+
+.prf-done-note {
+  margin: 0;
+  max-width: 60ch;
+  font-size: var(--prf-fs-meta);
+  line-height: 1.55;
+  color: var(--color-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prf-btn,
+  .prf-input,
+  .prf-link {
+    transition: none;
+  }
+
+  .prf-btn:active:not(:disabled) {
+    transform: none;
+  }
+}

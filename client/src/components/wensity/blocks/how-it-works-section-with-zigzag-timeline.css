@@ -1,83 +1,48 @@
 .sw-zigzag {
-  --zigzag-bg: #0b0e0c;
-  --zigzag-card: #171c19;
-  --zigzag-border: #2a342e;
-  --zigzag-ink: #f1f4f0;
-  --zigzag-muted: #a5afa8;
-  --zigzag-green: #176044;
+  --zigzag-bg: var(--color-paper-2);
+  --zigzag-card: var(--color-surface);
+  --zigzag-border: var(--color-rule);
+  --zigzag-ink: var(--color-ink);
+  --zigzag-copy: var(--color-ink-2);
+  --zigzag-muted: var(--color-muted);
+  --zigzag-accent: var(--color-accent);
+  --zigzag-accent-soft: var(--color-accent-weak);
+  --zigzag-success: var(--color-safe);
+  --zigzag-success-soft: var(--color-safe-soft);
   width: min(100%, 1120px);
   margin-inline: auto;
   padding: clamp(28px, 5vw, 62px);
   overflow: hidden;
-  border: 1px solid #202822;
+  border: 1px solid var(--zigzag-border);
   border-radius: 28px;
   color: var(--zigzag-ink);
   background: var(--zigzag-bg);
-  box-shadow: 0 24px 80px rgb(0 0 0 / 13%);
+  box-shadow: var(--shadow-overlay);
 }
 
 .sw-zigzag-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 28px;
-  margin-bottom: clamp(30px, 4.5vw, 54px);
-}
-
-.sw-zigzag-heading-copy { max-width: 720px; }
-
-.sw-zigzag-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 0 17px;
-  color: #83b79c;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
-.sw-zigzag-eyebrow-dot {
-  width: 7px;
-  height: 7px;
-  flex: none;
-  border-radius: 50%;
-  background: #66a985;
-  box-shadow: 0 0 0 4px rgb(102 169 133 / 14%);
+  max-width: 720px;
+  margin-bottom: clamp(30px, 4.5vw, 52px);
 }
 
 .sw-zigzag-heading h2 {
   max-width: 19ch;
+  min-width: 0;
   margin: 0;
   color: var(--zigzag-ink);
-  font-size: clamp(1.9rem, 4vw, 3.15rem);
+  font-size: clamp(1.9rem, 3.6vw, 3rem);
   font-weight: 650;
-  letter-spacing: -0.055em;
+  letter-spacing: var(--tracking-heading);
   line-height: 1.08;
+  overflow-wrap: anywhere;
 }
 
 .sw-zigzag-intro {
   max-width: 58ch;
   margin: 15px 0 0;
-  color: var(--zigzag-muted);
+  color: var(--zigzag-copy);
   font-size: 0.94rem;
   line-height: 1.7;
-}
-
-.sw-zigzag-heading-mark {
-  display: grid;
-  width: 54px;
-  height: 54px;
-  flex: none;
-  place-items: center;
-  margin-bottom: 3px;
-  border: 1px solid #344238;
-  border-radius: 17px;
-  color: #8bb99c;
-  background: #151b17;
 }
 
 .sw-zigzag-timeline {
@@ -109,11 +74,11 @@
 
 .sw-zigzag-connector path {
   fill: none;
-  stroke: #82958a;
-  stroke-width: 1.15;
+  stroke: var(--color-ink-2);
+  stroke-width: 1.35;
   stroke-dasharray: 3.5 7;
   stroke-linecap: round;
-  opacity: 0.63;
+  opacity: 0.58;
   vector-effect: non-scaling-stroke;
 }
 
@@ -122,12 +87,9 @@
   z-index: 1;
   width: min(100%, 448px);
   min-height: 146px;
-  padding: 27px 30px 25px 57px;
-  border: 1px solid var(--zigzag-border);
-  border-radius: 18px;
+  padding: 26px 30px;
+  border-radius: var(--radius-surface);
   background: var(--zigzag-card);
-  box-shadow: 0 18px 44px rgb(0 0 0 / 16%);
-  transition: border-color 180ms ease, transform 180ms ease, background-color 180ms ease;
 }
 
 .sw-zigzag-step.is-left .sw-zigzag-card {
@@ -142,61 +104,35 @@
   margin-left: clamp(12px, 3vw, 34px);
 }
 
-.sw-zigzag-card:hover {
-  transform: translateY(-2px);
-  border-color: #405146;
-  background: #1a211c;
-}
-
-.sw-zigzag-tab {
-  position: absolute;
-  top: 23px;
-  bottom: 23px;
-  left: 0;
-  display: flex;
-  width: 29px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0 9px 9px 0;
-}
-
-.sw-zigzag-tab span {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  font-weight: 800;
-  letter-spacing: 0.095em;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.sw-zigzag-tab.is-green {
-  color: #e4f0e8;
-  background: var(--zigzag-green);
-}
-
-.sw-zigzag-tab.is-light {
-  color: #28332c;
-  background: #e9eee9;
-}
-
 .sw-zigzag-card-heading {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
 }
 
 .sw-zigzag-card-icon {
   display: grid;
-  width: 35px;
-  height: 35px;
+  width: 34px;
+  height: 34px;
   flex: none;
   place-items: center;
-  border: 1px solid #35443a;
-  border-radius: 11px;
-  color: #9dc5aa;
-  background: #202a23;
+  margin-top: 1px;
+  border-radius: 10px;
+  color: var(--zigzag-accent);
+  background: var(--zigzag-accent-soft);
+}
+
+.sw-zigzag-card-titles { min-width: 0; }
+
+.sw-zigzag-card-step {
+  margin: 0 0 3px;
+  color: var(--zigzag-muted);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.4;
+  text-transform: uppercase;
 }
 
 .sw-zigzag-card h3 {
@@ -204,72 +140,66 @@
   color: var(--zigzag-ink);
   font-size: clamp(1.05rem, 1.65vw, 1.22rem);
   font-weight: 650;
-  letter-spacing: -0.025em;
+  letter-spacing: var(--tracking-heading);
   line-height: 1.3;
 }
 
 .sw-zigzag-card-description {
   max-width: 42ch;
-  margin: 12px 0 0 47px;
-  color: var(--zigzag-muted);
+  margin: 12px 0 0 46px;
+  color: var(--zigzag-copy);
   font-size: 0.86rem;
   line-height: 1.65;
 }
 
 .sw-zigzag-outcome-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 19px 0 0;
+  gap: 0;
+  margin: 16px 0 0 46px;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--zigzag-border);
 }
 
-.sw-zigzag-outcome-card {
+.sw-zigzag-outcome-row {
   display: flex;
   min-width: 0;
   align-items: flex-start;
   gap: 10px;
-  padding: 13px 12px;
-  border: 1px solid #303b34;
-  border-radius: 12px;
-  background: #111613;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--zigzag-border);
 }
+
+.sw-zigzag-outcome-row:last-child { border-bottom: 0; padding-bottom: 2px; }
 
 .sw-zigzag-outcome-icon {
   display: grid;
-  width: 27px;
-  height: 27px;
+  width: 22px;
+  height: 22px;
   flex: none;
   place-items: center;
-  border: 1px solid #48554b;
-  border-radius: 9px;
-  color: #b9c4bc;
-  background: #222a24;
+  margin-top: 1px;
+  color: var(--zigzag-copy);
 }
 
-.sw-zigzag-outcome-card.is-success .sw-zigzag-outcome-icon {
-  border-color: #35664a;
-  color: #a1d0ae;
-  background: #1b3425;
-}
+.sw-zigzag-outcome-row.is-success .sw-zigzag-outcome-icon { color: var(--zigzag-success); }
 
 .sw-zigzag-outcome-copy {
   display: grid;
-  gap: 5px;
+  gap: 4px;
   min-width: 0;
 }
 
 .sw-zigzag-outcome-copy strong {
-  color: #e8eee9;
-  font-size: 0.8rem;
+  color: var(--zigzag-ink);
+  font-size: 0.82rem;
   font-weight: 700;
   line-height: 1.35;
 }
 
 .sw-zigzag-outcome-copy > span {
-  color: #9da9a1;
-  font-size: 0.73rem;
+  color: var(--zigzag-muted);
+  font-size: 0.76rem;
   line-height: 1.55;
 }
 
@@ -283,21 +213,19 @@
 
   .sw-zigzag-card {
     min-height: 0;
-    padding: 23px 22px 22px 52px;
+    padding: 22px 20px;
   }
 
   .sw-zigzag-step.is-left .sw-zigzag-card { margin-right: 12px; }
   .sw-zigzag-step.is-right .sw-zigzag-card { margin-left: 12px; }
-  .sw-zigzag-outcome-list { grid-template-columns: 1fr; }
+  .sw-zigzag-card-description,
+  .sw-zigzag-outcome-list { margin-left: 0; }
 }
 
 @media (max-width: 560px) {
-  .sw-zigzag-heading { align-items: flex-start; gap: 12px; }
-  .sw-zigzag-heading-mark { width: 43px; height: 43px; border-radius: 13px; }
-  .sw-zigzag-heading-mark svg { width: 22px; height: 22px; }
-  .sw-zigzag-heading h2 { font-size: clamp(1.75rem, 8vw, 2.35rem); }
+  .sw-zigzag-heading h2 { font-size: clamp(1.7rem, 7.6vw, 2.25rem); }
   .sw-zigzag-intro { font-size: 0.87rem; }
-  .sw-zigzag-timeline { gap: 12px; }
+  .sw-zigzag-timeline { gap: 12px; padding-left: 14px; border-left: 1px solid var(--zigzag-border); }
   .sw-zigzag-step {
     display: block;
     padding: 0;
@@ -308,18 +236,10 @@
     width: 100%;
     margin: 0;
   }
-  .sw-zigzag-card { padding: 22px 17px 20px 49px; }
-  .sw-zigzag-card-description { margin-left: 0; }
-  .sw-zigzag-tab { top: 20px; bottom: 20px; width: 27px; }
+  .sw-zigzag-card { padding: 20px 18px; }
 }
 
 @media (max-width: 380px) {
   .sw-zigzag { padding: 22px 16px; }
-  .sw-zigzag-heading-mark { display: none; }
-  .sw-zigzag-outcome-card { padding: 11px 10px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sw-zigzag-card { transition: none; }
-  .sw-zigzag-card:hover { transform: none; }
+  .sw-zigzag-outcome-row { padding: 10px 0; }
 }

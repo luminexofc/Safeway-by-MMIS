@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "../../../shared/theme";
+import { useLang } from "../lib/lang";
 import { cn } from "../../../shared/cn";
 
 const OPTIONS = [
@@ -9,12 +10,34 @@ const OPTIONS = [
   { id: "system", label: "System", icon: Monitor },
 ];
 
+const COPY = {
+  en: {
+    title: "Theme: {mode}",
+    change: "Theme: {mode}. Change theme",
+    menu: "Theme",
+    light: "Light",
+    dark: "Dark",
+    system: "System",
+  },
+  bn: {
+    title: "থিম: {mode}",
+    change: "থিম: {mode}। থিম বদলান",
+    menu: "থিম",
+    light: "লাইট",
+    dark: "ডার্ক",
+    system: "সিস্টেম",
+  },
+};
+
 /** Theme picker: Light / Dark / System (follows the OS). Same control as admin. */
-export default function ThemeToggle({ className = "" }) {
+export default function ThemeToggle({ className = "", align = "left" }) {
   const { mode, setMode } = useTheme();
+  const [lang] = useLang();
+  const copy = COPY[lang] || COPY.en;
   const [open, setOpen] = useState(false);
   const boxRef = useRef(null);
   const Current = (OPTIONS.find((o) => o.id === mode) || OPTIONS[2]).icon;
+  const modeLabel = copy[mode] || copy.system;
 
   useEffect(() => {
     if (!open) return;
@@ -30,7 +53,7 @@ export default function ThemeToggle({ className = "" }) {
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open ]);
+  }, [open]);
 
   return (
     <div ref={boxRef} className={cn("relative", className)}>
@@ -39,17 +62,20 @@ export default function ThemeToggle({ className = "" }) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label={`Theme: ${mode}. Change theme`}
-        title={`Theme: ${mode}`}
-        className="inline-flex h-11 min-w-[44px] cursor-pointer items-center justify-center rounded-xl border border-rule text-ink-2 transition-colors hover:bg-paper-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 dark:hover:bg-white/10"
+        aria-label={copy.change.replace("{mode}", modeLabel)}
+        title={copy.title.replace("{mode}", modeLabel)}
+        className="inline-flex h-11 min-w-[44px] cursor-pointer items-center justify-center rounded-xl border border-rule text-ink-2 transition-colors hover:bg-paper-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus dark:hover:bg-white/10"
       >
         <Current className="h-5 w-5" aria-hidden="true" />
       </button>
       {open && (
         <div
           role="menu"
-          aria-label="Theme"
-          className="absolute right-0 top-full z-[800] mt-2 w-44 overflow-hidden rounded-2xl border border-rule bg-surface p-1.5 shadow-pop"
+          aria-label={copy.menu}
+          className={cn(
+            "absolute top-full z-[800] mt-2 w-44 overflow-hidden rounded-2xl border border-rule bg-surface p-1.5 shadow-pop",
+            align === "right" ? "right-0" : "left-0"
+          )}
         >
           {OPTIONS.map((o) => (
             <button
@@ -69,7 +95,7 @@ export default function ThemeToggle({ className = "" }) {
               )}
             >
               <o.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span className="flex-1">{o.label}</span>
+              <span className="flex-1">{copy[o.id] || o.label}</span>
               {mode === o.id && <Check className="h-4 w-4" aria-hidden="true" />}
             </button>
           ))}
