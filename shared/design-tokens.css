@@ -28,6 +28,10 @@
   --color-danger-soft: oklch(95% 0.025 27);
   --color-map-ground: oklch(91.5% 0.002 265);
   --color-map-road: oklch(98.5% 0.001 265);
+  /* Lines drawn on the tiles: the map surface stays light in both themes, so
+     this graphite must not flip with the theme. `--color-accent` does flip,
+     and a near-white accent vanished against light tiles in dark mode. */
+  --color-map-line: oklch(34% 0.008 265);
   --color-inverse: oklch(21% 0.005 265);
   --color-inverse-ink: oklch(97.5% 0.002 265);
   --color-inverse-muted: oklch(72% 0.004 265);
@@ -91,6 +95,7 @@
   --color-danger-soft: oklch(30% 0.055 27);
   --color-map-ground: oklch(26% 0.004 265);
   --color-map-road: oklch(34% 0.004 265);
+  --color-map-line: oklch(38% 0.009 265);
   --color-inverse: oklch(11% 0.004 265);
   --color-inverse-ink: oklch(97% 0.002 265);
   --color-inverse-muted: oklch(70% 0.003 265);

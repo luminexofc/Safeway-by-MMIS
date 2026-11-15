@@ -375,7 +375,10 @@ export default function Navigate() {
   // Build map lines:
   const lines = [];
 
-  // 1. Add route lines
+  // 1. Add route lines. The selected line uses `--color-map-line`, a graphite
+  // that stays dark in both themes: `--color-accent` flips to near-white in
+  // dark mode and disappeared against the light tiles. Weights stay slim so the
+  // road under the line is still readable.
   ordered.forEach((r) => {
     const isSel = r.id === active?.id;
     if (r.isBlocked) {
@@ -383,7 +386,7 @@ export default function Navigate() {
         id: r.id,
         positions: r.coords,
         color: "var(--color-danger)",
-        weight: isSel ? 7 : 4,
+        weight: isSel ? 4 : 3,
         dashed: true,
       });
     } else if (r.isSafeAlt) {
@@ -391,14 +394,14 @@ export default function Navigate() {
         id: r.id,
         positions: r.coords,
         color: "var(--color-safe)",
-        weight: isSel ? 7 : 5,
+        weight: isSel ? 5 : 3,
       });
     } else {
       lines.push({
         id: r.id,
         positions: r.coords,
-        color: isSel ? "var(--color-accent)" : "var(--color-rule-strong)",
-        weight: isSel ? 7 : 5,
+        color: isSel ? "var(--color-map-line)" : "var(--color-muted-2)",
+        weight: isSel ? 5 : 3,
       });
     }
   });
@@ -412,7 +415,7 @@ export default function Navigate() {
         id: `blockade-line-${b.id}`,
         positions,
         color: "var(--color-danger)",
-        weight: 6,
+        weight: 4,
         dashed: true,
       });
     }
