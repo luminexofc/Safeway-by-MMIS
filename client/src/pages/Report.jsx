@@ -28,6 +28,7 @@ import {
   useGeolocation,
   reverseGeocodeAddress,
   geocode,
+  fetchRoutes,
   snapToRoad,
   accuracyLabel,
   COUNTRY_CENTER,
@@ -445,6 +446,9 @@ export default function Report() {
   const [segmentEnd, setSegmentEnd] = useState(null);
   const [segmentEndLabel, setSegmentEndLabel] = useState("");
   const [segmentEndResolving, setSegmentEndResolving] = useState(false);
+  // Road geometry between the two ends of the flooded stretch. Null until the
+  // router answers (or when it cannot), in which case the chord is drawn.
+  const [segmentPath, setSegmentPath] = useState(null);
 
   // Protest scenario state
   const [protestRadius, setProtestRadius] = useState(300);
@@ -525,6 +529,35 @@ export default function Report() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [geo.pos, placedByUser]);
+
+  // The flooded stretch follows the road between the two marks. A straight
+  // chord cuts across whatever sits between them — blocks, rivers, another
+  // street — so the segment is drawn from the router's geometry instead. A
+  // failed or superseded request falls back to the chord, which keeps the
+  // segment visible while offline.
+  useEffect(() => {
+    if (occurrence !== "waterlogging" || !segmentEnd) {
+      setSegmentPath(null);
+      return;
+    }
+    const ctrl = new AbortController();
+    let live = true;
+    fetchRoutes(pin, segmentEnd, { signal: ctrl.signal })
+      .then((routes) => {
+        if (!live) return;
+        setSegmentPath(routes?.[0]?.coords?.length ? routes[0].coords : null);
+      })
+      .catch((err) => {
+        if (live && err?.name !== "AbortError") setSegmentPath(null);
+      });
+    return () => {
+      live = false;
+      ctrl.abort();
+    };
+    // pin and segmentEnd are new objects on every placement, which is exactly
+    // when the stretch has to be re-routed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [occurrence, pin, segmentEnd]);
 
   // A tap lands wherever the finger is, not on the carriageway. Snap to the
   // nearest road so the stored coordinate is the road, not the roof beside it.
@@ -706,21 +739,33 @@ export default function Report() {
   const severityItems = severityFor(occurrence, copy);
   const protestRanges = copy.protestRanges;
 
-  const mapLines =
+  // The flooded stretch follows the road, so it is drawn as a slim line with a
+  // narrow halo rather than a wide band: the casing lifts it off the tiles of
+  // either theme while the road stays readable underneath.
+  const segmentPositions =
     occurrence === "waterlogging" && segmentEnd
-      ? [
-          {
-            id: "waterlogging-segment",
-            positions: [
-              [pin.lat, pin.lng],
-              [segmentEnd.lat, segmentEnd.lng],
-            ],
-            color: "var(--color-accent)",
-            weight: 5,
-            dashed: true,
-          },
-        ]
-      : [];
+      ? (segmentPath ?? [
+          [pin.lat, pin.lng],
+          [segmentEnd.lat, segmentEnd.lng],
+        ])
+      : null;
+
+  const mapLines = segmentPositions
+    ? [
+        {
+          id: "waterlogging-casing",
+          positions: segmentPositions,
+          color: "var(--color-surface)",
+          weight: 8,
+        },
+        {
+          id: "waterlogging-segment",
+          positions: segmentPositions,
+          color: "var(--color-danger)",
+          weight: 4,
+        },
+      ]
+    : [];
 
   const mapMarkers =
     occurrence === "waterlogging" && segmentEnd
@@ -728,16 +773,32 @@ export default function Report() {
           {
             id: "segment-end-point",
             pos: [segmentEnd.lat, segmentEnd.lng],
-            tone: "info",
+            tone: "danger",
+            label: "B",
           },
         ]
       : [];
+
+  // Tapping B again takes the end point off the map. Marker taps never reach
+  // the map, so this cannot be mistaken for placing a new point; in-flight
+  // reverse-geocode replies are dropped so a stale label cannot resurrect.
+  const handleMarkerClick = (id) => {
+    if (id !== "segment-end-point") return;
+    endLookupId.current += 1;
+    setSegmentEnd(null);
+    setSegmentEndLabel("");
+    setSegmentEndResolving(false);
+    setSegmentActive("end");
+  };
 
   const mapRadius =
     occurrence === "protest"
       ? {
           at: [pin.lat, pin.lng],
           meters: protestRadius,
+          // The zone is a caution area, not just a drawn circle: colour it so
+          // it separates from route lines and blockades on the same map.
+          tone: "caution",
         }
       : null;
 
@@ -1005,6 +1066,7 @@ export default function Report() {
                 pin={{ pos: pinPos }}
                 onPinMove={movePin}
                 onMapClick={handleMapClick}
+                onMarkerClick={handleMarkerClick}
                 markers={mapMarkers}
                 lines={mapLines}
                 radius={mapRadius}

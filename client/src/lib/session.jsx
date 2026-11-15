@@ -15,8 +15,14 @@ const SessionContext = createContext({
 // does not rely on a third-party cookie surviving the round trip: Appwrite
 // returns one-time userId/secret params that /auth/callback exchanges for a
 // session stored in localStorage.cookieFallback.
+//
+// Appwrite rejects a success/failure URL whose origin is not a registered Web
+// platform on the project ("Invalid `success` param: Invalid URI"). Vercel
+// preview and branch hosts are never registered, so `VITE_APP_URL` names the
+// canonical site when the visitor happens to arrive from one of them.
 export function startGoogleAuth() {
-  const origin = window.location.origin;
+  const configured = import.meta.env.VITE_APP_URL?.trim().replace(/\/+$/, "");
+  const origin = configured || window.location.origin;
   account.createOAuth2Token({
     provider: "google",
     success: `${origin}/auth/callback`,

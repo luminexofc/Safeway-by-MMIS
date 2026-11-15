@@ -56,6 +56,12 @@ export default function AdminLogin() {
 
     setLoading(true);
     try {
+      // Appwrite keeps one session per project in the browser's cookie jar, and
+      // the public app is the same project — so a regular Safeway account signed
+      // in there blocks this sign-in with "a session is active". Clear whatever
+      // is there first: the console and the app use separate accounts, and
+      // signing in here must replace the other one rather than be refused by it.
+      await account.deleteSession({ sessionId: "current" }).catch(() => {});
       await account.createEmailPasswordSession({ email: address, password });
       // The provider mounted while signed out, so re-check before routing:
       // the guard needs the new session, not the stale signed-out state.

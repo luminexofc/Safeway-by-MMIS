@@ -1032,7 +1032,10 @@ export default function Dashboard() {
                 "flex h-10 w-10 cursor-pointer select-none touch-manipulation items-center justify-center rounded-xl border shadow-md transition-colors",
                 filterOpen
                   ? "border-solid bg-solid text-solid-ink shadow-sm"
-                  : "border-rule-strong bg-surface text-ink-2 hover:bg-paper-2 hover:text-ink active:bg-rule dark:border-white/15 dark:bg-surface dark:text-ink dark:hover:bg-white/10"
+                  // Hover and press must stay opaque, and the icon must darken with
+                  // them: this button floats on map tiles, so a translucent wash or
+                  // a mid-tone icon on a mid-tone fill reads as a vanished button.
+                  : "border-rule-strong bg-surface text-ink-2 hover:bg-paper-2 hover:text-ink active:bg-rule active:text-ink dark:border-white/15 dark:bg-surface dark:text-ink dark:active:bg-rule"
               )}
             >
               <Layers className="h-5 w-5" />
@@ -1189,7 +1192,7 @@ export default function Dashboard() {
             onClick={() => locate()}
             title={copy.centerOnMe}
             aria-label={copy.centerOnMe}
-            className="flex h-9 w-9 cursor-pointer select-none touch-manipulation items-center justify-center rounded-xl border border-rule-strong bg-surface text-ink-2 shadow-md transition-colors hover:bg-paper-2 hover:text-ink active:bg-rule dark:border-white/15 dark:bg-surface dark:text-ink dark:hover:bg-white/10 sm:h-10 sm:w-10"
+            className="flex h-9 w-9 cursor-pointer select-none touch-manipulation items-center justify-center rounded-xl border border-rule-strong bg-surface text-ink-2 shadow-md transition-colors hover:bg-paper-2 hover:text-ink active:bg-rule active:text-ink dark:border-white/15 dark:bg-surface dark:text-ink dark:active:bg-rule sm:h-10 sm:w-10"
           >
             <LocateFixed className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>

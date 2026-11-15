@@ -16,6 +16,7 @@ const RULES = [
   [/password_policy|password policy/i, "Your password doesn't meet our requirements. Try a longer one with letters and numbers."],
   [/session.*(expired|invalid)|unauthorized/i, "Your session expired. Please sign in again."],
   [/operator|member/i, "This account is not in the operators team."],
+  [/user_session_already_exists|session is active|prohibited when a session/i, "Another account is still signed in on this browser. Sign out of the public app, then try again."],
   [/failed to fetch|network|offline/i, "You're offline. Check your connection and try again."],
 ];
 

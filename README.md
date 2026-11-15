@@ -53,6 +53,14 @@ mint keys, so create them once by hand:
    `SERVER_API_KEY` variable (the platform's own `APPWRITE_API_KEY` injection
    is invalid on this project, so the code prefers `SERVER_API_KEY`).
 
+Web platforms (console → **Overview → Platforms → Add platform → Web**): every
+hostname the site is served from must be registered there — `localhost` for
+dev, plus each deployed site (e.g. `findsafeway.vercel.app`). Hostname only: no
+`https://`, no path. A missing entry breaks Google sign-in with
+`Invalid 'success' param: Invalid URI` and blocks Appwrite calls from that
+origin. Vercel preview hosts change per deployment, so either register the one
+you need or set `VITE_APP_URL` to the canonical site and use its sign-in link.
+
 Function settings (console): `submit-report` executes for `users` and
 deploys with build command `npm install`; `verify-report` executes for
 `team:operators`. API key scopes per function are assigned in the console —

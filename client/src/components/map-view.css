@@ -17,6 +17,40 @@
   height: 100%;
 }
 
+/* Report pin. MapView draws it as an SVG divIcon because Leaflet's default
+ * marker is a bitmap it resolves at runtime, which ships as a broken or blurry
+ * PNG. The shadow lives here so the icon html stays token-free. */
+.map-pin-body {
+  filter: drop-shadow(0 2px 6px oklch(20% 0.018 216 / 0.28));
+}
+
+/* Lettered tap target (A/B on a flooded stretch). The box is the finger's
+ * target; the dot inside is the visible badge. */
+.map-badge-hit {
+  display: grid;
+  place-items: center;
+}
+
+.map-badge-dot {
+  display: grid;
+  place-items: center;
+  border: 2.5px solid var(--color-surface);
+  border-radius: 50%;
+  /* Ink for a saturated fill: flips with the theme like the dot itself. */
+  color: var(--color-accent-ink);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 8px oklch(20% 0.018 216 / 0.32);
+  cursor: pointer;
+  transition: transform var(--duration-ui) var(--ease-out);
+}
+
+.map-badge-hit:hover .map-badge-dot {
+  transform: scale(1.08);
+}
+
 .map-credit {
   position: absolute;
   z-index: 500;
