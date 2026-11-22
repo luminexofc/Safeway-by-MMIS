@@ -19,19 +19,25 @@ export function Login() {
   const { user, loading } = useSession();
   const [view, setView] = useState("signin"); // "signin" | "forgot"
   const go = (next) => next !== view && wipeThen(() => setView(next));
-  // Already signed in? Login has nothing to offer — open the app.
-  useEffect(() => {
-    if (!loading && user) nav("/dashboard", { replace: true });
-  }, [loading, user, nav]);
-  // Where the user was headed when the guard bounced them here.
+  // Where the user was headed when the prompt or the guard sent them here.
+  // Only same-origin absolute paths are honoured, never a protocol-relative URL.
   const from = location.state?.from;
   const cameForPage = typeof from === "string" && from.startsWith("/") && !from.startsWith("//");
+  const next = cameForPage ? from : "/dashboard";
+  // Already signed in? Login has nothing to offer — continue to the task that
+  // brought them here (or the dashboard when they came for sign-in itself).
+  // This must use `next` as well: signing in sets the user, which fires this
+  // effect before onSuccess navigates, and a plain /dashboard here would
+  // silently drop the destination the prompt carried.
+  useEffect(() => {
+    if (!loading && user) nav(next, { replace: true });
+  }, [loading, user, nav, next]);
 
   return view === "signin" ? (
     <SignIn
-      onSignUp={() => wipeThen(() => nav("/signup"))}
+      onSignUp={() => wipeThen(() => nav("/signup", { state: { from } }))}
       onForgot={() => go("forgot")}
-      onSuccess={() => nav(cameForPage ? from : "/dashboard", { replace: true })}
+      onSuccess={() => nav(next, { replace: true })}
     />
   ) : (
     <ForgotPassword onBackToSignIn={() => go("signin")} />
@@ -40,12 +46,17 @@ export function Login() {
 
 export function Signup() {
   const nav = useNavigate();
+  const location = useLocation();
   const { user, loading } = useSession();
+  // The prompt on the map or the landing page sends people here with the task
+  // they were reaching for, so a new account lands on it instead of the map.
+  const from = location.state?.from;
+  const next = typeof from === "string" && from.startsWith("/") && !from.startsWith("//") ? from : "/dashboard";
   useEffect(() => {
-    if (!loading && user) nav("/dashboard", { replace: true });
-  }, [loading, user, nav]);
+    if (!loading && user) nav(next, { replace: true });
+  }, [loading, user, nav, next]);
   return (
-    <SignUp onSignIn={() => wipeThen(() => nav("/login"))} onSuccess={() => nav("/dashboard", { replace: true })} />
+    <SignUp onSignIn={() => wipeThen(() => nav("/login", { state: { from } }))} onSuccess={() => nav(next, { replace: true })} />
   );
 }
 

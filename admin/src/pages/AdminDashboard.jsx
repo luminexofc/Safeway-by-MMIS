@@ -1,16 +1,40 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, LogOut, Check, X, Flag, Inbox, UserRoundX, RefreshCw } from "lucide-react";
+import { ShieldCheck, LogOut, Check, X, Flag, Inbox, UserRoundX, RefreshCw, Trash2 } from "lucide-react";
 import { cn } from "../../../shared/cn";
 import ThemeToggle from "../components/ThemeToggle";
 import { useOperator } from "../lib/operator";
 import { tablesDB, storage, DATABASE_ID, TABLES, BUCKET, Query, callFunction } from "../lib/appwrite";
 import { friendlyError } from "../lib/errors";
+import { confirmReportDeletion } from "../lib/deletion";
 
 const MAIN_SITE = import.meta.env.VITE_MAIN_SITE_URL || "http://localhost:5173";
 
 const DEPTH_LABEL = { ankle: "ankle-deep", knee: "knee-deep", waist: "waist-deep", road_closed: "road closed" };
 const STATUS_LABEL = { pending: "Pending review", verified: "Verified", discarded: "Not verified", flagged_abuse: "Flagged for review" };
+
+// A verified report's stored expiry determines whether it is live on the map.
+const isExpired = (r) => {
+  if (!r?.expiresAt) return false;
+  const t = new Date(r.expiresAt).getTime();
+  return Number.isFinite(t) && t <= Date.now();
+};
+const stateLabel = (r) => {
+  if (r.status === "verified" && isExpired(r)) return "Ended · off map";
+  if (r.status === "verified" && r.expiresAt) return "Live · on map";
+  return STATUS_LABEL[r.status] ?? r.status;
+};
+
+// Ops-log verbs. `action` is a closed enum, so the descriptive verb lives in
+// `meta`; fall back to the action name for older rows.
+const eventVerb = (e) => {
+  const meta = typeof e?.meta === "string" ? e.meta.trim() : "";
+  if (meta.startsWith("deleted")) return "Deleted";
+  if (meta.startsWith("resolved")) return "Cleared";
+  if (meta.startsWith("confirmed")) return "Confirmed";
+  if (meta.startsWith("auto_verified")) return "Auto-verified";
+  return e?.action ?? "event";
+};
 
 const toneBadge = () => "sw-status-neutral";
 
@@ -43,18 +67,33 @@ export default function AdminDashboard() {
   const [reports, setReports] = useState(null); // null = loading
   const [events, setEvents] = useState([]);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [acting, setActing] = useState("");
 
   const load = useCallback(async () => {
     setError("");
     try {
-      const [r, e] = await Promise.all([
+      const [r, pending, e] = await Promise.all([
         tablesDB.listRows({
           databaseId: DATABASE_ID,
           tableId: TABLES.reports,
           queries: [Query.orderDesc("$createdAt"), Query.limit(50)],
           total: false,
         }),
+        // The recent-fifty window is newest-first, so an older pending report
+        // falls out of it and becomes unreachable — a submission nobody can
+        // ever review. Pull the whole backlog separately, oldest first, so the
+        // queue is complete no matter how busy the last fifty are.
+        tablesDB.listRows({
+          databaseId: DATABASE_ID,
+          tableId: TABLES.reports,
+          queries: [
+            Query.equal("status", ["pending"]),
+            Query.orderAsc("$createdAt"),
+            Query.limit(100),
+          ],
+          total: false,
+        }).catch(() => ({ rows: [] })),
         tablesDB.listRows({
           databaseId: DATABASE_ID,
           tableId: TABLES.auditEvents,
@@ -62,11 +101,19 @@ export default function AdminDashboard() {
           total: false,
         }),
       ]);
-      setReports(r.rows);
+      const seen = new Set();
+      setReports(
+        [...pending.rows, ...r.rows].filter((row) => {
+          if (seen.has(row.$id)) return false;
+          seen.add(row.$id);
+          return true;
+        }),
+      );
       setEvents(e.rows);
     } catch (err) {
       console.error("[console] load failed:", err?.code ?? err?.message ?? err);
       setError(friendlyError(err, "Could not load the operations data. Please try again."));
+      throw err;
     }
   }, []);
 
@@ -91,12 +138,30 @@ export default function AdminDashboard() {
   const decide = async (id, action) => {
     setActing(id);
     setError("");
+    setNotice("");
     try {
       await callFunction("verify-report", { reportId: id, action });
       await load();
     } catch (ex) {
       console.error("[console] decision failed:", ex?.code ?? ex?.message ?? ex);
       setError(friendlyError(ex, "Could not update the report. Please try again."));
+    } finally {
+      setActing("");
+    }
+  };
+
+  const remove = async (report) => {
+    if (!confirmReportDeletion(report)) return;
+    setActing(report.$id);
+    setError("");
+    setNotice("");
+    try {
+      await callFunction("verify-report", { reportId: report.$id, action: "delete" });
+      await load();
+      setNotice("Report permanently deleted. It is no longer on the public map.");
+    } catch (ex) {
+      console.error("[console] deletion failed:", ex?.code ?? ex?.message ?? ex);
+      setError(friendlyError(ex, "Could not delete the report. Please try again."));
     } finally {
       setActing("");
     }
@@ -175,6 +240,11 @@ export default function AdminDashboard() {
             {error}
           </div>
         )}
+        {notice && (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-[13.5px] font-semibold text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300" role="status">
+            {notice}
+          </div>
+        )}
 
         <dl className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-3 dark:border-white/10 dark:bg-slate-900">
           {[
@@ -197,10 +267,16 @@ export default function AdminDashboard() {
               <p className="py-6 text-center text-[13.5px] text-slate-500 dark:text-slate-400">No reports yet. New public submissions land here.</p>
             )}
             {reports !== null && reports.map((r) => {
-              const statusLabel = STATUS_LABEL[r.status] ?? r.status;
+              const statusLabel = stateLabel(r);
               const working = acting === r.$id;
               return (
-                <div key={r.$id} className="flex flex-wrap items-center gap-3 border-t border-slate-200 py-4 dark:border-white/10">
+                <div
+                  key={r.$id}
+                  className={cn(
+                    "flex flex-wrap items-center gap-3 border-t border-slate-200 py-4 dark:border-white/10",
+                    isDeleted(r) && "opacity-60",
+                  )}
+                >
                   {r.imageFileIds?.[0] ? (
                     <img
                       src={storage.getFileView({ bucketId: BUCKET.reportPhotos, fileId: r.imageFileIds[0] })}
@@ -223,8 +299,17 @@ export default function AdminDashboard() {
                       {r.note ? ` · “${r.note}”` : ""}
                     </p>
                   </div>
-                  <span className={cn("inline-flex items-center rounded-full border px-3 py-1 text-[12px] font-bold", toneBadge(statusLabel))}>{statusLabel}</span>
-                  {r.status === "pending" && (
+                  <span
+                    className={cn(
+                      "inline-flex items-center rounded-full border px-3 py-1 text-[12px] font-bold",
+                      toneBadge(statusLabel),
+                      isDeleted(r) && "border-red-300 text-red-700 dark:border-red-500/40 dark:text-red-300",
+                    )}
+                  >
+                    {isDeleted(r) && <Trash2 className="mr-1 h-3 w-3" aria-hidden="true" />}
+                    {statusLabel}
+                  </span>
+                  {r.status === "pending" && !isDeleted(r) && (
                     <div className="flex gap-2">
                       <button disabled={working} onClick={() => decide(r.$id, "verify")} className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg bg-solid px-4 text-[14px] font-bold text-solid-ink hover:bg-solid-hover disabled:cursor-not-allowed disabled:opacity-60">
                         <Check className="h-4 w-4" aria-hidden="true" /> {working ? "Saving…" : "Verify"}
@@ -236,6 +321,29 @@ export default function AdminDashboard() {
                         <X className="h-4 w-4" aria-hidden="true" /> Discard
                       </button>
                     </div>
+                  )}
+                  {/* Clearing is about the world, not the report: the road is
+                      passable again. It works on a live verified report and
+                      removes it from every map on the next load. */}
+                  {r.status === "verified" && !isExpired(r) && !isDeleted(r) && (
+                    <button
+                      disabled={working}
+                      onClick={() => decide(r.$id, "resolve")}
+                      title="The occurrence is over — remove it from the public map"
+                      className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg border border-slate-300 px-4 text-[14px] font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5"
+                    >
+                      <Check className="h-4 w-4" aria-hidden="true" /> {working ? "Saving…" : "Clear from map"}
+                    </button>
+                  )}
+                  {!isDeleted(r) && (
+                  <button
+                    disabled={working}
+                    onClick={() => remove(r)}
+                    aria-label={`Delete report at ${r.placeLabel}`}
+                    className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg border border-red-300 px-4 text-[14px] font-bold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-500/30 dark:text-red-300 dark:hover:bg-red-500/10"
+                  >
+                    <Trash2 className="h-4 w-4" aria-hidden="true" /> Delete
+                  </button>
                   )}
                 </div>
               );
@@ -252,7 +360,7 @@ export default function AdminDashboard() {
             {events.map((e) => (
               <div key={e.$id} className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-100 px-3 py-2 text-[13px] dark:border-white/10">
                 <span className="font-mono text-[12px] text-slate-500 dark:text-slate-400">{timeAgo(e.$createdAt)}</span>
-                <span className="rounded-full border border-slate-200 px-2 py-0.5 text-[12px] font-bold dark:border-white/15">{e.action}</span>
+                <span className="rounded-full border border-slate-200 px-2 py-0.5 text-[12px] font-bold dark:border-white/15">{eventVerb(e)}</span>
                 <span className="font-mono text-[12px] text-slate-500 dark:text-slate-400">{e.reportId}</span>
                 {e.meta && <span className="text-[12px] text-slate-500 dark:text-slate-400">{e.meta}</span>}
               </div>

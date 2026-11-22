@@ -10,16 +10,18 @@ import FaqScrollAccordion from "@/components/wensity/blocks/faq-scroll-accordion
 import FooterWithFourColumnLinks from "@/components/wensity/blocks/footer-with-four-column-links";
 import { useSession } from "../lib/session";
 import { setLang, useLang } from "../lib/lang";
+import SignInPrompt from "../components/auth/SignInPrompt";
 import "./landing.css";
 
 const COPY = {
   en: {
-    map: "Road map", report: "Report waterlogging", reports: "My reports",
+    map: "Road map", mapShort: "Map", report: "Report waterlogging", reports: "My reports",
     signIn: "Sign in", account: "Open Safeway",
     title: "Before you go, check the road.",
     intro: "Check verified waterlogging reports on the safety map. Add a report when a road is difficult to pass. Reports are reviewed before they appear as road conditions.",
     check: "Check a route", file: "Report a road",
-    access: "A Safeway account is required to view the map and submit reports.",
+    access: "The map is open to everyone. A Safeway account is only needed to report a road or follow your reports.",
+    openMap: "Open the map",
     flowTitle: "From a road report to the safety map",
     flowIntro: "A report appears as a road condition only after an operator verifies it.",
     flowStep: "STEP",
@@ -30,14 +32,17 @@ const COPY = {
     discarded: "Not verified", discardedBody: "The report does not appear as a road condition on the map.",
     language: "Switch language",
     pauseVideo: "Pause background video", playVideo: "Play background video",
+    promptTitle: "Sign in to report a road",
+    promptBody: "Reports are tied to a real account so the verification team can follow up. Browsing the map stays free.",
   },
   bn: {
-    map: "সড়কের মানচিত্র", report: "জলাবদ্ধতা জানান", reports: "আমার রিপোর্ট",
+    map: "সড়কের মানচিত্র", mapShort: "মানচিত্র", report: "জলাবদ্ধতা জানান", reports: "আমার রিপোর্ট",
     signIn: "লগইন", account: "সেফওয়ে খুলুন",
     title: "বের হওয়ার আগে সড়ক দেখুন।",
     intro: "নিরাপত্তা মানচিত্রে যাচাইকৃত জলাবদ্ধতার রিপোর্ট দেখুন। কোনো সড়ক চলাচলের অনুপযোগী হলে জানান। সড়কের অবস্থা হিসেবে দেখানোর আগে রিপোর্ট যাচাই করা হয়।",
     check: "রুট দেখুন", file: "সড়ক রিপোর্ট করুন",
-    access: "মানচিত্র দেখতে ও রিপোর্ট জমা দিতে সেফওয়ে অ্যাকাউন্ট প্রয়োজন।",
+    access: "মানচিত্র সবার জন্য খোলা। সড়ক রিপোর্ট করতে বা নিজের রিপোর্ট দেখতে সেফওয়ে অ্যাকাউন্ট দরকার।",
+    openMap: "মানচিত্র খুলুন",
     flowTitle: "সড়ক রিপোর্ট থেকে নিরাপত্তা মানচিত্রে",
     flowIntro: "অপারেটর যাচাই করার পরেই রিপোর্টটি সড়কের অবস্থা হিসেবে দেখায়।",
     flowStep: "ধাপ",
@@ -48,6 +53,8 @@ const COPY = {
     discarded: "যাচাই হয়নি", discardedBody: "রিপোর্টটি মানচিত্রে সড়কের অবস্থা হিসেবে দেখায় না।",
     language: "ভাষা বদলান",
     pauseVideo: "পেছনের ভিডিও থামান", playVideo: "পেছনের ভিডিও চালান",
+    promptTitle: "সড়ক রিপোর্ট করতে লগইন করুন",
+    promptBody: "রিপোর্ট একটি প্রকৃত অ্যাকাউন্টের সাথে যুক্ত থাকে, যাতে যাচাই দল যোগাযোগ করতে পারে। মানচিত্র দেখা সবার জন্য উন্মুক্ত।",
   },
 };
 
@@ -63,9 +70,15 @@ export default function Landing() {
   const { resolved } = useTheme();
   const videoRef = useRef(null);
   const [playing, setPlaying] = useState(!reduceMotion);
+  // A guest pressing the report actions gets the sign-in prompt here rather
+  // than being bounced to a login screen that discards where they were going.
+  const [prompting, setPrompting] = useState(false);
   const videoSrc = resolved === "dark" ? "/videos/for-dark-theme.mp4" : "/videos/landing-page.mp4";
-  const routePath = user ? "/navigate" : "/login";
-  const reportPath = user ? "/report" : "/login";
+  // The map is public; only the two report actions need an account, and they
+  // carry their destination so sign-in returns the person to that task.
+  const mapPath = "/map";
+  const reportPath = "/report";
+  const reportsPath = "/my-reports";
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -89,15 +102,21 @@ export default function Landing() {
         <div className="sw-header-inner">
           <Brand />
           <nav className="sw-nav" aria-label={lang === "bn" ? "প্রধান নেভিগেশন" : "Main navigation"}>
-            <Link to={routePath}>{t.map}</Link>
-            <Link to={reportPath}>{t.report}</Link>
-            {user && <Link to="/my-reports">{t.reports}</Link>}
+            {user && <Link to={reportsPath}>{t.reports}</Link>}
+            {user
+              ? <Link to={reportPath}>{t.report}</Link>
+              : <button type="button" className="sw-nav-button" onClick={() => setPrompting(true)}>{t.report}</button>}
           </nav>
           <div className="sw-header-actions">
             <button className="sw-language" type="button" onClick={() => setLang(lang === "en" ? "bn" : "en")} aria-label={t.language}>
               {lang === "en" ? "বাংলা" : "English"}
             </button>
             <ThemeToggle />
+            <Link className="sw-map-button" to={mapPath} aria-label={t.map}>
+              <HugeiconsIcon icon={MapsIcon} size={17} strokeWidth={2} aria-hidden="true" />
+              <span className="sw-map-button-long">{t.map}</span>
+              <span className="sw-map-button-short">{t.mapShort}</span>
+            </Link>
             {!loading && <Link className="sw-account-link" to={user ? "/dashboard" : "/login"}>{user ? t.account : t.signIn}</Link>}
           </div>
         </div>
@@ -112,8 +131,14 @@ export default function Landing() {
             <h1 id="sw-hero-title">{t.title}</h1>
             <p>{t.intro}</p>
             <div className="sw-hero-actions">
-              <Link className="sw-action sw-action-primary" to={routePath}><HugeiconsIcon icon={MapsIcon} size={18} strokeWidth={1.75} aria-hidden="true" />{t.check}</Link>
-              <Link className="sw-action sw-action-secondary" to={reportPath}><HugeiconsIcon icon={FileAddIcon} size={18} strokeWidth={1.75} aria-hidden="true" />{t.file}</Link>
+              <Link className="sw-action sw-action-primary" to={mapPath}><HugeiconsIcon icon={MapsIcon} size={18} strokeWidth={1.75} aria-hidden="true" />{t.openMap}</Link>
+              {user ? (
+                <Link className="sw-action sw-action-secondary" to={reportPath}><HugeiconsIcon icon={FileAddIcon} size={18} strokeWidth={1.75} aria-hidden="true" />{t.file}</Link>
+              ) : (
+                <button type="button" className="sw-action sw-action-secondary" onClick={() => setPrompting(true)}>
+                  <HugeiconsIcon icon={FileAddIcon} size={18} strokeWidth={1.75} aria-hidden="true" />{t.file}
+                </button>
+              )}
             </div>
             {!user && <p className="sw-access-note">{t.access}</p>}
           </motion.div>
@@ -153,12 +178,20 @@ export default function Landing() {
 
       <FooterWithFourColumnLinks
         lang={lang}
-        routePath={routePath}
+        routePath={mapPath}
         reportPath={reportPath}
-        reportsPath={user ? "/my-reports" : "/login"}
+        reportsPath={reportsPath}
         privacyPath="/privacy"
         accountPath={user ? "/dashboard" : "/login"}
         isSignedIn={Boolean(user)}
+      />
+
+      <SignInPrompt
+        open={prompting}
+        title={t.promptTitle}
+        body={t.promptBody}
+        from="/report"
+        onClose={() => setPrompting(false)}
       />
     </div>
   );

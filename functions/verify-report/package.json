@@ -3,8 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Operator-only: verify / discard / flag a report, write audit event, push to the division topic.",
+  "description": "Operator-only: verify / discard / flag / resolve / permanently delete a report, with audit and push.",
   "engines": { "node": ">=20" },
+  "scripts": { "test": "node --test test/*.test.js" },
   "dependencies": {
     "node-appwrite": "^31.1.0"
   }

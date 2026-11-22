@@ -16,7 +16,7 @@ const COPY = {
       {
         question: "Do I need an account to use it?",
         answer:
-          "Yes. A Safeway account is required to view the safety map and submit reports. Signing in takes a moment and keeps reports tied to real people.",
+          "Not to look. The safety map is open to everyone with no sign-up. You only need a Safeway account to file a report or follow the reports you filed, which keeps reports tied to real people.",
       },
       {
         question: "How does a report reach the map?",
@@ -36,7 +36,7 @@ const COPY = {
       {
         question: "Is Safeway free to use?",
         answer:
-          "Yes. Checking the safety map and filing road reports are free for everyone with an account.",
+          "Yes. Checking the safety map is free with no account, and filing road reports is free for everyone with an account.",
       },
     ],
   },
@@ -52,7 +52,7 @@ const COPY = {
       {
         question: "ব্যবহার করতে অ্যাকাউন্ট লাগবে?",
         answer:
-          "হ্যাঁ। নিরাপত্তা মানচিত্র দেখতে ও রিপোর্ট জমা দিতে সেফওয়ে অ্যাকাউন্ট প্রয়োজন। লগইন করতে এক মুহূর্ত লাগে এবং এতে রিপোর্ট প্রকৃত ব্যক্তির সাথে যুক্ত থাকে।",
+          "দেখতে লাগবে না। নিরাপত্তা মানচিত্র সাইন-আপ ছাড়াই সবার জন্য খোলা। কেবল রিপোর্ট জমা দিতে বা নিজের জমা দেওয়া রিপোর্ট দেখতে সেফওয়ে অ্যাকাউন্ট দরকার, যা রিপোর্ট প্রকৃত ব্যক্তির সাথে যুক্ত রাখে।",
       },
       {
         question: "রিপোর্ট কীভাবে মানচিত্রে আসে?",
@@ -72,7 +72,7 @@ const COPY = {
       {
         question: "সেফওয়ে ব্যবহারে খরচ আছে?",
         answer:
-          "না। অ্যাকাউন্ট থাকলে নিরাপত্তা মানচিত্র দেখা ও সড়ক রিপোর্ট করা সবার জন্য বিনামূল্যে।",
+          "না। অ্যাকাউন্ট ছাড়াই নিরাপত্তা মানচিত্র দেখা যায়, এবং অ্যাকাউন্ট থাকলে সড়ক রিপোর্ট করা সবার জন্য বিনামূল্যে।",
       },
     ],
   },

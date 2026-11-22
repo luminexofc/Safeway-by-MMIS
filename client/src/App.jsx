@@ -49,6 +49,17 @@ function Protected({ children }) {
   return <AppShell>{children}</AppShell>;
 }
 
+// The map itself is public: anyone may browse verified road conditions.
+// Only filing and tracking a report require an account, so this route skips
+// the session gate and lets Dashboard avoid the signed-in-only actions.
+function PublicMap() {
+  return (
+    <AppShell>
+      <Dashboard />
+    </AppShell>
+  );
+}
+
 const Shell = ({ children }) => <AppShell>{children}</AppShell>;
 
 export default function App() {
@@ -57,6 +68,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Shell><Landing /></Shell>} />
+          <Route path="/map" element={<PublicMap />} />
           <Route path="/login" element={<Shell><Login /></Shell>} />
           <Route path="/signup" element={<Shell><Signup /></Shell>} />
           <Route path="/verify" element={<Shell><Verify /></Shell>} />

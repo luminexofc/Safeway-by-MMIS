@@ -9,6 +9,7 @@ import {
   useGeolocation,
   emptyPointMessage,
   fetchRouteWithDetour,
+  isRouteBlockade,
   parseReportSegment,
 } from "../services/geo";
 import { fetchFeed } from "../lib/appwrite";
@@ -157,7 +158,9 @@ export default function Navigate() {
 
   const blockades = useMemo(() => {
     return feed
-      .filter((r) => r.status === "verified" || r.depth === "road_closed")
+      // Verified only: an unreviewed "road closed" claim must never take a
+      // route away from the driver who asked for one.
+      .filter((r) => isRouteBlockade(r))
       .map((r) => {
         const segment = parseReportSegment(r);
         const placeSplit = r.placeLabel ? r.placeLabel.split(/\s+to\s+/i) : null;

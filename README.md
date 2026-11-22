@@ -13,6 +13,21 @@ The public app has **zero admin entry points** by design. See `admin/README.md`
 for the connection contract (shared Appwrite backend, `operators` team gate,
 FCM fan-out).
 
+## Access model (no sign-up to look)
+
+| Action | Account needed |
+|---|---|
+| Browse the safety map (`/map`), search, plan a way around a blockage | No |
+| Read verified/pending report markers | No — `reports` rows carry `read("any")` |
+| File a report, or open My reports | Yes — prompt on the action, then back to it |
+| Operator review console | Yes — `operators` team only |
+
+The landing header carries a dedicated **Map** button so a first-time visitor
+reaches the live map in one press. Actions that need an account open a sign-in
+prompt (`client/src/components/auth/SignInPrompt.jsx`) instead of bouncing to
+`/login`, and the destination travels in router state so sign-in/sign-up lands
+on the task the person started.
+
 ## Backend
 
 Appwrite (region: sgp) — the only backend. Both sites are thin clients over
@@ -23,7 +38,7 @@ the Appwrite Web SDK; there is no custom REST API anymore.
 | Auth | Appwrite Auth (`client/src/lib/appwrite.js`) | email/password + Google OAuth2, recovery, email verification |
 | Database | TablesDB `safeway` | `divisions`, `districts`, `profiles`, `reports`, `audit_events` |
 | Storage | bucket `report-photos` | 5 MB max, jpg/png/webp, encryption + antivirus, per-file perms (uploader-only at upload; `submit-report` adds operator read) |
-| Functions | `submit-report`, `verify-report` | forced-pending creation + user-driven report/account deletion; operator decisions + audit + FCM push |
+| Functions | `submit-report`, `verify-report` | forced-pending creation + user-driven report/account deletion; operator decisions + permanent deletion of any report (including its photos and report-related audit rows) + audit + FCM push |
 | Push | Messaging topics `division-*` | one per division; FCM provider created only when configured |
 
 Roles: public users authenticate normally; only members of the `operators`
@@ -81,6 +96,72 @@ send is recorded as skipped in `audit_events`.
 
 Operators: after an operator signs up, add their user id to the `operators`
 team (console → Teams, or ask the agent).
+
+### Report freshness (why an old report leaves the map)
+
+A jam, a rally and a waterlogged road are all temporary, but they are not
+equally temporary. A report used to stay on the map forever once verified, so a
+blockage from months ago still looked like a live hazard. It now carries an
+honest lifetime:
+
+| Occurrence | Default lifetime |
+|---|---|
+| Traffic jam | 1 hour |
+| Protest / rally | 4 hours |
+| Waterlogging | 12 hours |
+| Road hazard | 7 days |
+
+Constants live in `client/src/lib/freshness.js` and, mirrored,
+`functions/submit-report/src/freshness.js` (the two deploy separately and cannot
+share a module). Change both together.
+
+Three layers keep a report honest:
+
+1. **`expiresAt` at birth.** `submit-report` sets it from the report's category.
+   A readonly filter (`fetchFeed`) drops rows past their expiry, so a stale
+   report disappears on the next load even if no function ever runs. Expired
+   rows are kept, not deleted: history, photos, and the audit trail survive.
+2. **"Still there?"** A signed-in user who is not the author can confirm an
+   occurrence from its map popup. This pushes `expiresAt` forward by the
+   category's lifetime and writes a `confirmed` audit event. The author cannot
+   self-confirm — that is exactly how one stale report lived for months. A
+   report can only be revived within `REVIVE_WINDOW_MS` (2 hours) of expiring,
+   so a five-month-old row cannot be re-armed.
+3. **Operator "Clear from map".** In the console, a live verified report can be
+   cleared the moment an operator knows the road is open again. It writes
+   `expiresAt` = now, `resolvedAt`, and `resolvedBy`.
+
+### Deleting a report
+
+An operator can permanently delete any report from the admin console after
+confirming the location and the destructive action. This includes pending
+reports and verified reports currently visible on the public map.
+
+The `verify-report` function independently validates the caller's session JWT
+and confirmed membership in the `operators` team. It deletes the report's
+photos, all report-related audit rows, and finally the report row. The report
+therefore disappears from both the map and the console. This cannot be undone;
+"Clear from map" is the separate, non-destructive option for an occurrence that
+is over.
+
+
+Rows filed before the `expiresAt` column existed are handled from `$createdAt`
+and the `[Report Type: …]` tag the wizard already writes into `note`, so the map
+is correct before any migration runs.
+
+Schema (one-time, needs a key with `tables.read` + `columns.write`; the
+functions key does not have schema scopes):
+
+```bash
+APPWRITE_MIGRATE_API_KEY=<schema-scoped key> node scripts/migrate-freshness.mjs --check
+APPWRITE_MIGRATE_API_KEY=<schema-scoped key> node scripts/migrate-freshness.mjs --yes
+```
+
+It adds `category`, `expiresAt`, `lastConfirmedAt`, `resolvedAt`, `resolvedBy`,
+then backfills every row. Rows already older than their lifetime get an expiry
+in the past: they leave the map immediately and their data stays intact. The
+script is safe to re-run.
+
 
 ## Coverage
 

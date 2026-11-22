@@ -11,11 +11,13 @@ import {
   useGeolocation,
   reverseGeocodeAddress,
   fetchRouteWithDetour,
+  isRouteBlockade,
   routeHitsBlockade,
   parseReportSegment,
 } from "../services/geo";
 import { useTheme } from "../../../shared/theme";
-import { callFunction, fetchFeed, reportType } from "../lib/appwrite";
+import { callFunction, fetchFeed, reportType, reportState, confirmReport as confirmReportCall } from "../lib/appwrite";
+import { categoryOf, expiryTimeOf } from "../lib/freshness";
 import { friendlyError } from "../lib/errors";
 import {
   Search, X, LocateFixed, Plus, Minus, Navigation, Footprints,
@@ -23,7 +25,9 @@ import {
   Camera, Car, Bike, MapPin, Layers, Check,
 } from "lucide-react";
 import RouteCard from "../components/dashboard/RouteCard";
+import SignInPrompt from "../components/auth/SignInPrompt";
 import { useLang } from "../lib/lang";
+import { useSession } from "../lib/session";
 import { LiveReportStatusSkeleton, SuggestionListSkeleton } from "../components/Skeletons";
 
 /* ─── constants ─────────────────────────────────────────────────────── */
@@ -87,6 +91,22 @@ const COPY = {
     legendAvoidSub: "×∞ — Waterlogged",
     liveReports: (n) => `${n} live report${n === 1 ? "" : "s"} · tap markers for details`,
     fileVerified: "File a verified report",
+    statusNow: "Still happening",
+    statusExpired: "Ended",
+    statusPending: "Awaiting review",
+    stillThere: "Still there?",
+    stillThereHint: "Confirm this so it stays on the map for the next few hours.",
+    stillThereBusy: "Confirming…",
+    stillThereDone: "Thanks — extended for everyone nearby.",
+    stillThereOwn: "You reported this. Someone else at the location has to confirm it.",
+    stillThereGone: "This is no longer on the map. File a new report if it is back.",
+    stillThereFailed: "Could not confirm this right now. Please try again.",
+    confirmedOnce: "Confirmed by someone on the spot",
+    expiresIn: (t) => `Leaves the map in ${t}`,
+    expiredAgo: (t) => `Ended ${t} ago`,
+    timeMin: (n) => `${n} min`,
+    timeHr: (n) => `${n} h`,
+    timeDay: (n) => `${n} ${n === 1 ? "day" : "days"}`,
     fromA: "From (A):",
     toB: "To (B):",
     startLocation: "Start location",
@@ -101,6 +121,11 @@ const COPY = {
     cautionAreas: (n) => `${n} caution area${n > 1 ? "s" : ""}`,
     within150: "within 150 m",
     noHazards: "No hazards on this route",
+    guestBadge: "Browsing as a guest",
+    guestNote: "The map is open to everyone. Sign in to file a report or follow its review.",
+    promptReportTitle: "Sign in to report a road",
+    promptReportBody: "Reports are tied to a real account so the verification team can follow up. Browsing the map stays free.",
+    signIn: "Sign in",
   },
   bn: {
     types: { safe: "নিরাপদ রুট", cautious: "সতর্কতা", danger: "বিপদ", blocked: "সড়ক বন্ধ" },
@@ -144,6 +169,22 @@ const COPY = {
     legendAvoidSub: "×∞ — জলাবদ্ধ",
     liveReports: (n) => `${n}টি লাইভ রিপোর্ট · বিস্তারিত দেখতে চিহ্নে চাপ দিন`,
     fileVerified: "যাচাইকৃত রিপোর্ট জমা দিন",
+    statusNow: "এখনো চলছে",
+    statusExpired: "শেষ হয়েছে",
+    statusPending: "যাচাইয়ের অপেক্ষায়",
+    stillThere: "এখনো আছে?",
+    stillThereHint: "নিশ্চিত করুন, তাহলে পরের কয়েক ঘণ্টা এটি মানচিত্রে থাকবে।",
+    stillThereBusy: "নিশ্চিত করা হচ্ছে…",
+    stillThereDone: "ধন্যবাদ — সবার জন্য সময় বাড়ানো হয়েছে।",
+    stillThereOwn: "এটি আপনি রিপোর্ট করেছেন। একই স্থানে থাকা অন্য কেউ নিশ্চিত করতে পারবেন।",
+    stillThereGone: "এটি আর মানচিত্রে নেই। আবার দেখা দিলে নতুন রিপোর্ট করুন।",
+    stillThereFailed: "এখনই নিশ্চিত করা যায়নি। আবার চেষ্টা করুন।",
+    confirmedOnce: "স্থানে থাকা কেউ নিশ্চিত করেছেন",
+    expiresIn: (t) => `${t} পরে মানচিত্র থেকে সরে যাবে`,
+    expiredAgo: (t) => `${t} আগে শেষ হয়েছে`,
+    timeMin: (n) => `${n} মিনিট`,
+    timeHr: (n) => `${n} ঘণ্টা`,
+    timeDay: (n) => `${n} দিন`,
     fromA: "শুরু (A):",
     toB: "শেষ (B):",
     startLocation: "শুরুর স্থান",
@@ -158,6 +199,11 @@ const COPY = {
     cautionAreas: (n) => `${n}টি সতর্ক এলাকা`,
     within150: "১৫০ মিটারের মধ্যে",
     noHazards: "এই রুটে কোনো বিপদ নেই",
+    guestBadge: "অতিথি হিসেবে দেখছেন",
+    guestNote: "মানচিত্র সবার জন্য খোলা। রিপোর্ট জমা দিতে বা তার যাচাই দেখতে লগইন করুন।",
+    promptReportTitle: "সড়ক রিপোর্ট করতে লগইন করুন",
+    promptReportBody: "রিপোর্ট একটি প্রকৃত অ্যাকাউন্টের সাথে যুক্ত থাকে, যাতে যাচাই দল যোগাযোগ করতে পারে। মানচিত্র দেখা সবার জন্য উন্মুক্ত।",
+    signIn: "লগইন",
   },
 };
 
@@ -278,6 +324,9 @@ export default function Dashboard() {
   const dark = resolved === "dark";
   const [lang] = useLang();
   const copy = COPY[lang] || COPY.en;
+  // The map is public; the session only decides which actions are offered.
+  const { user } = useSession();
+  const signedIn = !!user;
 
   // Localised views of the type + mode tables. The map, legend, filter menu and
   // route card all read from these, so one language switch updates the lot.
@@ -300,6 +349,9 @@ export default function Dashboard() {
   const [feed,     setFeed]     = useState([]);   // live rows from the reports table
   const [feedBusy, setFeedBusy] = useState(true);
   const [saving,   setSaving]   = useState(false);
+  // Report id being confirmed as still present, so the popup button can show
+  // its own busy state without freezing the map.
+  const [confirming, setConfirming] = useState(null);
   const [show, setShow] = useState({ safe: true, cautious: true, danger: true, blocked: true });
 
   // Search
@@ -322,6 +374,8 @@ export default function Dashboard() {
   // Tap-to-report
   const [tapping, setTapping] = useState(false);
   const [draft,   setDraft]   = useState(null);
+  // The sign-in prompt is open when this is true.
+  const [prompt,  setPrompt]  = useState(false);
 
   // UI panels
   const [toast,      setToast]      = useState("");
@@ -397,6 +451,17 @@ export default function Dashboard() {
       lng: r.lng,
       depth: r.depth,
       status: r.status,
+      // Derived: "expired" is not a stored status, it is what expiresAt means.
+      state: reportState(r),
+      // Derived too: a row filed before the expiresAt column existed still has
+      // an honest lifetime, computed from when it was filed.
+      expiresAt: (() => {
+        const t = expiryTimeOf(r);
+        return t === null ? null : new Date(t).toISOString();
+      })(),
+      lastConfirmedAt: r.lastConfirmedAt ?? null,
+      category: categoryOf(r),
+      reporterId: r.reporterId ?? null,
       placeLabel: r.placeLabel,
       fromLabel,
       toLabel,
@@ -430,9 +495,19 @@ export default function Dashboard() {
     });
   }, [reports, segmentGeometries]);
 
+  // One live toast timer, cleared on unmount: leaving the map while a toast is
+  // showing used to set state on an unmounted component.
+  const toastTimer = useRef(null);
   const notify = useCallback((msg) => {
     setToast(msg);
-    setTimeout(() => setToast(""), 3600);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => {
+      toastTimer.current = null;
+      setToast("");
+    }, 3600);
+  }, []);
+  useEffect(() => () => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
   }, []);
 
   const reloadFeed = useCallback(() => {
@@ -533,7 +608,9 @@ export default function Dashboard() {
     if (!dest || !from) return;
     const ctrl = new AbortController();
     setRouting(true);
-    const activeBlockades = reports.filter((r) => r.type === "blocked" || r.depth === "road_closed");
+    // Only a verified report may move a route; the rule lives in one predicate
+    // so this screen and the route planner cannot drift apart again.
+    const activeBlockades = reports.filter(isRouteBlockade);
     fetchRouteWithDetour(mode, from, dest.ll, activeBlockades, segmentGeometries, ctrl.signal)
       .then((res) => {
         setPrimaryRoute(res.primary);
@@ -609,7 +686,13 @@ export default function Dashboard() {
 
   /* ── Report actions ───────────────────────────────────────────────── */
 
-  const startReport  = () => { setTapping(true); setDraft(null); };
+  // Filing is the one map action that needs an account. A guest who presses
+  // Report gets the prompt instead of a tap-to-place mode they cannot finish.
+  const startReport  = () => {
+    if (!signedIn) return setPrompt(true);
+    setTapping(true);
+    setDraft(null);
+  };
   const saveReport   = async () => {
     if (!draft || saving) return;
     setSaving(true);
@@ -629,6 +712,7 @@ export default function Dashboard() {
         lat: draft.lat,
         lng: draft.lng,
         depth,
+        category: draft.type === "blocked" ? "road_hazard" : "waterlogging",
         note: draft.note?.trim() || undefined,
       });
       setDraft(null); setTapping(false);
@@ -641,6 +725,55 @@ export default function Dashboard() {
       setSaving(false);
     }
   };
+
+  // "Still there?" — the one signal a timer cannot produce. The server rejects
+  // the report's own author, hence the local check for a clearer message.
+  const confirmStillThere = async (r) => {
+    if (confirming) return;
+    if (!signedIn) return setPrompt(true);
+    setConfirming(r.id);
+    try {
+      const out = await confirmReportCall(r.id);
+      // Patch the row in place: refetching would drop it if it had just
+      // expired, and the whole point is that it did not.
+      setFeed((prev) =>
+        prev.map((row) =>
+          row.$id === r.id
+            ? { ...row, expiresAt: out.expiresAt ?? row.expiresAt, lastConfirmedAt: new Date().toISOString() }
+            : row,
+        ),
+      );
+      notify(copy.stillThereDone);
+    } catch (ex) {
+      const msg = String(ex?.message ?? "");
+      notify(
+        msg.includes("own report")
+          ? copy.stillThereOwn
+          : msg.includes("expired")
+            ? copy.stillThereGone
+            : friendlyError(ex, copy.stillThereFailed, lang),
+      );
+      // A report that aged out server-side must leave the map immediately
+      // rather than waiting for the next poll.
+      if (msg.includes("expired") || ex?.code === 404) reloadFeed();
+    } finally {
+      setConfirming(null);
+    }
+  };
+
+  // Human duration for "leaves the map in 3 h". Coarse on purpose: a countdown
+  // that ticks to the second would compete with the map for attention.
+  const humanTime = useCallback(
+    (ms) => {
+      const mins = Math.max(1, Math.round(Math.abs(ms) / 60000));
+      if (mins < 60) return copy.timeMin(mins);
+      const hrs = Math.round(mins / 60);
+      // A road hazard lives for a week; "168 h" is not a thing anyone reads.
+      if (hrs < 24) return copy.timeHr(hrs);
+      return copy.timeDay(Math.round(hrs / 24));
+    },
+    [copy],
+  );
   const cancelReport = () => { setDraft(null); setTapping(false); };
 
   /* ── Tiles ────────────────────────────────────────────────────────── */
@@ -795,6 +928,47 @@ export default function Dashboard() {
                   <p className="text-[12px] text-slate-600 dark:text-slate-300 leading-relaxed">
                     {r.cleanNote || r.note}
                   </p>
+
+                  {/* Freshness: when a hazard leaves the map, and the one-tap
+                      way to keep a real one showing. A report nobody has
+                      confirmed since it was filed is the one that goes stale. */}
+                  <div className="mt-2 border-t border-rule pt-2 dark:border-white/10">
+                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                      {r.state === "expired"
+                        ? copy.statusExpired
+                        : r.state === "pending"
+                          ? copy.statusPending
+                          : copy.statusNow}
+                      {r.expiresAt && r.state !== "pending" && (
+                        <>
+                          {" · "}
+                          {r.state === "expired"
+                            ? copy.expiredAgo(humanTime(Date.now() - new Date(r.expiresAt).getTime()))
+                            : copy.expiresIn(humanTime(new Date(r.expiresAt).getTime() - Date.now()))}
+                        </>
+                      )}
+                    </p>
+                    {r.state !== "expired" && (
+                      <>
+                        {r.lastConfirmedAt && (
+                          <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                            {copy.confirmedOnce}
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          disabled={confirming === r.id || user?.$id === r.reporterId}
+                          onClick={() => confirmStillThere(r)}
+                          className="mt-1.5 inline-flex min-h-[32px] w-full cursor-pointer items-center justify-center rounded-lg border border-rule px-2 py-1 text-[11.5px] font-bold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5"
+                        >
+                          {confirming === r.id ? copy.stillThereBusy : copy.stillThere}
+                        </button>
+                        <p className="mt-1 text-[10.5px] leading-snug text-slate-500 dark:text-slate-400">
+                          {user?.$id === r.reporterId ? copy.stillThereOwn : copy.stillThereHint}
+                        </p>
+                      </>
+                    )}
+                  </div>
                 </div>
               </Popup>
             );
@@ -944,6 +1118,22 @@ export default function Dashboard() {
               </div>
             )}
           </div>
+
+          {!signedIn && (
+            <div className={`${CARD} px-3 py-2.5`}>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-accent">
+                {copy.guestBadge}
+              </p>
+              <p className="mt-1 text-[12px] leading-snug text-ink-2">{copy.guestNote}</p>
+              <Link
+                to="/login"
+                state={{ from: "/report" }}
+                className="mt-2 inline-flex min-h-[36px] items-center rounded-lg bg-solid px-3 text-[12px] font-bold text-solid-ink transition-colors hover:bg-solid-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              >
+                {copy.signIn}
+              </Link>
+            </div>
+          )}
 
           {tileFailed && (
             <div className={`${CARD} flex items-center gap-2 px-3 py-2.5`} role="alert">
@@ -1271,15 +1461,37 @@ export default function Dashboard() {
           <div
             className="absolute left-1/2 z-[1000] bottom-safe hidden -translate-x-1/2 sm:block"
           >
-            <Link
-              to="/report"
-              className="inline-flex items-center gap-2 rounded-full border border-rule bg-white px-4 py-1.5 text-[12.5px] font-bold text-slate-600 shadow-md transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-white/5"
-            >
-              <Camera className="h-3.5 w-3.5 text-ink dark:text-accent" />
-              {copy.fileVerified}
-            </Link>
+            {signedIn ? (
+              <Link
+                to="/report"
+                className="inline-flex items-center gap-2 rounded-full border border-rule bg-white px-4 py-1.5 text-[12.5px] font-bold text-slate-600 shadow-md transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-white/5"
+              >
+                <Camera className="h-3.5 w-3.5 text-ink dark:text-accent" />
+                {copy.fileVerified}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setPrompt(true)}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-rule bg-white px-4 py-1.5 text-[12.5px] font-bold text-slate-600 shadow-md transition-colors hover:bg-slate-50 dark:border-white/10 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-white/5"
+              >
+                <Camera className="h-3.5 w-3.5 text-ink dark:text-accent" />
+                {copy.fileVerified}
+              </button>
+            )}
           </div>
         )}
+
+        {/* ╔══════════════════════════════════════════════════════════════╗
+            ║  Sign-in prompt — only for actions that need an account      ║
+            ╚══════════════════════════════════════════════════════════════╝ */}
+        <SignInPrompt
+          open={prompt}
+          title={copy.promptReportTitle}
+          body={copy.promptReportBody}
+          from="/report"
+          onClose={() => setPrompt(false)}
+        />
 
         {/* ╔══════════════════════════════════════════════════════════════╗
             ║  TOAST — transient status messages                           ║

@@ -41,14 +41,50 @@
 }
 
 .sw-nav { gap: 26px; }
-.sw-nav a {
+.sw-nav a,
+.sw-nav-button {
   color: var(--color-ink-2);
   font-size: 0.9rem;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
 }
-.sw-nav a:hover { color: var(--color-accent); }
+/* The signed-out Report entry is the same nav item as the signed-in link, so
+   it must look identical while opening the sign-in prompt instead of a route. */
+.sw-nav-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+.sw-nav a:hover,
+.sw-nav-button:hover { color: var(--color-accent); }
+
+/* The header Map button: the one control a first-time visitor can press
+   without an account, so it reads as a button rather than another nav word. */
+.sw-map-button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 15px;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-control);
+  color: var(--color-accent-ink);
+  background: var(--color-accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color var(--duration-ui) var(--ease-out);
+}
+.sw-map-button:hover { background: var(--color-accent-strong); }
+.sw-map-button svg { flex: none; }
+/* Bengali "সড়কের মানচিত্র" does not fit a phone header beside the account
+   link, so the same button swaps to the short word instead of dropping its
+   label. */
+.sw-map-button-short { display: none; }
 .sw-header-actions { gap: 10px; margin-left: auto; }
 .sw-language {
   min-height: 44px;
@@ -181,6 +217,10 @@
   .sw-nav a { display: inline-flex; min-height: 34px; align-items: center; font-size: 0.82rem; }
   .sw-header-actions { gap: 4px; }
   .sw-account-link { min-height: 40px; padding-inline: 11px; font-size: 0.82rem; }
+  .sw-map-button { min-height: 40px; padding-inline: 11px; font-size: 0.82rem; }
+  .sw-map-button svg,
+  .sw-map-button-long { display: none; }
+  .sw-map-button-short { display: inline; }
   .sw-language { min-height: 40px; padding-inline: 8px; }
   .sw-hero {
     width: min(100% - 32px, 1320px);

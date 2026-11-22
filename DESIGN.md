@@ -107,8 +107,11 @@ one-off colors.
   verified road condition.
 - Do not invent incident pins, counts, testimonials, review-time estimates,
   update times, or claims. Show timestamps only when supplied by the data.
-- Traffic and other blockage types are not presented as supported until the
-  report model, operator workflow, and route calculation support them.
+- An occurrence is shown only while it is still happening. Every report carries
+  a lifetime by type (jam 1 h, protest 4 h, waterlogging 12 h, hazard 7 d),
+  is extended by "still there?" confirmations from other people at the spot,
+  and can be cleared by an operator. Anything past its expiry leaves the map
+  and stays only in history. Never present an ended occurrence as current.
 - Explain sign-in before a protected action. The map remains behind the current
   authentication boundary unless access policy is deliberately changed.
 - Loading, empty, permission-denied, no-route, stale-data, and error states name

@@ -62,7 +62,7 @@ export async function deleteReport(db, storage, report) {
 // exactly the case that would destroy evidence.
 async function deleteOrphanFiles(db, storage, userId) {
   const ownPerm = `read("user:${userId}")`;
-  const referenced = await collectReferencedFileIds(db);
+  const referenced = await collectReferencedFileIds(db, userId);
 
   const owned = [];
   for (let offset = 0; ; offset += 100) {
@@ -80,15 +80,28 @@ async function deleteOrphanFiles(db, storage, userId) {
   return owned.length;
 }
 
-// Every file id any live report points at. Fails closed: a partial set would
-// make referenced photos look unreferenced.
-async function collectReferencedFileIds(db) {
+// File ids the caller still has referenced by a report.
+//
+// Only the caller's own rows can point at the caller's files:
+// tightenPhotoPermissions refuses to link a photo the caller does not own, so a
+// foreign row can never reference one. Reading just this user's rows instead of
+// walking the whole table keeps the sweep flat as the dataset grows — the old
+// version read every report in Bangladesh 100 at a time inside a 300 s function.
+//
+// Fails closed: if the read throws, the caller aborts the sweep rather than
+// deleting files it cannot prove are unreferenced.
+async function collectReferencedFileIds(db, userId) {
   const referenced = new Set();
   for (let offset = 0; ; offset += 100) {
     const page = await db.listRows({
       databaseId: DATABASE_ID,
       tableId: REPORTS,
-      queries: [Query.limit(100), Query.offset(offset), Query.isNotNull("imageFileIds")],
+      queries: [
+        Query.equal("reporterId", userId),
+        Query.isNotNull("imageFileIds"),
+        Query.limit(100),
+        Query.offset(offset),
+      ],
       total: false,
     });
     for (const row of page.rows) {

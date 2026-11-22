@@ -108,7 +108,11 @@ test("autoVerifyCluster: at the threshold publishes the whole cluster", async ()
     assert.ok(u.data.verifiedAt);
   }
   assert.equal(db.audits.length, THRESHOLD, "each publish is audited");
-  assert.equal(db.audits[0].action, "auto_verified");
+  // `action` is a closed enum in the live schema (submitted, verified,
+  // discarded, flagged_abuse, notify), so an auto-publish records the verb in
+  // meta and the category in action.
+  assert.equal(db.audits[0].action, "verified");
+  assert.match(db.audits[0].meta ?? "", /auto_verified/);
 });
 
 test("autoVerifyCluster: only pending rows are republished", async () => {

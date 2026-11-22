@@ -44,16 +44,26 @@ export function boundingBox(lat, lng, radiusM = RADIUS_M) {
 
 // Rows in the same spot that count toward agreement. Only pending and
 // verified reports count: discarded and flagged ones were rejected.
-export function reportersNear(rows, lat, lng, radiusM = RADIUS_M) {
+//
+// `sinceMs` drops rows older than the window. Without it, a report filed
+// months ago keeps voting forever, so one fresh report plus four ancient ones
+// would publish a road as blocked today.
+export function reportersNear(rows, lat, lng, radiusM = RADIUS_M, sinceMs = 0) {
   const seen = new Set();
   for (const row of rows) {
     if (!ACTIVE.has(row.status)) continue;
     if (!row.reporterId) continue;
+    const created = row.$createdAt ? new Date(row.$createdAt).getTime() : NaN;
+    if (Number.isFinite(created) && created < sinceMs) continue;
     const d = metersBetween(lat, lng, Number(row.lat), Number(row.lng));
     if (d <= radiusM) seen.add(row.reporterId);
   }
   return seen;
 }
+
+// How long independent reports keep counting as agreement. A waterlogged road
+// dries out; a report from last monsoon says nothing about this one.
+export const AGREEMENT_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 // Called after a report is created. Returns the ids published, or [].
 //
@@ -62,19 +72,21 @@ export function reportersNear(rows, lat, lng, radiusM = RADIUS_M) {
 // blocked for one reporter but pending for the next.
 export async function autoVerifyCluster(db, { lat, lng, log }) {
   const box = boundingBox(lat, lng);
+  const since = new Date(Date.now() - AGREEMENT_WINDOW_MS).toISOString();
   const page = await db.listRows({
     databaseId: DATABASE_ID,
     tableId: REPORTS,
     queries: [
       Query.between("lat", box.minLat, box.maxLat),
       Query.between("lng", box.minLng, box.maxLng),
+      Query.greaterThan("$createdAt", since),
       Query.limit(100),
     ],
     total: false,
   }).catch(() => null);
   if (!page) return [];
 
-  const reporters = reportersNear(page.rows, lat, lng);
+  const reporters = reportersNear(page.rows, lat, lng, RADIUS_M, Date.now() - AGREEMENT_WINDOW_MS);
   if (reporters.size < THRESHOLD) return [];
 
   const pending = page.rows.filter(
@@ -98,8 +110,11 @@ export async function autoVerifyCluster(db, { lat, lng, log }) {
       data: {
         reportId: row.$id,
         actorId: "auto:quorum",
-        action: "auto_verified",
-        meta: `reporters:${reporters.size}`,
+        // `action` is a closed enum in the live schema; "auto_verified" was
+        // rejected and the swallowed error meant auto-publishing was never
+        // recorded in the ops log. Keep the category, name the verb in meta.
+        action: "verified",
+        meta: `auto_verified;reporters:${reporters.size}`,
       },
       permissions: AUDIT_READ,
     }).catch(() => {});

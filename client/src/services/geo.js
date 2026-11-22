@@ -162,6 +162,17 @@ export function parseReportSegment(r) {
   };
 }
 
+// A report may move a route only once an operator has verified it, and only
+// when it actually closes the road. Pending reports are one person's claim;
+// routing around them would let any account redirect traffic, which is the
+// opposite of what the product promises. Both the dashboard and the route
+// planner ask this one question so the rule cannot drift between them again.
+export function isRouteBlockade(report) {
+  if (!report) return false;
+  if (report.status !== "verified") return false;
+  return report.depth === "road_closed";
+}
+
 export function routeHitsBlockade(coords, report, geomCoords) {
   if (geomCoords && geomCoords.length > 1) {
     for (let i = 0; i < geomCoords.length - 1; i++) {
@@ -193,13 +204,18 @@ export async function fetchRouteWithDetour(mode = "drive", from, to, blockades =
   let json;
   try {
     const res = await fetch(primaryUrl, { signal });
+    // A 429/500 still resolves, so without this check the fallback below is
+    // skipped and the user is told no road exists between two real places.
+    if (!res.ok) throw new Error(`Routing failed (${res.status})`);
     json = await res.json();
   } catch (err) {
+    if (err?.name === "AbortError") throw err;
     // Fallback to project-osrm router if routing.openstreetmap.de is unreachable
     const fbUrl =
       `https://router.project-osrm.org/route/v1/driving/` +
       `${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&geometries=geojson&alternatives=3`;
     const res = await fetch(fbUrl, { signal });
+    if (!res.ok) throw new Error(`Routing failed (${res.status})`);
     json = await res.json();
   }
 

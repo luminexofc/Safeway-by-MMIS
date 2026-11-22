@@ -4,7 +4,7 @@ import { friendlyError } from "../../lib/errors";
 const COPY = {
   en: {
     language: "Choose language", switchToBangla: "Switch to Bangla", switchToEnglish: "Switch to English", showPassword: "Show password", hidePassword: "Hide password",
-    signInTitle: "Welcome back", signInSub: "Sign in to check road reports and your saved reports.", continueToMap: "Sign in to continue to your map.",
+    signInTitle: "Welcome back", signInSub: "Sign in to report a road and follow the reports you filed.", continueToMap: "Sign in to continue where you left off.",
     email: "Email", emailHint: "you@example.com", password: "Password", passwordHint: "Enter your password",
     forgot: "Forgot password?", signIn: "Sign in", continueWith: "or continue with", googleSignIn: "Continue with Google",
     newTo: "New to Safeway?", createAccount: "Create an account", signUpTitle: "Create your account",
@@ -82,7 +82,7 @@ const COPY = {
   },
   bn: {
     language: "ভাষা নির্বাচন করুন", switchToBangla: "বাংলায় পরিবর্তন করুন", switchToEnglish: "ইংরেজিতে পরিবর্তন করুন", showPassword: "পাসওয়ার্ড দেখুন", hidePassword: "পাসওয়ার্ড লুকান",
-    signInTitle: "আবার স্বাগতম", signInSub: "সড়কের রিপোর্ট ও আপনার সংরক্ষিত রিপোর্ট দেখতে লগইন করুন।", continueToMap: "মানচিত্র দেখতে লগইন করুন।",
+    signInTitle: "আবার স্বাগতম", signInSub: "সড়ক রিপোর্ট করতে ও নিজের জমা দেওয়া রিপোর্ট দেখতে লগইন করুন।", continueToMap: "যেখানে ছিলেন সেখান থেকে চালিয়ে যেতে লগইন করুন।",
     email: "ইমেইল", emailHint: "you@example.com", password: "পাসওয়ার্ড", passwordHint: "পাসওয়ার্ড লিখুন",
     forgot: "পাসওয়ার্ড ভুলে গেছেন?", signIn: "লগইন", continueWith: "অথবা ব্যবহার করুন", googleSignIn: "Google দিয়ে লগইন",
     newTo: "Safeway-এ নতুন?", createAccount: "অ্যাকাউন্ট খুলুন", signUpTitle: "আপনার অ্যাকাউন্ট খুলুন",

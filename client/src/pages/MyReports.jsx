@@ -11,6 +11,7 @@ import {
   callFunction,
   depthLabel,
   shortReportId,
+  reportState,
 } from "../lib/appwrite";
 import { friendlyError } from "../lib/errors";
 import { ReportRowsSkeleton } from "../components/Skeletons";
@@ -24,6 +25,8 @@ const COPY = {
       verified: "Verified",
       discarded: "Not verified",
       flagged_abuse: "Under review",
+      expired: "Ended",
+      deleted: "Deleted",
     },
     filters: [
       { value: "queue", label: "In review" },
@@ -64,6 +67,8 @@ const COPY = {
       verified: "যাচাইকৃত",
       discarded: "যাচাই হয়নি",
       flagged_abuse: "পর্যালোচনাধীন",
+      expired: "শেষ হয়েছে",
+      deleted: "মুছে ফেলা হয়েছে",
     },
     filters: [
       { value: "queue", label: "যাচাই চলছে" },
@@ -163,7 +168,7 @@ function ReportRow({
               <h3 className="myr-place">{report.placeLabel}</h3>
               {showStatus && (
                 <span className="myr-status">
-                  {copy.status[report.status] ?? copy.status.pending}
+                  {copy.status[reportState(report)] ?? copy.status.pending}
                 </span>
               )}
             </div>
@@ -254,8 +259,10 @@ export default function MyReports() {
   }, [confirmId]);
 
   const all = rows ?? [];
-  const queue = all.filter((r) => r.status === "pending");
-  const decided = all.filter((r) => r.status !== "pending");
+  // A deleted report is neither waiting for review nor awaiting a decision;
+  // it is history, so it lands under "Decided" with its own label.
+  const queue = all.filter((r) => reportState(r) === "pending");
+  const decided = all.filter((r) => reportState(r) !== "pending");
 
   const shown = filter === "all" ? all : filter === "queue" ? queue : decided;
   const countFor = (value) =>

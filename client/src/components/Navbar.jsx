@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { ClipboardList, FilePlus2, LogOut, Map, Navigation, PanelLeftClose, PanelLeftOpen, Settings, ShieldCheck, UserRound } from "lucide-react";
 import { useLang, setLang } from "../lib/lang";
 import { cn } from "../../../shared/cn";
 import ThemeToggle from "./ThemeToggle";
+import SignInPrompt from "./auth/SignInPrompt";
 
 const LABELS = {
   en: {
@@ -20,6 +22,10 @@ const LABELS = {
     switchTo: "Switch to Bengali",
     collapse: "Collapse sidebar",
     expand: "Expand sidebar",
+    promptReportTitle: "Sign in to report a road",
+    promptReportBody: "Reports are tied to a real account so the verification team can follow up. Browsing the map stays free.",
+    promptRouteTitle: "Sign in to plan a route",
+    promptRouteBody: "Route planning is part of your signed-in workspace. Browsing the safety map needs no account.",
   },
   bn: {
     map: "মানচিত্র",
@@ -36,6 +42,10 @@ const LABELS = {
     switchTo: "ইংরেজিতে পরিবর্তন করুন",
     collapse: "সাইডবার সঙ্কুচিত করুন",
     expand: "সাইডবার প্রসারিত করুন",
+    promptReportTitle: "সড়ক রিপোর্ট করতে লগইন করুন",
+    promptReportBody: "রিপোর্ট একটি প্রকৃত অ্যাকাউন্টের সাথে যুক্ত থাকে, যাতে যাচাই দল যোগাযোগ করতে পারে। মানচিত্র দেখা সবার জন্য উন্মুক্ত।",
+    promptRouteTitle: "রুট পরিকল্পনা করতে লগইন করুন",
+    promptRouteBody: "রুট পরিকল্পনা লগইন করা ওয়ার্কস্পেসের অংশ। নিরাপত্তা মানচিত্র দেখতে অ্যাকাউন্ট লাগে না।",
   },
 };
 
@@ -60,12 +70,22 @@ export default function Navbar({ user, avatar = null, onLogout, collapsed = fals
   const t = LABELS[lang] || LABELS.en;
   const loggedIn = !!user;
   const home = loggedIn ? "/dashboard" : "/";
+  // The map is public, so its item is always a plain link. Everything that
+  // writes data or exposes personal history opens a sign-in prompt for a
+  // guest; the prompt names the task and returns to it after auth, which is
+  // friendlier than a silent bounce to /login.
+  const [prompt, setPrompt] = useState(null);
   const items = [
-    { to: loggedIn ? "/dashboard" : "/", label: t.map, icon: Map, end: true },
-    { to: "/navigate", label: t.route, icon: Navigation },
-    { to: "/report", label: t.report, icon: FilePlus2 },
+    { to: loggedIn ? "/dashboard" : "/map", label: t.map, icon: Map, end: true },
+    { to: "/navigate", gate: { id: "route", from: "/navigate" }, label: t.route, icon: Navigation },
+    { to: "/report", gate: { id: "report", from: "/report" }, label: t.report, icon: FilePlus2 },
     ...(loggedIn ? [{ to: "/my-reports", label: t.reports, icon: ClipboardList }] : []),
   ];
+  const promptCopy = {
+    route: [t.promptRouteTitle, t.promptRouteBody],
+    report: [t.promptReportTitle, t.promptReportBody],
+  };
+  const activePrompt = prompt ? promptCopy[prompt.id] ?? promptCopy.report : null;
 
   const LanguageControl = ({ compact = false }) => (
     <button
@@ -84,25 +104,42 @@ export default function Navbar({ user, avatar = null, onLogout, collapsed = fals
       className={mobile ? "sw-mobile-task-nav" : cn("sw-side-task-nav", collapsed && "sw-side-task-nav-collapsed")}
       aria-label={mobile ? t.mobile : t.nav}
     >
-      {items.map(({ to, label, icon: Icon, end }) => (
-        <NavLink
-          key={label}
-          to={to}
-          end={end}
-          title={collapsed && !mobile ? label : undefined}
-          aria-label={collapsed && !mobile ? label : undefined}
-          className={({ isActive }) =>
-            cn(
-              "sw-task-link",
-              isActive && "is-active",
-              collapsed && !mobile && "justify-center px-0"
-            )
-          }
-        >
-          <Icon size={19} aria-hidden="true" />
-          {(!collapsed || mobile) && <span>{label}</span>}
-        </NavLink>
-      ))}
+      {items.map(({ to, label, icon: Icon, end, gate }) => {
+        const linkClass = (isActive) =>
+          cn("sw-task-link", isActive && "is-active", collapsed && !mobile && "justify-center px-0");
+        const content = (
+          <>
+            <Icon size={19} aria-hidden="true" />
+            {(!collapsed || mobile) && <span>{label}</span>}
+          </>
+        );
+        if (!loggedIn && gate) {
+          return (
+            <button
+              key={label}
+              type="button"
+              onClick={() => setPrompt(gate)}
+              title={collapsed && !mobile ? label : undefined}
+              aria-label={collapsed && !mobile ? label : undefined}
+              className={cn(linkClass(false), "cursor-pointer border-0 bg-transparent text-left")}
+            >
+              {content}
+            </button>
+          );
+        }
+        return (
+          <NavLink
+            key={label}
+            to={to}
+            end={end}
+            title={collapsed && !mobile ? label : undefined}
+            aria-label={collapsed && !mobile ? label : undefined}
+            className={({ isActive }) => linkClass(isActive)}
+          >
+            {content}
+          </NavLink>
+        );
+      })}
     </nav>
   );
 
@@ -212,6 +249,13 @@ export default function Navbar({ user, avatar = null, onLogout, collapsed = fals
         </div>
       </header>
       <TaskLinks mobile />
+      <SignInPrompt
+        open={prompt !== null}
+        title={activePrompt?.[0]}
+        body={activePrompt?.[1]}
+        from={prompt?.from ?? "/dashboard"}
+        onClose={() => setPrompt(null)}
+      />
     </>
   );
 }

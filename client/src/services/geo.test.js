@@ -7,6 +7,7 @@ import {
   parseReportSegment,
   distToSegmentMeters,
   routeHitsBlockade,
+  isRouteBlockade,
   accuracyLabel,
   fetchRoutes,
 } from "./geo.js";
@@ -91,6 +92,38 @@ describe("distToSegmentMeters and routeHitsBlockade", () => {
   });
 });
 
+
+describe("isRouteBlockade", () => {
+  // This decides whether a route is taken away from a driver, so it must only
+  // ever answer yes for something an operator has confirmed.
+  it("rejects a pending report even when it claims the road is closed", () => {
+    // The exact case that shipped: one unverified person could force a detour.
+    assert.equal(
+      isRouteBlockade({ status: "pending", depth: "road_closed", type: "blocked" }),
+      false,
+    );
+  });
+
+  it("rejects a discarded or flagged report", () => {
+    assert.equal(isRouteBlockade({ status: "discarded", depth: "road_closed" }), false);
+    assert.equal(isRouteBlockade({ status: "flagged_abuse", depth: "road_closed" }), false);
+  });
+
+  it("rejects a verified report that does not close the road", () => {
+    assert.equal(isRouteBlockade({ status: "verified", depth: "ankle" }), false);
+    assert.equal(isRouteBlockade({ status: "verified", depth: "knee" }), false);
+  });
+
+  it("accepts a verified road closure", () => {
+    assert.equal(isRouteBlockade({ status: "verified", depth: "road_closed" }), true);
+  });
+
+  it("tolerates missing input", () => {
+    assert.equal(isRouteBlockade(null), false);
+    assert.equal(isRouteBlockade(undefined), false);
+    assert.equal(isRouteBlockade({}), false);
+  });
+});
 
 describe("geocode result shape", () => {
   // Every search caller (Report pin, Dashboard destination) reads {lat, lng}.

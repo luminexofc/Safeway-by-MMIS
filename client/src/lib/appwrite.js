@@ -12,6 +12,7 @@ import {
   Storage,
   TablesDB,
 } from "appwrite";
+import { expiryTimeOf, isLive } from "./freshness.js";
 
 export const DATABASE_ID = "safeway";
 export const TABLES = {
@@ -80,15 +81,95 @@ export const reportType = (r) =>
 export const shortReportId = (id) => `R-${String(id).replace(/[^a-z0-9]/gi, "").slice(0, 6).toUpperCase()}`;
 
 // Newest-first sanitized-ish feed for the public map. Direct table query:
-// rows are readable by all signed-in users (see submit-report permissions).
-export async function fetchFeed({ limit = 200 } = {}) {
-  const res = await tablesDB.listRows({
-    databaseId: DATABASE_ID,
-    tableId: TABLES.reports,
-    queries: [Query.equal("status", ["pending", "verified"]), Query.orderDesc("$createdAt"), Query.limit(limit)],
-    total: false,
-  });
-  return res.rows;
+// rows grant read("any") (see submit-report), so this works with no session —
+// the map is browsable without an account. Only the reporter's own photo
+// stays operator-only.
+//
+// Expired occurrences are filtered here, not by a scheduled sweep: a report
+// that stopped being true must leave the map on the very next load, even if
+// no function ever ran. The query narrows to rows that have an expiry in the
+// future; rows with no expiry yet (pre-migration) are filtered by age in
+// memory via isLive, so the map is honest even before the backfill runs.
+//
+// Pages until the rows run out. One fixed page used to be enough, but it cut
+// the oldest still-live reports off the map with no sign that anything was
+// missing — worst exactly during monsoon season, when it matters most.
+const FEED_PAGE = 200;
+const FEED_MAX_PAGES = 5;
+
+export async function fetchFeed({ limit = FEED_PAGE } = {}) {
+  const now = Date.now();
+  const live = Query.or([
+    Query.greaterThan("expiresAt", new Date(now).toISOString()),
+    Query.isNull("expiresAt"),
+  ]);
+
+  const collect = async (withFreshness) => {
+    const rows = [];
+    for (let page = 0; page < FEED_MAX_PAGES; page += 1) {
+      const queries = [
+        Query.equal("status", ["pending", "verified"]),
+        ...(withFreshness ? [live] : []),
+        Query.orderDesc("$createdAt"),
+        Query.limit(limit),
+        Query.offset(page * limit),
+      ];
+      const res = await tablesDB.listRows({
+        databaseId: DATABASE_ID,
+        tableId: TABLES.reports,
+        queries,
+        total: false,
+      });
+      rows.push(...res.rows);
+      if (res.rows.length < limit) return rows;
+    }
+    // Hitting the ceiling is not silent: the map is still incomplete, and the
+    // only honest thing is to say so in the console rather than pretend.
+    console.warn(`[feed] stopped after ${FEED_MAX_PAGES * limit} rows; map may be missing older live reports`);
+    return rows;
+  };
+
+  let rows;
+  try {
+    rows = await collect(true);
+  } catch (err) {
+    // `expiresAt` does not exist yet (schema migration pending). Fall back to
+    // the unfiltered query so the map keeps working during the rollout.
+    if (err?.code !== 400) throw err;
+    rows = await collect(false);
+  }
+
+  // Always run the age check: it covers both pre-migration rows and a report
+  // whose stored expiry passed between the query and this line.
+  return rows.filter((r) => isLive(r, now));
+}
+
+// "Still there?" — extends a live report so it stays on the map. The server
+// enforces that you cannot confirm your own report.
+export async function confirmReport(reportId) {
+  return callFunction("submit-report", { action: "confirm", reportId });
+}
+
+// A report removed by an operator is not stored as a status: `status` is a
+// closed enum in the schema. Deleting removes the row's public read
+// permission, so the durable mark is its permission list. The reporter keeps
+// a read grant, which is why their own list must label it rather than hide it.
+export function isDeleted(r) {
+  const perms = r?.$permissions;
+  if (!Array.isArray(perms)) return false;
+  return !perms.some((p) => p === 'read("any")' || p === 'read("users")');
+}
+
+// Where a report stands, including the states the backend does not store:
+// deleted and expired. "pending" stays pending — it is not on the map as a
+// road condition yet, and calling it ended would be the wrong story.
+export function reportState(r, now = Date.now()) {
+  if (isDeleted(r)) return "deleted";
+  if (r?.status === "discarded" || r?.status === "flagged_abuse") return r.status;
+  if (r?.status === "pending") return "pending";
+  const exp = expiryTimeOf(r);
+  if (exp !== null && exp <= now) return "expired";
+  return r?.status ?? "pending";
 }
 
 // Deterministic short fingerprint for abuse dedup, computed client-side
@@ -109,6 +190,14 @@ export async function uploadReportPhoto(file, userId) {
     file,
     permissions: [Permission.read(Role.user(userId))],
   });
+}
+
+// Drop a photo whose report was never created, so a failed submission does not
+// leave an orphan file behind on every retry. Best effort: the user already has
+// an error to read, and the account-deletion sweep is the backstop.
+export async function discardReportPhoto(fileId) {
+  if (!fileId) return;
+  await storage.deleteFile({ bucketId: BUCKET.reportPhotos, fileId }).catch(() => {});
 }
 
 // Fetch (or create empty) the profile row owned by this user.

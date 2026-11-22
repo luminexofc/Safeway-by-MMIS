@@ -34,3 +34,10 @@ opencode.json
 graphify-out/
 .vercel
 .env*
+
+# Local npm cache used when the default cache dir is not writable
+.npm-cache/
+
+# Editor / agent tooling state, not app code
+.serena/
+.pw2/

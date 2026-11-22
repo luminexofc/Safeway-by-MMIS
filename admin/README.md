@@ -26,8 +26,9 @@ npm run dev      # http://localhost:5173
 | Auth | Appwrite Auth email/password (or Google OAuth). Public app signs in as a normal user. |
 | Operator gate | Console requires membership in the Appwrite **operators** team. `admin/src/lib/operator.jsx` checks `teams.listMemberships`; non-members see a "Not an operator" screen. Public users are never added to the team. |
 | Verification flow | Console Verify / Flag / Discard → calls the `verify-report` Appwrite Function with `{ reportId, action }`. The function checks team membership server-side, flips `reports.status`, writes an `audit_events` row, and (when verified) pushes to the `division-*` Messaging topic for FCM fan-out. |
+| Permanent deletion | Every report row has a **Delete** action. After confirmation, the function verifies the operator again and permanently deletes the report's photos, report-related audit rows, and finally the report row, regardless of its status. A verified report therefore disappears from the public map. This is not reversible. |
 | Submit flow | Public app creates reports only via the `submit-report` Function (forces `status=pending`), so clients can never forge a verified report. |
-| Map feed | Public map reads the `reports` table directly (rows are readable by all signed-in users; only operators can update). |
+| Map feed | Public map reads the `reports` table directly (rows are readable by anyone, signed in or not, so the map needs no account; only operators can update). |
 | Ops log | Console reads the append-only `audit_events` table (operators only). |
 | CORS | Appwrite handles this; add the two dev origins (:5173, :5174) and production origins to the project's platform allow-list in the console. |
 | No shared code | The console vendors its own copy of the design tokens. No imports from `../client`. |

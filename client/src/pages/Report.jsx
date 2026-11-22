@@ -34,7 +34,7 @@ import {
   COUNTRY_CENTER,
 } from "../services/geo";
 import { useSession } from "../lib/session";
-import { callFunction, sha256Hex, uploadReportPhoto } from "../lib/appwrite";
+import { callFunction, discardReportPhoto, sha256Hex, uploadReportPhoto } from "../lib/appwrite";
 import { friendlyError } from "../lib/errors";
 import { onRadioKey } from "../lib/radio";
 import { useLang } from "../lib/lang";
@@ -671,9 +671,12 @@ export default function Report() {
     if (!user || submitting) return;
     setSubmitting(true);
     setSubmitError("");
+    // The photo is uploaded before the row exists, so a failure after the
+    // upload has to remove it or the bucket keeps an orphan file per retry.
+    let uploaded = null;
     try {
       const imageHash = photo ? await sha256Hex(photo) : undefined;
-      const uploaded = photo ? await uploadReportPhoto(photo, user.$id) : null;
+      uploaded = photo ? await uploadReportPhoto(photo, user.$id) : null;
       const { division, district } = addressRef.current;
 
       let placeSummary = pinLabel;
@@ -720,6 +723,9 @@ export default function Report() {
         lat: pin.lat,
         lng: pin.lng,
         depth,
+        // Decides how long the occurrence is shown. The note above carries the
+        // same thing as text for older rows and human readers.
+        category: occurrence,
         note: noteLines.join("\n").slice(0, 500) || undefined,
         imageFileIds: uploaded ? [uploaded.$id] : undefined,
         imageHash,
@@ -728,6 +734,7 @@ export default function Report() {
       nav("/my-reports");
     } catch (ex) {
       console.error("[report] submit failed:", ex?.code ?? ex?.message ?? ex);
+      await discardReportPhoto(uploaded?.$id);
       setSubmitError(friendlyError(ex, copy.submitFailed, lang));
       setSubmitting(false);
     }

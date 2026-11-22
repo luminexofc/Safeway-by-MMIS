@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test src/lib/deletion.test.js"
   },
   "dependencies": {
     "appwrite": "^29.2.0",
