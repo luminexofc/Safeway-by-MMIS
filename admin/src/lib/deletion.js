@@ -1,7 +1,6 @@
 export function confirmReportDeletion(report, confirm = globalThis.confirm) {
   return confirm(
-    `Delete the report at “${report.placeLabel}”?\n\n` +
-      "It disappears from the public map immediately. The report, its photo and its " +
-      "history stay here and in the operations log, marked as Deleted.",
+    `Permanently delete the report at “${report.placeLabel}”?\n\n` +
+      "This removes it from the public map and permanently deletes its photos and activity history. This cannot be undone.",
   );
 }

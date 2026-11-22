@@ -270,13 +270,7 @@ export default function AdminDashboard() {
               const statusLabel = stateLabel(r);
               const working = acting === r.$id;
               return (
-                <div
-                  key={r.$id}
-                  className={cn(
-                    "flex flex-wrap items-center gap-3 border-t border-slate-200 py-4 dark:border-white/10",
-                    isDeleted(r) && "opacity-60",
-                  )}
-                >
+                <div key={r.$id} className="flex flex-wrap items-center gap-3 border-t border-slate-200 py-4 dark:border-white/10">
                   {r.imageFileIds?.[0] ? (
                     <img
                       src={storage.getFileView({ bucketId: BUCKET.reportPhotos, fileId: r.imageFileIds[0] })}
@@ -299,17 +293,8 @@ export default function AdminDashboard() {
                       {r.note ? ` · “${r.note}”` : ""}
                     </p>
                   </div>
-                  <span
-                    className={cn(
-                      "inline-flex items-center rounded-full border px-3 py-1 text-[12px] font-bold",
-                      toneBadge(statusLabel),
-                      isDeleted(r) && "border-red-300 text-red-700 dark:border-red-500/40 dark:text-red-300",
-                    )}
-                  >
-                    {isDeleted(r) && <Trash2 className="mr-1 h-3 w-3" aria-hidden="true" />}
-                    {statusLabel}
-                  </span>
-                  {r.status === "pending" && !isDeleted(r) && (
+                  <span className={cn("inline-flex items-center rounded-full border px-3 py-1 text-[12px] font-bold", toneBadge(statusLabel))}>{statusLabel}</span>
+                  {r.status === "pending" && (
                     <div className="flex gap-2">
                       <button disabled={working} onClick={() => decide(r.$id, "verify")} className="pressable inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-lg bg-solid px-4 text-[14px] font-bold text-solid-ink hover:bg-solid-hover disabled:cursor-not-allowed disabled:opacity-60">
                         <Check className="h-4 w-4" aria-hidden="true" /> {working ? "Saving…" : "Verify"}
@@ -325,7 +310,7 @@ export default function AdminDashboard() {
                   {/* Clearing is about the world, not the report: the road is
                       passable again. It works on a live verified report and
                       removes it from every map on the next load. */}
-                  {r.status === "verified" && !isExpired(r) && !isDeleted(r) && (
+                  {r.status === "verified" && !isExpired(r) && (
                     <button
                       disabled={working}
                       onClick={() => decide(r.$id, "resolve")}
@@ -335,7 +320,6 @@ export default function AdminDashboard() {
                       <Check className="h-4 w-4" aria-hidden="true" /> {working ? "Saving…" : "Clear from map"}
                     </button>
                   )}
-                  {!isDeleted(r) && (
                   <button
                     disabled={working}
                     onClick={() => remove(r)}
@@ -344,7 +328,6 @@ export default function AdminDashboard() {
                   >
                     <Trash2 className="h-4 w-4" aria-hidden="true" /> Delete
                   </button>
-                  )}
                 </div>
               );
             })}

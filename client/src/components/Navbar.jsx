@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { ClipboardList, FilePlus2, LogOut, Map, Navigation, PanelLeftClose, PanelLeftOpen, Settings, ShieldCheck, UserRound } from "lucide-react";
 import { useLang, setLang } from "../lib/lang";
@@ -14,12 +14,14 @@ const LABELS = {
     reports: "My reports",
     profile: "Profile",
     settings: "Settings",
+    account: "Account",
     signIn: "Sign in",
     logout: "Log out",
     nav: "Main navigation",
     mobile: "Mobile navigation",
     language: "বাংলা",
     switchTo: "Switch to Bengali",
+    accountMenu: "Account menu",
     collapse: "Collapse sidebar",
     expand: "Expand sidebar",
     promptReportTitle: "Sign in to report a road",
@@ -34,12 +36,14 @@ const LABELS = {
     reports: "আমার রিপোর্ট",
     profile: "প্রোফাইল",
     settings: "সেটিংস",
+    account: "অ্যাকাউন্ট",
     signIn: "লগইন",
     logout: "লগআউট",
     nav: "প্রধান নেভিগেশন",
     mobile: "মোবাইল নেভিগেশন",
     language: "English",
     switchTo: "ইংরেজিতে পরিবর্তন করুন",
+    accountMenu: "অ্যাকাউন্ট মেনু",
     collapse: "সাইডবার সঙ্কুচিত করুন",
     expand: "সাইডবার প্রসারিত করুন",
     promptReportTitle: "সড়ক রিপোর্ট করতে লগইন করুন",
@@ -62,6 +66,94 @@ function Brand({ to, collapsed = false }) {
       </span>
       {!collapsed && <span>Safeway</span>}
     </Link>
+  );
+}
+
+/**
+ * The phone header is the only chrome a signed-in person sees there, so the
+ * account mark has to reach Profile, Settings and Log out. It opens a menu
+ * instead of linking straight to Profile: the two destinations and the exit
+ * belong together, and on a 320 px header there is no room for three targets.
+ */
+function MobileAccountMenu({ user, avatar, labels, onLogout }) {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef(null);
+  const name = user.name || user.email || labels.account;
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e) => {
+      if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const rows = [
+    { to: "/profile", label: labels.profile, icon: UserRound },
+    { to: "/settings", label: labels.settings, icon: Settings },
+  ];
+
+  return (
+    <div ref={boxRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        aria-label={labels.accountMenu}
+        title={name}
+        className="sw-mobile-account inline-flex h-10 min-w-[40px] cursor-pointer items-center justify-center rounded-lg border border-rule text-ink-2 transition-colors hover:bg-paper-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus dark:hover:bg-white/10"
+      >
+        {avatar ? (
+          <img className="h-[26px] w-[26px] rounded-full object-cover" src={avatar} alt="" />
+        ) : (
+          <UserRound size={18} aria-hidden="true" />
+        )}
+      </button>
+      {open && (
+        <div
+          role="menu"
+          aria-label={labels.accountMenu}
+          className="absolute right-0 top-full z-[800] mt-2 w-52 overflow-hidden rounded-2xl border border-rule bg-surface p-1.5 shadow-pop"
+        >
+          <p className="sw-mobile-account-name px-3 pb-2 pt-1 text-[13px] font-semibold">{name}</p>
+          {rows.map((row) => (
+            <Link
+              key={row.to}
+              to={row.to}
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex min-h-[44px] items-center gap-2.5 rounded-xl px-3 text-[14px] font-semibold text-ink-2 hover:bg-paper-2 hover:text-ink dark:hover:bg-white/10"
+            >
+              <row.icon size={17} aria-hidden="true" />
+              {row.label}
+            </Link>
+          ))}
+          <div className="mt-1 border-t border-rule pt-1">
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false);
+                onLogout();
+              }}
+              className="flex min-h-[44px] w-full cursor-pointer items-center gap-2.5 rounded-xl border-0 bg-transparent px-3 text-left text-[14px] font-semibold text-ink-2 hover:bg-paper-2 hover:text-ink dark:hover:bg-white/10"
+            >
+              <LogOut size={17} aria-hidden="true" />
+              {labels.logout}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -241,7 +333,9 @@ export default function Navbar({ user, avatar = null, onLogout, collapsed = fals
         <div className="sw-mobile-utilities">
           <LanguageControl />
           <ThemeToggle align="right" />
-          {!loggedIn && (
+          {loggedIn ? (
+            <MobileAccountMenu user={user} avatar={avatar} labels={t} onLogout={onLogout} />
+          ) : (
             <Link to="/login" className="sw-mobile-sign-in">
               {t.signIn}
             </Link>
